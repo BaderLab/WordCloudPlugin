@@ -151,6 +151,8 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener,
 	private UpdateCloudAction updateCloudAction;
 
 	private SaveCloudAction saveCloudAction;
+
+	private CloudListSelectionHandlerFactory handlerFactory;
 	
 	//String Constants for Separators in remove word combo box
 	private static final String addedSeparator = "--Added Words--";
@@ -166,7 +168,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener,
 
 	
 	//CONSTRUCTORS
-	public SemanticSummaryInputPanel(ModelManager modelManager, CyApplicationManager applicationManager, CySwingApplication application, FileUtil fileUtil, SemanticSummaryManager cloudManager, SemanticSummaryPluginAction pluginAction, CreateCloudAction createCloudAction, DeleteCloudAction deleteCloudAction, UpdateCloudAction updateCloudAction, SaveCloudAction saveCloudAction)
+	public SemanticSummaryInputPanel(ModelManager modelManager, CyApplicationManager applicationManager, CySwingApplication application, FileUtil fileUtil, SemanticSummaryManager cloudManager, SemanticSummaryPluginAction pluginAction, CreateCloudAction createCloudAction, DeleteCloudAction deleteCloudAction, UpdateCloudAction updateCloudAction, SaveCloudAction saveCloudAction, CloudListSelectionHandlerFactory handlerFactory)
 	{
 		this.modelManager = modelManager;
 		this.application = application;
@@ -175,6 +177,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener,
 		this.deleteCloudAction = deleteCloudAction;
 		this.updateCloudAction = updateCloudAction;
 		this.saveCloudAction = saveCloudAction;
+		this.handlerFactory = handlerFactory;
 		
 		decFormat = new DecimalFormat();
 		decFormat.setParseIntegerOnly(false);
@@ -236,7 +239,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener,
 		
 		//Setup Selection Listener
 		ListSelectionModel listSelectionModel = cloudList.getSelectionModel();
-		handler = new CloudListSelectionHandler(this, applicationManager, cloudManager, createCloudAction.getSemanticSummaryPluginAction());
+		handler = handlerFactory.createHandler(this);
 		listSelectionModel.addListSelectionListener(handler);
 		JScrollPane listScrollPane = new JScrollPane(cloudList);
 		

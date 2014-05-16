@@ -16,8 +16,9 @@ public class SemanticSummaryInputPanelFactory {
 	private final SaveCloudAction saveCloudAction;
 
 	private SemanticSummaryPluginAction pluginAction;
+	private CloudListSelectionHandlerFactory handlerFactory;
 
-	public SemanticSummaryInputPanelFactory(ModelManager modelManager, CyApplicationManager applicationManager, CySwingApplication application, FileUtil fileUtil, SemanticSummaryManager cloudManager, CreateCloudAction createCloudAction, DeleteCloudAction deleteCloudAction, UpdateCloudAction updateCloudAction, SaveCloudAction saveCloudAction) {
+	public SemanticSummaryInputPanelFactory(ModelManager modelManager, CyApplicationManager applicationManager, CySwingApplication application, FileUtil fileUtil, SemanticSummaryManager cloudManager, CreateCloudAction createCloudAction, DeleteCloudAction deleteCloudAction, UpdateCloudAction updateCloudAction, SaveCloudAction saveCloudAction, CloudListSelectionHandlerFactory handlerFactory) {
 		this.modelManager = modelManager;
 		this.applicationManager = applicationManager;
 		this.application = application;
@@ -27,6 +28,7 @@ public class SemanticSummaryInputPanelFactory {
 		this.deleteCloudAction = deleteCloudAction;
 		this.updateCloudAction = updateCloudAction;
 		this.saveCloudAction = saveCloudAction;
+		this.handlerFactory = handlerFactory;
 	}
 	
 	public void setSemanticSummaryPluginAction(SemanticSummaryPluginAction pluginAction) {
@@ -37,6 +39,6 @@ public class SemanticSummaryInputPanelFactory {
 		if (pluginAction == null) {
 			throw new RuntimeException();
 		}
-		return new SemanticSummaryInputPanel(modelManager, applicationManager, application, fileUtil, cloudManager, pluginAction, createCloudAction, deleteCloudAction, updateCloudAction, saveCloudAction);
+		return new SemanticSummaryInputPanel(modelManager, applicationManager, application, fileUtil, cloudManager, pluginAction, createCloudAction, deleteCloudAction, updateCloudAction, saveCloudAction, handlerFactory);
 	}
 }

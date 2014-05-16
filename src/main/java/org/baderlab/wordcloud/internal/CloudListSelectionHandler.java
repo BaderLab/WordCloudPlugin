@@ -30,10 +30,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 
 /**
  * This class handles the action associated with selecting a cloud from the
@@ -46,16 +46,16 @@ import org.cytoscape.view.model.CyNetworkView;
 public class CloudListSelectionHandler implements ListSelectionListener 
 {
 	private Component parent;
-	private CyApplicationManager applicationManager;
 	private SemanticSummaryManager cloudManager;
 	private SemanticSummaryPluginAction pluginAction;
+	private CyNetworkViewManager viewManager;
 
-	public CloudListSelectionHandler(Component parent, CyApplicationManager applicationManager, SemanticSummaryManager cloudManager, SemanticSummaryPluginAction pluginAction)
+	public CloudListSelectionHandler(Component parent, SemanticSummaryManager cloudManager, SemanticSummaryPluginAction pluginAction, CyNetworkViewManager viewManager)
 	{
 		this.parent = parent;
-		this.applicationManager = applicationManager;
 		this.cloudManager = cloudManager;
 		this.pluginAction = pluginAction;
+		this.viewManager = viewManager;
 	}
 	
 	public void valueChanged(ListSelectionEvent e)
@@ -110,6 +110,10 @@ public class CloudListSelectionHandler implements ListSelectionListener
 			SelectionUtils.setColumns(network.getDefaultNodeTable(), CyNetwork.SELECTED, Boolean.FALSE);
 			SelectionUtils.setColumns(network.getDefaultEdgeTable(), CyNetwork.SELECTED, Boolean.FALSE);
 			SelectionUtils.setColumns(network, selNodes, CyNetwork.SELECTED, Boolean.TRUE);
+			
+			for (CyNetworkView networkView : viewManager.getNetworkViews(network)) {
+				networkView.updateView();
+			}
 		
 			//Move windows to the forefront
 			pluginAction.loadCloudPanel();

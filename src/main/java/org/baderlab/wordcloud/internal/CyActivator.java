@@ -73,14 +73,19 @@ public class CyActivator extends AbstractCyActivator {
 			application.addAction(action);
 		}
 		
-		SemanticSummaryInputPanelFactory inputPanelFactory = new SemanticSummaryInputPanelFactory(modelManager, applicationManager, application, fileUtil, cloudManager, createCloudAction, deleteCloudAction, updateCloudAction, saveCloudAction);
+		CloudListSelectionHandlerFactory handlerFactory = new CloudListSelectionHandlerFactory(cloudManager, viewManager);
+		SemanticSummaryInputPanelFactory inputPanelFactory = new SemanticSummaryInputPanelFactory(modelManager, applicationManager, application, fileUtil, cloudManager, createCloudAction, deleteCloudAction, updateCloudAction, saveCloudAction, handlerFactory);
 		SemanticSummaryPluginAction pluginAction = new SemanticSummaryPluginAction(cloudManager, applicationManager, inputPanelFactory, application, registrar);
 
+		// Original code had a circular dependency on
+		// SemanticSummaryPluginAction.  Need to do dependency injection
+		// via setter rather than constructor.
 		createCloudAction.setSemanticSummaryPluginAction(pluginAction);
 		deleteCloudAction.setSemanticSummaryPluginAction(pluginAction);
 		updateCloudAction.setSemanticSummaryPluginAction(pluginAction);
 		saveCloudAction.setSemanticSummaryPluginAction(pluginAction);
 		inputPanelFactory.setSemanticSummaryPluginAction(pluginAction);
+		handlerFactory.setPluginAction(pluginAction);
 		
 		Properties createCloudActionProperties = new Properties();
 		createCloudActionProperties.setProperty(ServiceProperties.TITLE, (String) createCloudAction.getValue(Action.NAME));
