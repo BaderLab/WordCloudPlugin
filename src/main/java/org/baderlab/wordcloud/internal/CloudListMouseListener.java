@@ -22,13 +22,13 @@
 
 package org.baderlab.wordcloud.internal;
 
-import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -44,10 +44,10 @@ import org.cytoscape.application.swing.AbstractCyAction;
 
 public class CloudListMouseListener extends MouseAdapter 
 {
-	private Component parent;
+	private JComponent parent;
 	private SemanticSummaryManager cloudManager;
 
-	public CloudListMouseListener(Component parent, SemanticSummaryManager cloudManager) {
+	public CloudListMouseListener(JComponent parent, SemanticSummaryManager cloudManager) {
 		this.parent = parent;
 		this.cloudManager = cloudManager;
 	}
@@ -114,10 +114,10 @@ public class CloudListMouseListener extends MouseAdapter
 	{
 
 		private static final long serialVersionUID = 3741354852598317680L;
-		private Component parent;
+		private JComponent parent;
 
 		//CONSTRUCTOR
-		public ChangeCloudNameAction(Component parent)
+		public ChangeCloudNameAction(JComponent parent)
 		{
 			super("Edit Cloud Name");
 			this.parent = parent;

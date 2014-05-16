@@ -22,17 +22,16 @@
 
 package org.baderlab.wordcloud.internal;
 
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.Insets;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -64,9 +63,9 @@ public class EditCloudNameDialog extends JDialog implements ActionListener
 	 * @param modal - whether this is a modal display
 	 * @param curName - the current name of the cloud.
 	 */
-	public EditCloudNameDialog(Component parent, boolean modal, String curName)
+	public EditCloudNameDialog(JComponent parent, boolean modal, String curName)
 	{
-		super((JFrame) parent, modal);
+		super(parent == null ? null : (Window) parent.getTopLevelAncestor(), modal ? ModalityType.APPLICATION_MODAL : ModalityType.MODELESS);
 		initComponents();
 		tfCloudName.setText(curName);
 		tfCloudName.setSelectionStart(0);
