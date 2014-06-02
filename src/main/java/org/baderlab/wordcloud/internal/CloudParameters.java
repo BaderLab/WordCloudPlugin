@@ -227,7 +227,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 		else
 			this.cloudWords = new ArrayList<CloudWordInfo>();
 		
-		CyTable cloudTable = networkParams.getNetwork().getTable(CyNode.class, Constants.NAMESPACE);
+		CyTable cloudTable = networkParams.getNetwork().getDefaultNodeTable();
 		if (cloudTable == null) {
 			throw new RuntimeException();
 		}
@@ -1001,7 +1001,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 			return;
 		}
 		
-		CyTable table = network.getTable(CyNode.class, Constants.NAMESPACE);
+		CyTable table = network.getDefaultNodeTable();
 		if (cloudName != null) {
 			CyColumn column = table.getColumn(cloudName);
 			column.setName(name);
@@ -1082,7 +1082,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 		
 		Set<CyNode> nodes = new HashSet<CyNode>();
 		for (CyNode node : network.getNodeList()) {
-			CyRow row = network.getRow(node, Constants.NAMESPACE);
+			CyRow row = network.getRow(node);
 			Boolean selected = row.get(cloudName, Boolean.class);
 			if (selected != null && selected) {
 				nodes.add(node);
@@ -1105,7 +1105,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 		}
 		
 		for (CyNode node : network.getNodeList()) {
-			CyRow row = network.getRow(node, Constants.NAMESPACE);
+			CyRow row = network.getRow(node);
 			Boolean wasSelected = row.get(cloudName, Boolean.class);
 			if (wasSelected == null) {
 				wasSelected = Boolean.FALSE;
@@ -1129,7 +1129,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 		
 		int count = 0;
 		for (CyNode node : network.getNodeList()) {
-			Boolean selected = network.getRow(node, Constants.NAMESPACE).get(cloudName, Boolean.class);
+			Boolean selected = network.getRow(node).get(cloudName, Boolean.class);
 			if (selected != null && selected) {
 				count++;
 			}

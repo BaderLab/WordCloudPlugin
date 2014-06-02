@@ -170,7 +170,7 @@ public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, Ses
 			//write out files.
 			try 
 			{
-				int uid = network.getRow(network, Constants.NAMESPACE).get(Constants.NETWORK_UID, Integer.class);
+				int uid = network.getRow(network).get(Constants.NETWORK_UID, Integer.class);
 				File current_filter = new File(tmpDir, netNameSep + uid + netNameSep + ".FILTER.txt");
 				BufferedWriter filterWriter = new BufferedWriter(new FileWriter(current_filter));
 				filterWriter.write(params.getFilter().toString());

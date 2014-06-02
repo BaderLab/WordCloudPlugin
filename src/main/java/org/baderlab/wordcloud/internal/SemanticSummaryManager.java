@@ -138,7 +138,7 @@ public class SemanticSummaryManager implements SetCurrentNetworkListener, SetCur
 	
 	@Override
 	public void handleEvent(ColumnCreatedEvent event) {
-		if (inputWindow == null || event.getSource().getTitle().equals(Constants.TABLE_NAME)) {
+		if (inputWindow == null) {
 			return;
 		}
 		inputWindow.refreshAttributeCMB();
@@ -146,7 +146,7 @@ public class SemanticSummaryManager implements SetCurrentNetworkListener, SetCur
 	
 	@Override
 	public void handleEvent(ColumnDeletedEvent event) {
-		if (inputWindow == null || event.getSource().getTitle().equals(Constants.TABLE_NAME)) {
+		if (inputWindow == null) {
 			return;
 		}
 		inputWindow.refreshAttributeCMB();

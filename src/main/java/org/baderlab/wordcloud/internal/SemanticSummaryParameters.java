@@ -24,7 +24,6 @@ package org.baderlab.wordcloud.internal;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
@@ -230,7 +229,7 @@ public class SemanticSummaryParameters
 	
 	public Integer getCloudCount()
 	{
-		return network.getRow(network, Constants.NAMESPACE).get(Constants.CLOUD_COUNTER, Integer.class);
+		return network.getRow(network).get(Constants.CLOUD_COUNTER, Integer.class);
 	}
 	
 	public String getCloudName()
@@ -265,12 +264,12 @@ public class SemanticSummaryParameters
 	
 	public boolean getIsStemming()
 	{
-		return network.getRow(network, Constants.NAMESPACE).get(Constants.USE_STEMMING, Boolean.class);
+		return network.getRow(network).get(Constants.USE_STEMMING, Boolean.class);
 	}
 	
 	public void setIsStemming(boolean val)
 	{
-		network.getRow(network, Constants.NAMESPACE).set(Constants.USE_STEMMING, val);
+		network.getRow(network).set(Constants.USE_STEMMING, val);
 	}
 	
 	public CyNetwork getNetwork() {

@@ -1,6 +1,5 @@
 package org.baderlab.wordcloud.internal;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,7 +12,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
@@ -75,34 +73,20 @@ public class ModelManager implements AddedNodesListener, RemovedNodesListener, A
 	}
 
 	public boolean hasCloudMetadata(CyNetwork network) {
-		CyTable table = networkTableManager.getTable(network, CyNetwork.class,
-				Constants.NAMESPACE);
-		return table != null;
+		return network.getDefaultNetworkTable().getColumn(Constants.NETWORK_UID) != null;
 	}
 
 	public void createCloudMetadata(CyNetwork network) {
-		CyTable networkTable = tableFactory.createTable(Constants.TABLE_NAME,
-				CyNetwork.SUID, Long.class, false, false);
-		tableManager.addTable(networkTable);
-		networkTableManager.setTable(network, CyNetwork.class,
-				Constants.NAMESPACE, networkTable);
+		CyTable networkTable = network.getDefaultNetworkTable();
 
 		networkTable.createColumn(Constants.USE_STEMMING, Boolean.class, false);
 		networkTable.createColumn(Constants.CLOUD_COUNTER, Integer.class, false);
 		networkTable.createColumn(Constants.NETWORK_UID, Integer.class, false);
-		networkTable.createListColumn(Constants.CLOUD_LIST, String.class, false);
 
-		CyRow row = network.getRow(network, Constants.NAMESPACE);
+		CyRow row = network.getRow(network);
 		row.set(Constants.USE_STEMMING, Boolean.FALSE);
 		row.set(Constants.CLOUD_COUNTER, 1);
-		row.set(Constants.CLOUD_LIST, new ArrayList<String>());
 		row.set(Constants.NETWORK_UID, getNextNetworkUID());
-
-		CyTable nodeTable = tableFactory.createTable(Constants.TABLE_NAME,
-				CyNetwork.SUID, Long.class, false, false);
-		tableManager.addTable(nodeTable);
-		networkTableManager.setTable(network, CyNode.class,
-				Constants.NAMESPACE, nodeTable);
 	}
 
 	public int getNextNetworkUID() {
@@ -125,7 +109,7 @@ public class ModelManager implements AddedNodesListener, RemovedNodesListener, A
 	}
 	
 	public void incrementCloudCounter(CyNetwork network) {
-		CyRow row = network.getRow(network, Constants.NAMESPACE);
+		CyRow row = network.getRow(network);
 		int count = row.get(Constants.CLOUD_COUNTER, Integer.class);
 		row.set(Constants.CLOUD_COUNTER, count + 1);
 	}
@@ -218,11 +202,14 @@ public class ModelManager implements AddedNodesListener, RemovedNodesListener, A
 
 	public CyNetwork getNetwork(int uid) {
 		for (CyNetwork network : networkManager.getNetworkSet()) {
-			CyRow row = network.getRow(network, Constants.NAMESPACE);
+			CyRow row = network.getRow(network);
 			if (row == null) {
 				continue;
 			}
-			int other = row.get(Constants.NETWORK_UID, Integer.class);
+			Integer other = row.get(Constants.NETWORK_UID, Integer.class);
+			if (other == null) {
+				continue;
+			}
 			if (uid == other) {
 				return network;
 			}
