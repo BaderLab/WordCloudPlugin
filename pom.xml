@@ -7,7 +7,7 @@
 	<version>2.0.0</version>
 	<packaging>bundle</packaging>
 	
-	<name>Word Cloud App</name>
+	<name>WordCloud</name>
 	<properties>
 		<bundle.symbolicName>wordcloud</bundle.symbolicName>
 		<bundle.namespace>org.baderlab.wordcloud.internal</bundle.namespace>
