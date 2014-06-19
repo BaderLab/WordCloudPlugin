@@ -23,6 +23,7 @@
 package org.baderlab.wordcloud.internal;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
@@ -48,6 +49,7 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 	private CySwingApplication application;
 	private SemanticSummaryManager cloudManager;
 	private SemanticSummaryParametersFactory parametersFactory;
+	private String nameColumnName;
 	
 	//CONSTRUCTORS
 	
@@ -65,10 +67,15 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 		this.parametersFactory = parametersFactory;
 	}
 	
+	public void setAttributeColumn(String columnName) {
+		this.nameColumnName = columnName;
+	}
+	
 	//METHODS
 	
 	/**
 	 * Method called when a Create Cloud action occurs.
+	 * @param nameColumnName 
 	 * 
 	 * @param ActionEvent - event created when choosing Create Cloud from 
 	 * any of its various locations.
@@ -90,6 +97,8 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 					"Please select one or more nodes.");
 			return;
 		}
+		
+		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
 		
 		//Check if network is already in our list
 		SemanticSummaryParameters params;
@@ -115,7 +124,8 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 		cloudParams.setCloudNum(params.getCloudCount());
 		cloudParams.setCloudName(params.getNextCloudName());
 		
-		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
+//		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network); This used to be here, and something was clearing the nodes
+		// doesn't seem to interfere with anything else by being in it's new place
 		cloudParams.setSelectedNodes(nodes);
 		
 		//Add to list of clouds
@@ -124,6 +134,12 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 		// Select all attributes by default
 		SemanticSummaryInputPanel inputPanel = cloudManager.getInputWindow();
 		inputPanel.setAttributeNames(cloudManager.getColumnNames(network, CyNode.class));
+		
+		if (nameColumnName != null) {
+			ArrayList<String> attributeNames = new ArrayList<String>();
+			attributeNames.add(nameColumnName);
+			inputPanel.setAttributeNames(attributeNames);
+		}
 		
 		//Retrieve values from input panel
 		cloudParams.retrieveInputVals(inputPanel);

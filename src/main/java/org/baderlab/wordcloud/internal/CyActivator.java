@@ -23,6 +23,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.ServiceProperties;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 import org.osgi.framework.BundleContext;
 
@@ -51,7 +52,7 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingFunctionFactory continuousMappingFactory = getService(context, VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
 		VisualMappingFunctionFactory passthroughMappingFactory = getService(context, VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
 		
-		WordCloudVisualStyleFactory cloudStyleFactory = new WordCloudVisualStyleFactory(styleFactory, continuousMappingFactory, passthroughMappingFactory);
+		WordCloudVisualStyleFactory cloudStyleFactory = new WordCloudVisualStyleFactory(styleFactory, continuousMappingFactory, passthroughMappingFactory);		
 		
 		ModelManager modelManager = new ModelManager(networkTableManager, tableManager, tableFactory, networkFactory, networkViewFactory, networkManager, viewManager, visualMappingManager, layoutTaskFactory, taskManager, cloudStyleFactory );
 		registerAllServices(context, modelManager, new Properties());
@@ -93,5 +94,12 @@ public class CyActivator extends AbstractCyActivator {
 		
 		SemanticSummaryPlugin plugin = new SemanticSummaryPlugin(pluginAction, cloudManager, parametersFactory, modelManager, ioUtil, applicationManager, application);
 		registerAllServices(context, plugin, new Properties());
+		
+		//generic EM command line option
+		Properties properties = new Properties();
+    		properties.put(ServiceProperties.COMMAND, "build");
+    		properties.put(ServiceProperties.COMMAND_NAMESPACE, "wordcloud");
+
+    		registerService(context, new BuildWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudManager, createCloudAction, parametersFactory), TaskFactory.class, properties);
 	}
 }
