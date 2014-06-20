@@ -7,9 +7,11 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -65,6 +67,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(context, cloudManager, new Properties());
 		
 		CreateCloudAction createCloudAction = new CreateCloudAction(applicationManager, application, cloudManager, parametersFactory);
+		CreateCloudNoDisplayAction createCloudNoDisplayAction = new CreateCloudNoDisplayAction(applicationManager, application, cloudManager, parametersFactory);
 		DeleteCloudAction deleteCloudAction = new DeleteCloudAction(application, cloudManager);
 		UpdateCloudAction updateCloudAction = new UpdateCloudAction(cloudManager, applicationManager);
 		SaveCloudAction saveCloudAction = new SaveCloudAction(application, fileUtil, cloudManager);
@@ -82,6 +85,7 @@ public class CyActivator extends AbstractCyActivator {
 		// SemanticSummaryPluginAction.  Need to do dependency injection
 		// via setter rather than constructor.
 		createCloudAction.setSemanticSummaryPluginAction(pluginAction);
+		createCloudNoDisplayAction.setSemanticSummaryPluginAction(pluginAction);
 		deleteCloudAction.setSemanticSummaryPluginAction(pluginAction);
 		updateCloudAction.setSemanticSummaryPluginAction(pluginAction);
 		saveCloudAction.setSemanticSummaryPluginAction(pluginAction);
@@ -95,11 +99,10 @@ public class CyActivator extends AbstractCyActivator {
 		SemanticSummaryPlugin plugin = new SemanticSummaryPlugin(pluginAction, cloudManager, parametersFactory, modelManager, ioUtil, applicationManager, application);
 		registerAllServices(context, plugin, new Properties());
 		
-		//generic EM command line option
+		//command line option
 		Properties properties = new Properties();
-    		properties.put(ServiceProperties.COMMAND, "build");
-    		properties.put(ServiceProperties.COMMAND_NAMESPACE, "wordcloud");
-
-    		registerService(context, new BuildWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudManager, createCloudAction, parametersFactory), TaskFactory.class, properties);
+    	properties.put(ServiceProperties.COMMAND, "build");
+    	properties.put(ServiceProperties.COMMAND_NAMESPACE, "wordcloud");
+   		registerService(context, new BuildWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudManager, createCloudNoDisplayAction, parametersFactory), TaskFactory.class, properties);
 	}
 }

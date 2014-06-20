@@ -11,23 +11,23 @@ public class BuildWordCloudCommandHandlerTaskFactory implements TaskFactory{
 	private CySwingApplication application;
 	private SemanticSummaryManager cloudManager;
 	private SemanticSummaryParametersFactory parametersFactory;
-	private CreateCloudAction createCloudAction;
+	private CreateCloudNoDisplayAction createCloudNoDisplayAction;
 
 	// I'll probably have to specify more (like Network)
 
 	public BuildWordCloudCommandHandlerTaskFactory(CyApplicationManager applicationManager,
 			CySwingApplication application, SemanticSummaryManager cloudManager,
-			CreateCloudAction createCloudAction, SemanticSummaryParametersFactory parametersFactory) {
+			CreateCloudNoDisplayAction createCloudNoDisplayAction, SemanticSummaryParametersFactory parametersFactory) {
 		this.applicationManager = applicationManager;
 		this.application = application;
 		this.cloudManager = cloudManager;
-		this.createCloudAction = createCloudAction;
+		this.createCloudNoDisplayAction = createCloudNoDisplayAction;
 		this.parametersFactory = parametersFactory;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new BuildWordCloudCommandHandlerTask(applicationManager, application, cloudManager, createCloudAction, parametersFactory));
+		return new TaskIterator(new BuildWordCloudCommandHandlerTask(applicationManager, application, cloudManager, createCloudNoDisplayAction, parametersFactory));
 	}
 
 	@Override

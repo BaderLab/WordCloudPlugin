@@ -67,10 +67,6 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 		this.parametersFactory = parametersFactory;
 	}
 	
-	public void setAttributeColumn(String columnName) {
-		this.nameColumnName = columnName;
-	}
-	
 	//METHODS
 	
 	/**
@@ -98,8 +94,6 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 			return;
 		}
 		
-		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
-		
 		//Check if network is already in our list
 		SemanticSummaryParameters params;
 		
@@ -124,8 +118,8 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 		cloudParams.setCloudNum(params.getCloudCount());
 		cloudParams.setCloudName(params.getNextCloudName());
 		
-//		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network); This used to be here, and something was clearing the nodes
-		// doesn't seem to interfere with anything else by being in it's new place
+		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
+		
 		cloudParams.setSelectedNodes(nodes);
 		
 		//Add to list of clouds
@@ -152,7 +146,7 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 		
 		//Update list of clouds
 		//inputPanel.setNetworkList(params);
-		inputPanel.addNewCloud(cloudParams);	
+		inputPanel.addNewCloud(cloudParams);
 		inputPanel.getCreateNetworkButton().setEnabled(true);
 		inputPanel.getSaveCloudButton().setEnabled(true);
 		
