@@ -72,7 +72,6 @@ public class BuildWordCloudCommandHandlerTask implements Task {
 			createCloudNoDisplayAction.setClusterColumn(clusterColumnName);
 			createCloudNoDisplayAction.setClusterNumber(clusterNumber);
 			createCloudNoDisplayAction.actionPerformed(new ActionEvent("", 0, ""));
-			createCloudNoDisplayAction.getWordInfo();
 			deselectNodes(rows);
 		}
 	}

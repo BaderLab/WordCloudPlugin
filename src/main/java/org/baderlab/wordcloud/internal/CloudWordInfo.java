@@ -228,7 +228,7 @@ public class CloudWordInfo implements Comparable<CloudWordInfo>
 	
 	public String toStringHuman()
 	{
-		return word + "," + fontSize + "," + cluster + "," + wordNum + "," + textColor.getRGB();
+		return word + "," + fontSize + "," + cluster + "," + wordNum;
 	}
 	
 	//Getters and Setters

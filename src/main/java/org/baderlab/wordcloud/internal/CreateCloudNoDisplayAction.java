@@ -136,13 +136,13 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 		cloudParams.calculateFontSizes();
 
 		this.wordInfo = cloudParams.getCloudWordInfoList();
+		ArrayList<String> wordInfoString = new ArrayList<String>();
+		for (CloudWordInfo cloud : wordInfo) {
+			wordInfoString.add(cloud.toStringHuman());
+		}
 		List<CyRow> table = network.getDefaultNodeTable().getAllRows();
 		for (CyRow row : table) {
 			if (row.get(clusterColumnName, Integer.class) == clusterNumber) {
-				ArrayList<String> wordInfoString = new ArrayList<String>();
-				for (CloudWordInfo cloud : wordInfo) {
-					wordInfoString.add(cloud.toStringHuman());
-				}
 				row.set("Word Info", wordInfoString);
 			}
 		}
