@@ -226,9 +226,10 @@ public class CloudWordInfo implements Comparable<CloudWordInfo>
 		return paramVariables.toString();
 	}
 	
-	public String toStringHuman()
+	public String[] toSplitString()
 	{
-		return word + "," + fontSize + "," + cluster + "," + wordNum;
+		String[] splitString = {word, Integer.toString(fontSize), Integer.toString(cluster), Integer.toString(wordNum)};
+		return splitString;
 	}
 	
 	//Getters and Setters

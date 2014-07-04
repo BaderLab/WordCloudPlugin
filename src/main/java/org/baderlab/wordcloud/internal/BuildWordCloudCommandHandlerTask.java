@@ -60,11 +60,10 @@ public class BuildWordCloudCommandHandlerTask implements Task {
 			}
 		}
 		CyTable nodeTable = network.getDefaultNodeTable();
-		CyColumn column = nodeTable.getColumn("Word Info");
-		if (column != null) {
-			nodeTable.deleteColumn("Word Info");
-		}
-		nodeTable.createListColumn("Word Info", String.class, false);
+		createColumn(nodeTable, "WC_Word");
+		createColumn(nodeTable, "WC_FontSize");
+		createColumn(nodeTable, "WC_Cluster");
+		createColumn(nodeTable, "WC_Number");
 		for (Integer clusterNumber : clusters.keySet()) {
 			ArrayList<CyRow> rows = clusters.get(clusterNumber);
 			selectNodes(rows);
@@ -74,6 +73,14 @@ public class BuildWordCloudCommandHandlerTask implements Task {
 			createCloudNoDisplayAction.actionPerformed(new ActionEvent("", 0, ""));
 			deselectNodes(rows);
 		}
+	}
+	
+	public void createColumn(CyTable nodeTable, String columnName) {
+		CyColumn column = nodeTable.getColumn(columnName);
+		if (column != null) {
+			nodeTable.deleteColumn(columnName);
+		}
+		nodeTable.createListColumn(columnName, String.class, false);
 	}
 	
 	public void selectNodes(ArrayList<CyRow> cluster) {

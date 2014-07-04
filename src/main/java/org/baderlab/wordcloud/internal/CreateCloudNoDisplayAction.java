@@ -1,3 +1,24 @@
+/*
+ File: CreateCloudNoDisplayAction.java
+
+ Copyright 2014 - The Cytoscape Consortium (www.cytoscape.org)
+ 
+ Code written by: Arkady Arkhangorodsky
+ 
+ This library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this project.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.baderlab.wordcloud.internal;
 
 import java.awt.event.ActionEvent;
@@ -35,6 +56,7 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 	 * CreateCloudAction constructor.
 	 * @param pluginAction 
 	 */
+	
 	public CreateCloudNoDisplayAction(CyApplicationManager applicationManager, CySwingApplication application, SemanticSummaryManager cloudManager, SemanticSummaryParametersFactory parametersFactory)
 	{
 		super("Create Cloud Without");
@@ -79,14 +101,6 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 		if (network == null) {
 			return;
 		}
-
-		//If no nodes are selected
-		if (!SelectionUtils.hasSelectedNodes(network))
-		{
-			JOptionPane.showMessageDialog(application.getJFrame(), 
-					"Please select one or more nodes.");
-			return;
-		}
 		
 		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
 		
@@ -111,7 +125,7 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 		
 		//Create CloudParameters
 		CloudParameters cloudParams = new CloudParameters(params);
-		cloudParams.setCloudNum(params.getCloudCount());
+		cloudParams.setCloudNum(clusterNumber);
 		cloudParams.setCloudName(params.getNextCloudName());
 		cloudParams.setSelectedNodes(nodes);
 		
@@ -127,23 +141,45 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 			attributeNames.add(nameColumnName);
 			inputPanel.setAttributeNames(attributeNames);
 		}
-
 		
 		//Retrieve values from input panel
 		cloudParams.retrieveInputVals(inputPanel);
 		
 		cloudParams.updateRatios();
 		cloudParams.calculateFontSizes();
-
+		
+		CloudDisplayPanel cloudPanel = cloudManager.getCloudWindow();
+		cloudPanel.updateCloudDisplay(cloudParams);
+		
+		inputPanel.addNewCloud(cloudParams);
+		
+		// Get rid of the membership columns
+		for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
+ 			String name = column.getName();
+ 			if (name.contains("Cloud")) {
+ 				network.getDefaultNodeTable().deleteColumn(name);
+ 			}
+ 		}
+		
 		this.wordInfo = cloudParams.getCloudWordInfoList();
-		ArrayList<String> wordInfoString = new ArrayList<String>();
-		for (CloudWordInfo cloud : wordInfo) {
-			wordInfoString.add(cloud.toStringHuman());
+		ArrayList<String> WC_Word = new ArrayList<String>();
+		ArrayList<String> WC_FontSize = new ArrayList<String>();
+		ArrayList<String> WC_Cluster = new ArrayList<String>();
+		ArrayList<String> WC_Number = new ArrayList<String>();
+		for (CloudWordInfo cloudWord : wordInfo) {
+			String[] wordInfo = cloudWord.toSplitString();
+			WC_Word.add(wordInfo[0]);
+			WC_FontSize.add(wordInfo[1]);
+			WC_Cluster.add(wordInfo[2]);
+			WC_Number.add(wordInfo[3]);
 		}
 		List<CyRow> table = network.getDefaultNodeTable().getAllRows();
 		for (CyRow row : table) {
 			if (row.get(clusterColumnName, Integer.class) == clusterNumber) {
-				row.set("Word Info", wordInfoString);
+				row.set("WC_Word", WC_Word);
+				row.set("WC_FontSize", WC_FontSize);
+				row.set("WC_Cluster", WC_Cluster);
+				row.set("WC_Number", WC_Number);
 			}
 		}
 	}
