@@ -106,14 +106,6 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 			return;
 		}
 
-		//If no nodes are selected
-		if (!SelectionUtils.hasSelectedNodes(network))
-		{
-			JOptionPane.showMessageDialog(application.getJFrame(), 
-					"Please select one or more nodes.");
-			return;
-		}
-		
 		//Check if network is already in our list
 		SemanticSummaryParameters params;
 		
@@ -137,6 +129,10 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 		CloudParameters cloudParams = new CloudParameters(params);
 		cloudParams.setCloudNum(params.getCloudCount());
 		cloudParams.setCloudName(cloudNamePrefix + "Cloud " + clusterNumber);
+		
+		cloudParams.setClusterColumnName(clusterColumnName);
+		cloudParams.setCloudNamePrefix(cloudNamePrefix);
+		cloudParams.setClusterNumber(clusterNumber);
 		
 		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
 		

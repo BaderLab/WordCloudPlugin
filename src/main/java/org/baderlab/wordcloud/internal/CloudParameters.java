@@ -109,6 +109,9 @@ public class CloudParameters implements Comparable<CloudParameters>
 	private double defaultClusterCutoff = 1.0;
 	private String defaultStyle = CloudDisplayStyles.DEFAULT_STYLE;
 	private Set<CyNode> selectedNodes;
+	private String clusterColumnName;
+	private String cloudNamePrefix;
+	private int clusterNumber;
 	
 	//CONSTRUCTORS
 	
@@ -1368,5 +1371,28 @@ public class CloudParameters implements Comparable<CloudParameters>
 	{
 		useNetNormal = val;
 	}
+
+	public String getClusterColumnName() {
+		return clusterColumnName;
+	}
 	
+	public void setClusterColumnName(String clusterColumnName) {
+		this.clusterColumnName = clusterColumnName;		
+	}
+	
+	public int getClusterNumber() {
+		return clusterNumber;
+	}
+	
+	public void setClusterNumber(int clusterNumber) {
+		this.clusterNumber = clusterNumber;		
+	}
+	
+	public String getCloudNamePrefix() {
+		return cloudNamePrefix;
+	}
+	
+	public void setCloudNamePrefix(String cloudNamePrefix) {
+		this.cloudNamePrefix = cloudNamePrefix;		
+	}
 }

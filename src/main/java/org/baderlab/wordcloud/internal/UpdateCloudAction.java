@@ -24,9 +24,12 @@
 package org.baderlab.wordcloud.internal;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 
 /**
  * This is the action associated with updating a Semantic Summary Tag Cloud
@@ -95,6 +98,31 @@ public class UpdateCloudAction extends AbstractSemanticSummaryAction
 		
 		//Update with new information
 		cloudParams.calculateFontSizes();
+		
+		if ((Integer) cloudParams.getClusterNumber() != null) {
+			List<CloudWordInfo> wordInfos = cloudParams.getCloudWordInfoList();
+			ArrayList<String> WC_Word = new ArrayList<String>();
+			ArrayList<String> WC_FontSize = new ArrayList<String>();
+			ArrayList<String> WC_Cluster = new ArrayList<String>();
+			ArrayList<String> WC_Number = new ArrayList<String>();
+			for (CloudWordInfo cloudWord : wordInfos) {
+				String[] wordInfo = cloudWord.toSplitString();
+				WC_Word.add(wordInfo[0]);
+				WC_FontSize.add(wordInfo[1]);
+				WC_Cluster.add(wordInfo[2]);
+				WC_Number.add(wordInfo[3]);
+			}
+			List<CyRow> table = network.getDefaultNodeTable().getAllRows();
+			for (CyRow row : table) {
+				if (row.get(cloudParams.getClusterColumnName(), Integer.class) != null &&  row.get(cloudParams.getClusterColumnName(), Integer.class) == cloudParams.getClusterNumber()) {
+					String cloudNamePrefix = cloudParams.getCloudNamePrefix();
+					row.set(cloudNamePrefix + "WC_Word", WC_Word);
+					row.set(cloudNamePrefix + "WC_FontSize", WC_FontSize);
+					row.set(cloudNamePrefix + "WC_Cluster", WC_Cluster);
+					row.set(cloudNamePrefix + "WC_Number", WC_Number);
+				}
+			}
+		}
 		
 		CloudDisplayPanel cloudPanel =
 			cloudManager.getCloudWindow();

@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JList;
+import javax.swing.event.ListSelectionEvent;
 
 import org.baderlab.wordcloud.internal.DeleteCloudAction;
 import org.baderlab.wordcloud.internal.SemanticSummaryManager;
@@ -48,7 +49,12 @@ public class DeleteWordCloudCommandHandlerTask implements Task {
 			} catch (Exception e) {
 				continue;
 			}
-		} 
+		}
+		for (int i = 0; i < cloudManager.getInputWindow().getCloudList().getModel().getSize(); i++) {
+			if (cloudManager.getInputWindow().getCloudList().getModel().getElementAt(i) == params) {
+				cloudManager.getInputWindow().getCloudList().getListSelectionListeners()[0].valueChanged(new ListSelectionEvent("", i,i, false));				
+			}
+		}
 	}
 
 	@Override
