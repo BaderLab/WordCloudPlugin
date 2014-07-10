@@ -108,6 +108,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 	private int defaultMaxWords = 250;
 	private double defaultClusterCutoff = 1.0;
 	private String defaultStyle = CloudDisplayStyles.DEFAULT_STYLE;
+	private Set<CyNode> selectedNodes;
 	
 	//CONSTRUCTORS
 	
@@ -1080,15 +1081,16 @@ public class CloudParameters implements Comparable<CloudParameters>
 			return Collections.emptySet();
 		}
 		
-		Set<CyNode> nodes = new HashSet<CyNode>();
-		for (CyNode node : network.getNodeList()) {
-			CyRow row = network.getRow(node);
-			Boolean selected = row.get(cloudName, Boolean.class);
-			if (selected != null && selected) {
-				nodes.add(node);
-			}
-		}
-		return nodes;
+//		Set<CyNode> nodes = new HashSet<CyNode>();
+//		for (CyNode node : network.getNodeList()) {
+//			CyRow row = network.getRow(node);
+//			Boolean selected = row.get(cloudName, Boolean.class);
+//			if (selected != null && selected) {
+//				nodes.add(node);
+//			}
+//		}
+//		return nodes;
+		return selectedNodes;
 	}
 
 	public void setSelectedNodes(Set<CyNode> nodes)
@@ -1103,7 +1105,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 		if (network == null) {
 			return;
 		}
-		
+		selectedNodes = nodes;
 		for (CyNode node : network.getNodeList()) {
 			CyRow row = network.getRow(node);
 			Boolean wasSelected = row.get(cloudName, Boolean.class);
@@ -1127,14 +1129,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 			return 0;
 		}
 		
-		int count = 0;
-		for (CyNode node : network.getNodeList()) {
-			Boolean selected = network.getRow(node).get(cloudName, Boolean.class);
-			if (selected != null && selected) {
-				count++;
-			}
-		}
-		return count;
+		return selectedNodes.size();
 	}
 
 	public Map<String, Set<CyNode>> getStringNodeMapping()

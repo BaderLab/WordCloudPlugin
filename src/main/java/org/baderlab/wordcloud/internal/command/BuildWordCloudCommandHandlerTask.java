@@ -1,10 +1,13 @@
-package org.baderlab.wordcloud.internal;
+package org.baderlab.wordcloud.internal.command;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
+import org.baderlab.wordcloud.internal.CreateCloudNoDisplayAction;
+import org.baderlab.wordcloud.internal.SemanticSummaryManager;
+import org.baderlab.wordcloud.internal.SemanticSummaryParametersFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyColumn;
@@ -29,6 +32,9 @@ public class BuildWordCloudCommandHandlerTask implements Task {
 
 	@Tunable(description="Column with gene set names")
 	public String nameColumnName;
+	
+	@Tunable(description="Prefix before cloud names")
+	public String cloudNamePrefix = "";
 
 	
 	public BuildWordCloudCommandHandlerTask(CyApplicationManager applicationManager,
@@ -60,15 +66,16 @@ public class BuildWordCloudCommandHandlerTask implements Task {
 			}
 		}
 		CyTable nodeTable = network.getDefaultNodeTable();
-		createColumn(nodeTable, "WC_Word");
-		createColumn(nodeTable, "WC_FontSize");
-		createColumn(nodeTable, "WC_Cluster");
-		createColumn(nodeTable, "WC_Number");
+		createColumn(nodeTable, cloudNamePrefix + "WC_Word");
+		createColumn(nodeTable, cloudNamePrefix + "WC_FontSize");
+		createColumn(nodeTable, cloudNamePrefix + "WC_Cluster");
+		createColumn(nodeTable, cloudNamePrefix + "WC_Number");
 		for (Integer clusterNumber : clusters.keySet()) {
 			ArrayList<CyRow> rows = clusters.get(clusterNumber);
 			selectNodes(rows);
 			createCloudNoDisplayAction.setAttributeColumn(nameColumnName);
 			createCloudNoDisplayAction.setClusterColumn(clusterColumnName);
+			createCloudNoDisplayAction.setCloudNamePrefix(cloudNamePrefix);
 			createCloudNoDisplayAction.setClusterNumber(clusterNumber);
 			createCloudNoDisplayAction.actionPerformed(new ActionEvent("", 0, ""));
 			deselectNodes(rows);

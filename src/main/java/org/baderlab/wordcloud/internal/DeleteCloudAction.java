@@ -69,7 +69,12 @@ public class DeleteCloudAction extends AbstractSemanticSummaryAction
 		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
 		CloudParameters cloudParams = cloudManager.getCurCloud();
 		
-		int selection = confirmDelete();
+		int selection;
+		if (ae.getActionCommand() == "No confirmation") {
+			selection = JOptionPane.YES_OPTION;
+		} else {
+			selection = confirmDelete();
+		}
 		
 		if (selection == JOptionPane.YES_OPTION)
 		{

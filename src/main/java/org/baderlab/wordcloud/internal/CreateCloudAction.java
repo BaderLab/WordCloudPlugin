@@ -49,7 +49,6 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 	private CySwingApplication application;
 	private SemanticSummaryManager cloudManager;
 	private SemanticSummaryParametersFactory parametersFactory;
-	private String nameColumnName;
 	
 	//CONSTRUCTORS
 	
@@ -128,12 +127,6 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 		// Select all attributes by default
 		SemanticSummaryInputPanel inputPanel = cloudManager.getInputWindow();
 		inputPanel.setAttributeNames(cloudManager.getColumnNames(network, CyNode.class));
-		
-		if (nameColumnName != null) {
-			ArrayList<String> attributeNames = new ArrayList<String>();
-			attributeNames.add(nameColumnName);
-			inputPanel.setAttributeNames(attributeNames);
-		}
 		
 		//Retrieve values from input panel
 		cloudParams.retrieveInputVals(inputPanel);

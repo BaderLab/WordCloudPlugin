@@ -49,6 +49,7 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 	private String clusterColumnName;
 	private List<CloudWordInfo> wordInfo;
 	private Integer clusterNumber;
+	private String cloudNamePrefix;
 	
 	//CONSTRUCTORS
 	
@@ -59,7 +60,7 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 	
 	public CreateCloudNoDisplayAction(CyApplicationManager applicationManager, CySwingApplication application, SemanticSummaryManager cloudManager, SemanticSummaryParametersFactory parametersFactory)
 	{
-		super("Create Cloud Without");
+		super("Create Cloud");
 		this.applicationManager = applicationManager;
 		this.application = application;
 		this.cloudManager = cloudManager;
@@ -76,6 +77,10 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 	
 	public void setClusterNumber(Integer clusterNumber) {
 		this.clusterNumber = clusterNumber;
+	}
+
+	public void setCloudNamePrefix(String cloudNamePrefix) {
+		this.cloudNamePrefix = cloudNamePrefix;
 	}
 	
 	public List<CloudWordInfo> getWordInfo() {
@@ -96,13 +101,18 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 		//Initialize the Semantic Summary Panels
 		pluginAction.actionPerformed(ae);
 		
-		
 		CyNetwork network = applicationManager.getCurrentNetwork();
 		if (network == null) {
 			return;
 		}
-		
-		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
+
+		//If no nodes are selected
+		if (!SelectionUtils.hasSelectedNodes(network))
+		{
+			JOptionPane.showMessageDialog(application.getJFrame(), 
+					"Please select one or more nodes.");
+			return;
+		}
 		
 		//Check if network is already in our list
 		SemanticSummaryParameters params;
@@ -125,8 +135,11 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 		
 		//Create CloudParameters
 		CloudParameters cloudParams = new CloudParameters(params);
-		cloudParams.setCloudNum(clusterNumber);
-		cloudParams.setCloudName(params.getNextCloudName());
+		cloudParams.setCloudNum(params.getCloudCount());
+		cloudParams.setCloudName(cloudNamePrefix + "Cloud " + clusterNumber);
+		
+		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
+		
 		cloudParams.setSelectedNodes(nodes);
 		
 		//Add to list of clouds
@@ -134,13 +147,9 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 		
 		// Select all attributes by default
 		SemanticSummaryInputPanel inputPanel = cloudManager.getInputWindow();
-		inputPanel.setAttributeNames(cloudManager.getColumnNames(network, CyNode.class));
-		
-		if (nameColumnName != null) {
-			ArrayList<String> attributeNames = new ArrayList<String>();
-			attributeNames.add(nameColumnName);
-			inputPanel.setAttributeNames(attributeNames);
-		}
+		ArrayList<String> attributes = new ArrayList<String>();
+		attributes.add(nameColumnName);
+		inputPanel.setAttributeNames(attributes);
 		
 		//Retrieve values from input panel
 		cloudParams.retrieveInputVals(inputPanel);
@@ -151,15 +160,20 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 		CloudDisplayPanel cloudPanel = cloudManager.getCloudWindow();
 		cloudPanel.updateCloudDisplay(cloudParams);
 		
+		//Update list of clouds
+		//inputPanel.setNetworkList(params);
 		inputPanel.addNewCloud(cloudParams);
+		inputPanel.getCreateNetworkButton().setEnabled(true);
+		inputPanel.getSaveCloudButton().setEnabled(true);
 		
-		// Get rid of the membership columns
-		for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
- 			String name = column.getName();
- 			if (name.contains("Cloud")) {
- 				network.getDefaultNodeTable().deleteColumn(name);
- 			}
- 		}
+		//displayPanel.getSaveCloudButton().setEnabled(true);
+		
+		//Update the list of filter words and checkbox
+		inputPanel.refreshNetworkSettings();
+		
+		//Enable adding of words to exclusion list
+		inputPanel.getAddWordTextField().setEditable(true);
+		inputPanel.getAddWordButton().setEnabled(true);
 		
 		this.wordInfo = cloudParams.getCloudWordInfoList();
 		ArrayList<String> WC_Word = new ArrayList<String>();
@@ -176,10 +190,18 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 		List<CyRow> table = network.getDefaultNodeTable().getAllRows();
 		for (CyRow row : table) {
 			if (row.get(clusterColumnName, Integer.class) == clusterNumber) {
-				row.set("WC_Word", WC_Word);
-				row.set("WC_FontSize", WC_FontSize);
-				row.set("WC_Cluster", WC_Cluster);
-				row.set("WC_Number", WC_Number);
+				row.set(cloudNamePrefix + "WC_Word", WC_Word);
+				row.set(cloudNamePrefix + "WC_FontSize", WC_FontSize);
+				row.set(cloudNamePrefix + "WC_Cluster", WC_Cluster);
+				row.set(cloudNamePrefix + "WC_Number", WC_Number);
+			}
+		}
+
+		// Get rid of the membership columns
+		for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
+			String name = column.getName();
+			if (name.equals(cloudParams.getCloudName())) {
+				network.getDefaultNodeTable().deleteColumn(name);
 			}
 		}
 	}
