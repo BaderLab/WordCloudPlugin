@@ -36,7 +36,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 
-public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction 
+public class CreateCloudCommandAction extends AbstractSemanticSummaryAction 
 {
 
 	//VARIABLES
@@ -50,6 +50,7 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 	private List<CloudWordInfo> wordInfo;
 	private Integer clusterNumber;
 	private String cloudNamePrefix;
+	private CyTable clusterTable;
 	
 	//CONSTRUCTORS
 	
@@ -58,7 +59,7 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 	 * @param pluginAction 
 	 */
 	
-	public CreateCloudNoDisplayAction(CyApplicationManager applicationManager, CySwingApplication application, SemanticSummaryManager cloudManager, SemanticSummaryParametersFactory parametersFactory)
+	public CreateCloudCommandAction(CyApplicationManager applicationManager, CySwingApplication application, SemanticSummaryManager cloudManager, SemanticSummaryParametersFactory parametersFactory)
 	{
 		super("Create Cloud");
 		this.applicationManager = applicationManager;
@@ -81,6 +82,10 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 
 	public void setCloudNamePrefix(String cloudNamePrefix) {
 		this.cloudNamePrefix = cloudNamePrefix;
+	}
+	
+	public void setClusterTable(CyTable clusterTable) {
+		this.clusterTable = clusterTable;
 	}
 	
 	public List<CloudWordInfo> getWordInfo() {
@@ -183,6 +188,13 @@ public class CreateCloudNoDisplayAction extends AbstractSemanticSummaryAction
 			WC_Cluster.add(wordInfo[2]);
 			WC_Number.add(wordInfo[3]);
 		}
+		
+		CyRow clusterRow = clusterTable.getRow(clusterNumber);
+		clusterRow.set("WC_Word", WC_Word);
+		clusterRow.set("WC_FontSize", WC_FontSize);
+		clusterRow.set("WC_Cluster", WC_Cluster);
+		clusterRow.set("WC_Number", WC_Number);
+		
 		List<CyRow> table = network.getDefaultNodeTable().getAllRows();
 		for (CyRow row : table) {
 			if (row.get(clusterColumnName, Integer.class) == clusterNumber) {

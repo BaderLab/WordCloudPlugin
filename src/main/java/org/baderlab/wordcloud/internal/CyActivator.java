@@ -70,7 +70,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(context, cloudManager, new Properties());
 		
 		CreateCloudAction createCloudAction = new CreateCloudAction(applicationManager, application, cloudManager, parametersFactory);
-		CreateCloudNoDisplayAction createCloudNoDisplayAction = new CreateCloudNoDisplayAction(applicationManager, application, cloudManager, parametersFactory);
+		CreateCloudCommandAction createCloudNoDisplayAction = new CreateCloudCommandAction(applicationManager, application, cloudManager, parametersFactory);
 		DeleteCloudAction deleteCloudAction = new DeleteCloudAction(application, cloudManager);
 		UpdateCloudAction updateCloudAction = new UpdateCloudAction(cloudManager, applicationManager);
 		SaveCloudAction saveCloudAction = new SaveCloudAction(application, fileUtil, cloudManager);
@@ -106,7 +106,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties properties = new Properties();
     	properties.put(ServiceProperties.COMMAND, "build");
     	properties.put(ServiceProperties.COMMAND_NAMESPACE, "wordcloud");
-   		registerService(context, new BuildWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudManager, createCloudNoDisplayAction, parametersFactory), TaskFactory.class, properties);
+    	registerService(context, new BuildWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudManager, createCloudNoDisplayAction, parametersFactory, tableManager, tableFactory), TaskFactory.class, properties);
    		
 		//command line option
 		properties = new Properties();

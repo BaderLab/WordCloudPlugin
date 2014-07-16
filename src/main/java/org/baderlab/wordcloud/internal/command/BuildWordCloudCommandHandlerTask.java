@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
-import org.baderlab.wordcloud.internal.CreateCloudNoDisplayAction;
+import org.baderlab.wordcloud.internal.CreateCloudCommandAction;
 import org.baderlab.wordcloud.internal.SemanticSummaryManager;
 import org.baderlab.wordcloud.internal.SemanticSummaryParametersFactory;
 import org.cytoscape.application.CyApplicationManager;
@@ -15,6 +15,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -24,8 +26,10 @@ public class BuildWordCloudCommandHandlerTask implements Task {
 	private CyApplicationManager applicationManager;
 	private CySwingApplication application;
 	private SemanticSummaryManager cloudManager;
-	private CreateCloudNoDisplayAction createCloudNoDisplayAction;
+	private CreateCloudCommandAction createCloudCommandAction;
 	private SemanticSummaryParametersFactory parametersFactory;
+	private CyTableManager tableManager;
+	private CyTableFactory tableFactory;
 	
 	@Tunable(description="Column with clusters")
 	public String clusterColumnName;
@@ -39,12 +43,14 @@ public class BuildWordCloudCommandHandlerTask implements Task {
 	
 	public BuildWordCloudCommandHandlerTask(CyApplicationManager applicationManager,
 			CySwingApplication application, SemanticSummaryManager cloudManager,
-			CreateCloudNoDisplayAction createCloudNoDisplayAction, SemanticSummaryParametersFactory parametersFactory) {
+			CreateCloudCommandAction createCloudCommandAction, SemanticSummaryParametersFactory parametersFactory, CyTableManager tableManager, CyTableFactory tableFactory) {
 		this.applicationManager = applicationManager;
 		this.application = application;
 		this.cloudManager = cloudManager;
-		this.createCloudNoDisplayAction = createCloudNoDisplayAction;
+		this.createCloudCommandAction = createCloudCommandAction;
 		this.parametersFactory = parametersFactory;
+		this.tableManager = tableManager;
+		this.tableFactory = tableFactory;
 	}
 	
 	@Override
@@ -65,19 +71,32 @@ public class BuildWordCloudCommandHandlerTask implements Task {
 				clusters.get(clusterNumber).add(row);	
 			}
 		}
+		CyTable clusterTable = tableFactory.createTable(cloudNamePrefix + " Table", "Cluster number", Integer.class, true, true);
+		createColumn(clusterTable, "WC_Word");
+		createColumn(clusterTable, "WC_FontSize");
+		createColumn(clusterTable, "WC_Cluster");
+		createColumn(clusterTable, "WC_Number");
+		tableManager.addTable(clusterTable);
+		if (network.getDefaultNetworkTable().getColumn(cloudNamePrefix) == null) {
+			network.getDefaultNetworkTable().createColumn(cloudNamePrefix, Long.class, false);		
+		}
+		network.getRow(network).set(cloudNamePrefix, clusterTable.getSUID());
+		
 		CyTable nodeTable = network.getDefaultNodeTable();
 		createColumn(nodeTable, cloudNamePrefix + "WC_Word");
 		createColumn(nodeTable, cloudNamePrefix + "WC_FontSize");
 		createColumn(nodeTable, cloudNamePrefix + "WC_Cluster");
 		createColumn(nodeTable, cloudNamePrefix + "WC_Number");
+		
 		for (Integer clusterNumber : clusters.keySet()) {
 			ArrayList<CyRow> rows = clusters.get(clusterNumber);
 			selectNodes(rows);
-			createCloudNoDisplayAction.setAttributeColumn(nameColumnName);
-			createCloudNoDisplayAction.setClusterColumn(clusterColumnName);
-			createCloudNoDisplayAction.setCloudNamePrefix(cloudNamePrefix);
-			createCloudNoDisplayAction.setClusterNumber(clusterNumber);
-			createCloudNoDisplayAction.actionPerformed(new ActionEvent("", 0, ""));
+			createCloudCommandAction.setAttributeColumn(nameColumnName);
+			createCloudCommandAction.setClusterColumn(clusterColumnName);
+			createCloudCommandAction.setCloudNamePrefix(cloudNamePrefix);
+			createCloudCommandAction.setClusterNumber(clusterNumber);
+			createCloudCommandAction.setClusterTable(clusterTable);
+			createCloudCommandAction.actionPerformed(new ActionEvent("", 0, ""));
 			deselectNodes(rows);
 		}
 	}
