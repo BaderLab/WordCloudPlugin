@@ -112,7 +112,7 @@ public class CyActivator extends AbstractCyActivator {
 		properties = new Properties();
     	properties.put(ServiceProperties.COMMAND, "delete");
     	properties.put(ServiceProperties.COMMAND_NAMESPACE, "wordcloud");
-   		registerService(context, new DeleteWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudManager, deleteCloudAction), TaskFactory.class, properties);
+   		registerService(context, new DeleteWordCloudCommandHandlerTaskFactory(applicationManager, cloudManager, deleteCloudAction), TaskFactory.class, properties);
    		
 		//command line option
 		properties = new Properties();

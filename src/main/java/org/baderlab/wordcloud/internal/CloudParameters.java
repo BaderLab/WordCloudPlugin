@@ -112,6 +112,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 	private String clusterColumnName;
 	private String cloudNamePrefix;
 	private int clusterNumber;
+	private CyTable clusterTable;
 	
 	//CONSTRUCTORS
 	
@@ -1394,5 +1395,13 @@ public class CloudParameters implements Comparable<CloudParameters>
 	
 	public void setCloudNamePrefix(String cloudNamePrefix) {
 		this.cloudNamePrefix = cloudNamePrefix;		
+	}
+
+	public void setClusterTable(CyTable clusterTable) {
+		this.clusterTable = clusterTable;
+	}
+	
+	public CyTable getClusterTable() {
+		return clusterTable;
 	}
 }

@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JOptionPane;
-
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyColumn;
@@ -42,7 +40,6 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 	//VARIABLES
 	private static final long serialVersionUID = -5065616290485908393L;
 	private CyApplicationManager applicationManager;
-	private CySwingApplication application;
 	private SemanticSummaryManager cloudManager;
 	private SemanticSummaryParametersFactory parametersFactory;
 	private String nameColumnName;
@@ -63,7 +60,6 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 	{
 		super("Create Cloud");
 		this.applicationManager = applicationManager;
-		this.application = application;
 		this.cloudManager = cloudManager;
 		this.parametersFactory = parametersFactory;
 	}
@@ -133,8 +129,8 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 		//Create CloudParameters
 		CloudParameters cloudParams = new CloudParameters(params);
 		cloudParams.setCloudNum(params.getCloudCount());
-		cloudParams.setCloudName(cloudNamePrefix + "Cloud " + clusterNumber);
-		
+		cloudParams.setCloudName(cloudNamePrefix + " Cloud " + clusterNumber);
+		cloudParams.setClusterTable(clusterTable);
 		cloudParams.setClusterColumnName(clusterColumnName);
 		cloudParams.setCloudNamePrefix(cloudNamePrefix);
 		cloudParams.setClusterNumber(clusterNumber);
@@ -194,16 +190,6 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 		clusterRow.set("WC_FontSize", WC_FontSize);
 		clusterRow.set("WC_Cluster", WC_Cluster);
 		clusterRow.set("WC_Number", WC_Number);
-		
-		List<CyRow> table = network.getDefaultNodeTable().getAllRows();
-		for (CyRow row : table) {
-			if (row.get(clusterColumnName, Integer.class) == clusterNumber) {
-				row.set(cloudNamePrefix + "WC_Word", WC_Word);
-				row.set(cloudNamePrefix + "WC_FontSize", WC_FontSize);
-				row.set(cloudNamePrefix + "WC_Cluster", WC_Cluster);
-				row.set(cloudNamePrefix + "WC_Number", WC_Number);
-			}
-		}
 
 		// Get rid of the membership columns
 		for (CyColumn column : network.getDefaultNodeTable().getColumns()) {

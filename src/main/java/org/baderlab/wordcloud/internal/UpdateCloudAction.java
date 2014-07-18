@@ -30,6 +30,7 @@ import java.util.List;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 
 /**
  * This is the action associated with updating a Semantic Summary Tag Cloud
@@ -112,16 +113,11 @@ public class UpdateCloudAction extends AbstractSemanticSummaryAction
 				WC_Cluster.add(wordInfo[2]);
 				WC_Number.add(wordInfo[3]);
 			}
-			List<CyRow> table = network.getDefaultNodeTable().getAllRows();
-			for (CyRow row : table) {
-				if (row.get(cloudParams.getClusterColumnName(), Integer.class) != null &&  row.get(cloudParams.getClusterColumnName(), Integer.class) == cloudParams.getClusterNumber()) {
-					String cloudNamePrefix = cloudParams.getCloudNamePrefix();
-					row.set(cloudNamePrefix + "WC_Word", WC_Word);
-					row.set(cloudNamePrefix + "WC_FontSize", WC_FontSize);
-					row.set(cloudNamePrefix + "WC_Cluster", WC_Cluster);
-					row.set(cloudNamePrefix + "WC_Number", WC_Number);
-				}
-			}
+			CyRow clusterRow = cloudParams.getClusterTable().getRow(cloudParams.getClusterNumber());
+			clusterRow.set("WC_Word", WC_Word);
+			clusterRow.set("WC_FontSize", WC_FontSize);
+			clusterRow.set("WC_Cluster", WC_Cluster);
+			clusterRow.set("WC_Number", WC_Number);
 		}
 		
 		CloudDisplayPanel cloudPanel =
