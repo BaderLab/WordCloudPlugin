@@ -129,11 +129,11 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 		//Create CloudParameters
 		CloudParameters cloudParams = new CloudParameters(params);
 		cloudParams.setCloudNum(params.getCloudCount());
-		cloudParams.setCloudName(cloudNamePrefix + " Cloud " + clusterNumber);
 		cloudParams.setClusterTable(clusterTable);
 		cloudParams.setClusterColumnName(clusterColumnName);
 		cloudParams.setCloudNamePrefix(cloudNamePrefix);
 		cloudParams.setClusterNumber(clusterNumber);
+		cloudParams.setCloudName(cloudNamePrefix + " Cloud " + clusterNumber);
 		
 		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
 		

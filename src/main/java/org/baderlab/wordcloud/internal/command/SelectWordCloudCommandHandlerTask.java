@@ -3,6 +3,7 @@ package org.baderlab.wordcloud.internal.command;
 import javax.swing.JList;
 
 import org.baderlab.wordcloud.internal.SemanticSummaryManager;
+import org.baderlab.wordcloud.internal.SemanticSummaryParameters;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
@@ -26,6 +27,8 @@ public class SelectWordCloudCommandHandlerTask implements Task {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		SemanticSummaryParameters params = cloudManager.getParameters(applicationManager.getCurrentNetwork());
+		cloudManager.setCurCloud(params.getCloud(cloudName));
 		JList cloudList = cloudManager.getInputWindow().getCloudList();
 		for (int i = 0; i < cloudList.getModel().getSize(); i++) {
 			if (cloudList.getModel().getElementAt(i).equals(cloudName)) {

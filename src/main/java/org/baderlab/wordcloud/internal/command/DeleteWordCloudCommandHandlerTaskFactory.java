@@ -8,9 +8,9 @@ import org.cytoscape.work.TaskIterator;
 
 public class DeleteWordCloudCommandHandlerTaskFactory implements TaskFactory{
 
-	private CyApplicationManager applicationManager;
 	private SemanticSummaryManager cloudManager;
 	private DeleteCloudAction deleteCloudAction;
+	private CyApplicationManager applicationManager;
 
 	public DeleteWordCloudCommandHandlerTaskFactory(
 			CyApplicationManager applicationManager,
