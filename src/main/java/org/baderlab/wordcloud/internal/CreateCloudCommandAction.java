@@ -190,13 +190,5 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 		clusterRow.set("WC_FontSize", WC_FontSize);
 		clusterRow.set("WC_Cluster", WC_Cluster);
 		clusterRow.set("WC_Number", WC_Number);
-
-		// Get rid of the membership columns
-		for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
-			String name = column.getName();
-			if (name.equals(cloudParams.getCloudName())) {
-				network.getDefaultNodeTable().deleteColumn(name);
-			}
-		}
 	}
 }

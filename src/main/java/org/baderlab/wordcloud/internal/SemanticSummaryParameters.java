@@ -24,6 +24,7 @@ package org.baderlab.wordcloud.internal;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
@@ -68,7 +69,7 @@ public class SemanticSummaryParameters
 	 */
 	public SemanticSummaryParameters(ModelManager modelManager, CySwingApplication application, WordFilterFactory filterFactory)
 	{
-		this.clouds = new HashMap<String,CloudParameters>();
+		this.clouds = new TreeMap<String,CloudParameters>();
 		this.filter = filterFactory.createWordFilter();
 		this.delimiters = new WordDelimiters(application);
 		this.modelManager = modelManager;

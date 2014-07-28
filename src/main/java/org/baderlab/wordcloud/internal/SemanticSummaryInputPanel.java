@@ -64,6 +64,7 @@ import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -1087,6 +1088,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener,
 		cloudManager.setCurCloud(params);
 		String cloudName = params.getCloudName();
 		listValues.addElement(cloudName);
+		
 		int index = listValues.lastIndexOf(cloudName);
 		
 		//Set to be selected
@@ -1906,5 +1908,5 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener,
 			if (invalid)
 				JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
 		}
-	}
+	}	
 }

@@ -108,7 +108,6 @@ public class CloudParameters implements Comparable<CloudParameters>
 	private int defaultMaxWords = 250;
 	private double defaultClusterCutoff = 1.0;
 	private String defaultStyle = CloudDisplayStyles.DEFAULT_STYLE;
-	private Set<CyNode> selectedNodes;
 	private String clusterColumnName;
 	private String cloudNamePrefix;
 	private int clusterNumber;
@@ -234,10 +233,6 @@ public class CloudParameters implements Comparable<CloudParameters>
 		
 		CyTable cloudTable = networkParams.getNetwork().getDefaultNodeTable();
 		if (cloudTable == null) {
-			throw new RuntimeException();
-		}
-		CyColumn column = cloudTable.getColumn(cloudName);
-		if (column == null) {
 			throw new RuntimeException();
 		}
 	}
@@ -1085,16 +1080,15 @@ public class CloudParameters implements Comparable<CloudParameters>
 			return Collections.emptySet();
 		}
 		
-//		Set<CyNode> nodes = new HashSet<CyNode>();
-//		for (CyNode node : network.getNodeList()) {
-//			CyRow row = network.getRow(node);
-//			Boolean selected = row.get(cloudName, Boolean.class);
-//			if (selected != null && selected) {
-//				nodes.add(node);
-//			}
-//		}
-//		return nodes;
-		return selectedNodes;
+		Set<CyNode> nodes = new HashSet<CyNode>();
+		for (CyNode node : network.getNodeList()) {
+			CyRow row = network.getRow(node);
+			Boolean selected = row.get(cloudName, Boolean.class);
+			if (selected != null && selected) {
+				nodes.add(node);
+			}
+		}
+		return nodes;
 	}
 
 	public void setSelectedNodes(Set<CyNode> nodes)
@@ -1109,7 +1103,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 		if (network == null) {
 			return;
 		}
-		selectedNodes = nodes;
+		
 		for (CyNode node : network.getNodeList()) {
 			CyRow row = network.getRow(node);
 			Boolean wasSelected = row.get(cloudName, Boolean.class);
@@ -1133,7 +1127,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 			return 0;
 		}
 		
-		return selectedNodes.size();
+		return getSelectedNodes(network).size();
 	}
 
 	public Map<String, Set<CyNode>> getStringNodeMapping()

@@ -152,7 +152,6 @@ public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, Ses
 	{
 		//Create an empty file on system temp directory
 		String tmpDir = System.getProperty("java.io.tmpdir");
-		System.out.println("java.io.tmpdir: [" + tmpDir + "]");
 		
 		//get the networks
 		Map<CyNetwork, SemanticSummaryParameters> networks = cloudManager.getCyNetworkList();
