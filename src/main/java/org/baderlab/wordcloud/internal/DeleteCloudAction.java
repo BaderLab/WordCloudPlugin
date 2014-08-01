@@ -87,7 +87,10 @@ public class DeleteCloudAction extends AbstractSemanticSummaryAction
 			
 				//Remove cloud from list
 				networkParams.getClouds().remove(cloudName);
-			
+				if (networkParams.getNetwork().getDefaultNodeTable().getColumn(cloudName) != null) {
+					networkParams.getNetwork().getDefaultNodeTable().deleteColumn(cloudName);
+				}
+				
 				//Update Current network
 				cloudManager.setupCurrentNetwork(networkParams.getNetwork());
 			
