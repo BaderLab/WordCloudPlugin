@@ -216,4 +216,8 @@ public class ModelManager implements AddedNodesListener, RemovedNodesListener, A
 		}
 		return null;
 	}
+
+	public CyTableManager getTableManager() {
+		return tableManager;
+	}
 }

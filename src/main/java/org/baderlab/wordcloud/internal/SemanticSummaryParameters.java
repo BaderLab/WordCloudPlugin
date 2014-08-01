@@ -275,4 +275,8 @@ public class SemanticSummaryParameters
 	public CyNetwork getNetwork() {
 		return network;
 	}
+
+	public ModelManager getModelManager() {
+		return modelManager;
+	}
 }

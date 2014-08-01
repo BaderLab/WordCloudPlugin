@@ -100,7 +100,7 @@ public class UpdateCloudAction extends AbstractSemanticSummaryAction
 		//Update with new information
 		cloudParams.calculateFontSizes();
 		
-		if ((Integer) cloudParams.getClusterNumber() != null) {
+		if (cloudParams.getClusterTable() != null) {
 			List<CloudWordInfo> wordInfos = cloudParams.getCloudWordInfoList();
 			ArrayList<String> WC_Word = new ArrayList<String>();
 			ArrayList<String> WC_FontSize = new ArrayList<String>();

@@ -42,6 +42,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 
 /**
  * The CloudParameters class defines all of the variables that are
@@ -1396,6 +1397,17 @@ public class CloudParameters implements Comparable<CloudParameters>
 	}
 	
 	public CyTable getClusterTable() {
-		return clusterTable;
+		if (clusterTable != null) {
+			return clusterTable;
+		} else {
+			try {
+				CyNetwork network = networkParams.getNetwork();
+				CyTableManager tableManager = networkParams.getModelManager().getTableManager();
+				String tableName = cloudName.substring(0, cloudName.indexOf(" Cloud "));
+				return tableManager.getTable(network.getDefaultNetworkTable().getRow(network.getSUID()).get(tableName, Long.class));
+			} catch (Exception e) {
+				return null;
+			}
+		}
 	}
 }
