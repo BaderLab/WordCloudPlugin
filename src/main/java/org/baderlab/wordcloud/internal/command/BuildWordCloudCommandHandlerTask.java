@@ -54,10 +54,12 @@ public class BuildWordCloudCommandHandlerTask implements Task {
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
 		CyNetwork network = applicationManager.getCurrentNetwork();
-		// Get rows for each cluster
+		// Get rows for each cluster based on the specified cluster column
 		HashMap<Integer, ArrayList<CyRow>> clusters = new HashMap<Integer, ArrayList<CyRow>>();
-		Class<?> columnType = network.getDefaultNodeTable().getColumn(clusterColumnName).getType();
+		CyColumn clusterColumn = network.getDefaultNodeTable().getColumn(clusterColumnName);
+		Class<?> columnType = clusterColumn.getType();
 		if (columnType == Integer.class) {
+			// If cluster column contains integers
 			for (CyRow row : network.getDefaultNodeTable().getAllRows()) {	
 				Integer clusterNumber = row.get(clusterColumnName, Integer.class);
 				if (clusterNumber != null) {
@@ -67,7 +69,8 @@ public class BuildWordCloudCommandHandlerTask implements Task {
 					clusters.get(clusterNumber).add(row);	
 				}
 			}			
-		} else if (columnType == List.class) {
+		} else if (columnType == List.class && clusterColumn.getListElementType() == Integer.class) {
+			// If cluster column contains lists of integers
 			for (CyRow row : network.getDefaultNodeTable().getAllRows()) {	
 				@SuppressWarnings("unchecked")
 				List<Integer> clusterNumbers = row.get(clusterColumnName, List.class);
@@ -79,13 +82,14 @@ public class BuildWordCloudCommandHandlerTask implements Task {
 				}
 			}
 		}
-		
+		// Create table to add WordInfos to
 		CyTable clusterTable = tableFactory.createTable(cloudNamePrefix + " Table", "Cluster number", Integer.class, true, true);
 		createColumn(clusterTable, "WC_Word");
 		createColumn(clusterTable, "WC_FontSize");
 		createColumn(clusterTable, "WC_Cluster");
 		createColumn(clusterTable, "WC_Number");
 		tableManager.addTable(clusterTable);
+		// Store table ID in the network table
 		if (network.getDefaultNetworkTable().getColumn(cloudNamePrefix) == null) {
 			network.getDefaultNetworkTable().createColumn(cloudNamePrefix, Long.class, false);		
 		}

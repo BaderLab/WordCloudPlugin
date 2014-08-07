@@ -2,8 +2,6 @@ package org.baderlab.wordcloud.internal.command;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.JList;
-
 import org.baderlab.wordcloud.internal.DeleteCloudAction;
 import org.baderlab.wordcloud.internal.SemanticSummaryManager;
 import org.baderlab.wordcloud.internal.SemanticSummaryParameters;
@@ -35,9 +33,11 @@ public class DeleteWordCloudCommandHandlerTask implements Task {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		SemanticSummaryParameters params = cloudManager.getParameters(applicationManager.getCurrentNetwork());
 		while (true) {
+			// cloudManager.setCurCloud(params.getCloud(cloudName));
+			// deleteCloudAction.actionPerformed(new ActionEvent("", 1, "No confirmation"));
 			try {
 				cloudManager.setCurCloud(params.getCloud(cloudName));
-				deleteCloudAction.actionPerformed(new  ActionEvent("", 1, "No confirmation"));
+				deleteCloudAction.actionPerformed(new ActionEvent("", 1, "No confirmation"));
 				break;
 			} catch (Exception e) {
 				continue;

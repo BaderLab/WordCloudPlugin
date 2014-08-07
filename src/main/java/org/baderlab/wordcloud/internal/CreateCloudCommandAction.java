@@ -28,7 +28,6 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -48,14 +47,14 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 	private Integer clusterNumber;
 	private String cloudNamePrefix;
 	private CyTable clusterTable;
-	
+
 	//CONSTRUCTORS
-	
-		/**
+
+	/**
 	 * CreateCloudAction constructor.
 	 * @param pluginAction 
 	 */
-	
+
 	public CreateCloudCommandAction(CyApplicationManager applicationManager, CySwingApplication application, SemanticSummaryManager cloudManager, SemanticSummaryParametersFactory parametersFactory)
 	{
 		super("Create Cloud");
@@ -63,15 +62,15 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 		this.cloudManager = cloudManager;
 		this.parametersFactory = parametersFactory;
 	}
-	
+
 	public void setAttributeColumn(String columnName) {
 		this.nameColumnName = columnName;
 	}
-	
+
 	public void setClusterColumn(String columnName) {
 		this.clusterColumnName = columnName;
 	}
-	
+
 	public void setClusterNumber(Integer clusterNumber) {
 		this.clusterNumber = clusterNumber;
 	}
@@ -79,17 +78,17 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 	public void setCloudNamePrefix(String cloudNamePrefix) {
 		this.cloudNamePrefix = cloudNamePrefix;
 	}
-	
+
 	public void setClusterTable(CyTable clusterTable) {
 		this.clusterTable = clusterTable;
 	}
-	
+
 	public List<CloudWordInfo> getWordInfo() {
 		return this.wordInfo;
 	}
-	
+
 	//METHODS
-	
+
 	/**
 	 * Method called when a Create Cloud action occurs.
 	 * @param nameColumnName 
@@ -101,7 +100,7 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 	{
 		//Initialize the Semantic Summary Panels
 		pluginAction.actionPerformed(ae);
-		
+
 		CyNetwork network = applicationManager.getCurrentNetwork();
 		if (network == null) {
 			return;
@@ -109,15 +108,14 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 
 		//Check if network is already in our list
 		SemanticSummaryParameters params;
-		
-		//Get SemanticSummaryParameters or Register if necessary
+
+		//Get SemanticSummaryParameters or register if necessary
 		if(cloudManager.isSemanticSummary(network))
 		{
 			params = cloudManager.getParameters(network);
-			
+
 			//Update if necessary
-			if (params.networkHasChanged(network));
-				params.updateParameters(network);
+			if (params.networkHasChanged(network)) params.updateParameters(network);
 		}
 		else
 		{
@@ -125,7 +123,7 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 			params.updateParameters(network);
 			cloudManager.registerNetwork(network, params);
 		}
-		
+
 		//Create CloudParameters
 		CloudParameters cloudParams = new CloudParameters(params);
 		cloudParams.setCloudNum(params.getCloudCount());
@@ -134,44 +132,42 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 		cloudParams.setCloudNamePrefix(cloudNamePrefix);
 		cloudParams.setClusterNumber(clusterNumber);
 		cloudParams.setCloudName(cloudNamePrefix + " Cloud " + clusterNumber);
-		
+
 		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
-		
 		cloudParams.setSelectedNodes(nodes);
-		
+
 		//Add to list of clouds
 		params.addCloud(cloudParams.getCloudName(), cloudParams);
-		
-		// Select all attributes by default
+
+		// Select specified attribute column
 		SemanticSummaryInputPanel inputPanel = cloudManager.getInputWindow();
 		ArrayList<String> attributes = new ArrayList<String>();
 		attributes.add(nameColumnName);
 		inputPanel.setAttributeNames(attributes);
-		
+
 		//Retrieve values from input panel
 		cloudParams.retrieveInputVals(inputPanel);
-		
+
 		cloudParams.updateRatios();
 		cloudParams.calculateFontSizes();
-		
+
 		CloudDisplayPanel cloudPanel = cloudManager.getCloudWindow();
 		cloudPanel.updateCloudDisplay(cloudParams);
-		
+
 		//Update list of clouds
-		//inputPanel.setNetworkList(params);
 		inputPanel.addNewCloud(cloudParams);
+		
 		inputPanel.getCreateNetworkButton().setEnabled(true);
 		inputPanel.getSaveCloudButton().setEnabled(true);
 		
-		//displayPanel.getSaveCloudButton().setEnabled(true);
-		
 		//Update the list of filter words and checkbox
 		inputPanel.refreshNetworkSettings();
-		
+
 		//Enable adding of words to exclusion list
 		inputPanel.getAddWordTextField().setEditable(true);
 		inputPanel.getAddWordButton().setEnabled(true);
-		
+
+		// Add wordInfo to table
 		this.wordInfo = cloudParams.getCloudWordInfoList();
 		ArrayList<String> WC_Word = new ArrayList<String>();
 		ArrayList<String> WC_FontSize = new ArrayList<String>();
@@ -184,7 +180,7 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 			WC_Cluster.add(wordInfo[2]);
 			WC_Number.add(wordInfo[3]);
 		}
-		
+
 		CyRow clusterRow = clusterTable.getRow(clusterNumber);
 		clusterRow.set("WC_Word", WC_Word);
 		clusterRow.set("WC_FontSize", WC_FontSize);
