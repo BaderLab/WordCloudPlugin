@@ -92,11 +92,9 @@ public class CloudListSelectionHandler implements ListSelectionListener
 			
 			//InputPanel load values
 			inputPanel.loadCurrentCloud(cloudParams);
-			
 			//Load Cloud
 			cloudManager.getCloudWindow().
 			updateCloudDisplay(cloudParams);
-			
 			
 			//Highlight selected nodes if view exists
 			
@@ -106,7 +104,7 @@ public class CloudListSelectionHandler implements ListSelectionListener
 			}
 			
 			Set<CyNode> selNodes = cloudParams.getSelectedNodes();
-		
+			
 			SelectionUtils.setColumns(network.getDefaultNodeTable(), CyNetwork.SELECTED, Boolean.FALSE);
 			SelectionUtils.setColumns(network.getDefaultEdgeTable(), CyNetwork.SELECTED, Boolean.FALSE);
 			SelectionUtils.setColumns(network, selNodes, CyNetwork.SELECTED, Boolean.TRUE);
@@ -114,7 +112,7 @@ public class CloudListSelectionHandler implements ListSelectionListener
 			for (CyNetworkView networkView : viewManager.getNetworkViews(network)) {
 				networkView.updateView();
 			}
-		
+			
 			//Move windows to the forefront
 			pluginAction.loadCloudPanel();
 		}

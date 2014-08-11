@@ -10,7 +10,7 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class BuildWordCloudCommandHandlerTaskFactory implements TaskFactory{
+public class CreateWordCloudCommandHandlerTaskFactory implements TaskFactory{
 	
 	private CyApplicationManager applicationManager;
 	private CySwingApplication application;
@@ -22,7 +22,7 @@ public class BuildWordCloudCommandHandlerTaskFactory implements TaskFactory{
 
 	// I'll probably have to specify more (like Network)
 
-	public BuildWordCloudCommandHandlerTaskFactory(CyApplicationManager applicationManager,
+	public CreateWordCloudCommandHandlerTaskFactory(CyApplicationManager applicationManager,
 			CySwingApplication application, SemanticSummaryManager cloudManager,
 			CreateCloudCommandAction createCloudNoDisplayAction, SemanticSummaryParametersFactory parametersFactory, CyTableManager tableManager, CyTableFactory tableFactory) {
 		this.applicationManager = applicationManager;
@@ -36,7 +36,7 @@ public class BuildWordCloudCommandHandlerTaskFactory implements TaskFactory{
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new BuildWordCloudCommandHandlerTask(applicationManager, application, cloudManager, createCloudNoDisplayAction, parametersFactory, tableManager, tableFactory));
+		return new TaskIterator(new CreateWordCloudCommandHandlerTask(applicationManager, application, cloudManager, createCloudNoDisplayAction, parametersFactory, tableManager, tableFactory));
 	}
 
 	@Override
