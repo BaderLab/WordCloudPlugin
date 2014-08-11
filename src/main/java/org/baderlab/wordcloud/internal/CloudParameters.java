@@ -110,8 +110,6 @@ public class CloudParameters implements Comparable<CloudParameters>
 	private double defaultClusterCutoff = 1.0;
 	private String defaultStyle = CloudDisplayStyles.DEFAULT_STYLE;
 	private String clusterColumnName;
-	private String cloudNamePrefix;
-	private int clusterNumber;
 	private CyTable clusterTable;
 	
 	//CONSTRUCTORS
@@ -1374,22 +1372,6 @@ public class CloudParameters implements Comparable<CloudParameters>
 	
 	public void setClusterColumnName(String clusterColumnName) {
 		this.clusterColumnName = clusterColumnName;		
-	}
-	
-	public int getClusterNumber() {
-		return clusterNumber;
-	}
-	
-	public void setClusterNumber(int clusterNumber) {
-		this.clusterNumber = clusterNumber;		
-	}
-	
-	public String getCloudNamePrefix() {
-		return cloudNamePrefix;
-	}
-	
-	public void setCloudNamePrefix(String cloudNamePrefix) {
-		this.cloudNamePrefix = cloudNamePrefix;		
 	}
 
 	public void setClusterTable(CyTable clusterTable) {

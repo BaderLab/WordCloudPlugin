@@ -3,7 +3,7 @@ import java.util.Properties;
 
 import javax.swing.Action;
 
-import org.baderlab.wordcloud.internal.command.BuildWordCloudCommandHandlerTaskFactory;
+import org.baderlab.wordcloud.internal.command.CreateWordCloudCommandHandlerTaskFactory;
 import org.baderlab.wordcloud.internal.command.DeleteWordCloudCommandHandlerTaskFactory;
 import org.baderlab.wordcloud.internal.command.SelectWordCloudCommandHandlerTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
@@ -104,9 +104,9 @@ public class CyActivator extends AbstractCyActivator {
 		
 		//command line option
 		Properties properties = new Properties();
-    	properties.put(ServiceProperties.COMMAND, "build");
+    	properties.put(ServiceProperties.COMMAND, "create");
     	properties.put(ServiceProperties.COMMAND_NAMESPACE, "wordcloud");
-    	registerService(context, new BuildWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudManager, createCloudNoDisplayAction, parametersFactory, tableManager, tableFactory), TaskFactory.class, properties);
+    	registerService(context, new CreateWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudManager, createCloudNoDisplayAction, parametersFactory, tableManager, tableFactory), TaskFactory.class, properties);
    		
 		//command line option
 		properties = new Properties();

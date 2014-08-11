@@ -42,12 +42,11 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 	private SemanticSummaryManager cloudManager;
 	private SemanticSummaryParametersFactory parametersFactory;
 	private String nameColumnName;
-	private String clusterColumnName;
 	private List<CloudWordInfo> wordInfo;
-	private Integer clusterNumber;
-	private String cloudNamePrefix;
+	private String cloudName;
 	private CyTable clusterTable;
-
+	private Set<CyNode> nodes;
+	
 	//CONSTRUCTORS
 
 	/**
@@ -63,20 +62,14 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 		this.parametersFactory = parametersFactory;
 	}
 
+	//GETTERS AND SETTERS
+	
 	public void setAttributeColumn(String columnName) {
 		this.nameColumnName = columnName;
 	}
 
-	public void setClusterColumn(String columnName) {
-		this.clusterColumnName = columnName;
-	}
-
-	public void setClusterNumber(Integer clusterNumber) {
-		this.clusterNumber = clusterNumber;
-	}
-
-	public void setCloudNamePrefix(String cloudNamePrefix) {
-		this.cloudNamePrefix = cloudNamePrefix;
+	public void setCloudName(String cloudName) {
+		this.cloudName = cloudName;
 	}
 
 	public void setClusterTable(CyTable clusterTable) {
@@ -86,12 +79,17 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 	public List<CloudWordInfo> getWordInfo() {
 		return this.wordInfo;
 	}
+	
+	public void setNodes(Set<CyNode> nodes) {
+		this.nodes = nodes;
+	}
+
 
 	//METHODS
 
 	/**
 	 * Method called when a Create Cloud action occurs.
-	 * @param nameColumnName 
+	 * @param wordColumnName 
 	 * 
 	 * @param ActionEvent - event created when choosing Create Cloud from 
 	 * any of its various locations.
@@ -128,12 +126,7 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 		CloudParameters cloudParams = new CloudParameters(params);
 		cloudParams.setCloudNum(params.getCloudCount());
 		cloudParams.setClusterTable(clusterTable);
-		cloudParams.setClusterColumnName(clusterColumnName);
-		cloudParams.setCloudNamePrefix(cloudNamePrefix);
-		cloudParams.setClusterNumber(clusterNumber);
-		cloudParams.setCloudName(cloudNamePrefix + " Cloud " + clusterNumber);
-
-		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
+		cloudParams.setCloudName(cloudName);
 		cloudParams.setSelectedNodes(nodes);
 
 		//Add to list of clouds
@@ -181,7 +174,7 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 			WC_Number.add(wordInfo[3]);
 		}
 
-		CyRow clusterRow = clusterTable.getRow(clusterNumber);
+		CyRow clusterRow = clusterTable.getRow(cloudName);
 		clusterRow.set("WC_Word", WC_Word);
 		clusterRow.set("WC_FontSize", WC_FontSize);
 		clusterRow.set("WC_Cluster", WC_Cluster);

@@ -113,7 +113,7 @@ public class UpdateCloudAction extends AbstractSemanticSummaryAction
 				WC_Cluster.add(wordInfo[2]);
 				WC_Number.add(wordInfo[3]);
 			}
-			CyRow clusterRow = cloudParams.getClusterTable().getRow(cloudParams.getClusterNumber());
+			CyRow clusterRow = cloudParams.getClusterTable().getRow(cloudParams.getCloudName());
 			clusterRow.set("WC_Word", WC_Word);
 			clusterRow.set("WC_FontSize", WC_FontSize);
 			clusterRow.set("WC_Cluster", WC_Cluster);
