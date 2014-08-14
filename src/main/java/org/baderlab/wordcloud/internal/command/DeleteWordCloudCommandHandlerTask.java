@@ -33,13 +33,12 @@ public class DeleteWordCloudCommandHandlerTask implements Task {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		SemanticSummaryParameters params = cloudManager.getParameters(applicationManager.getCurrentNetwork());
 		while (true) {
-			// cloudManager.setCurCloud(params.getCloud(cloudName));
-			// deleteCloudAction.actionPerformed(new ActionEvent("", 1, "No confirmation"));
 			try {
 				cloudManager.setCurCloud(params.getCloud(cloudName));
 				deleteCloudAction.actionPerformed(new ActionEvent("", 1, "No confirmation"));
 				break;
 			} catch (Exception e) {
+				// If user has deleted the cloud already there will be a null pointer
 				continue;
 			}
 		}

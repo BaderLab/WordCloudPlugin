@@ -41,7 +41,6 @@ public class CreateWordCloudCommandHandlerTaskFactory implements TaskFactory{
 
 	@Override
 	public boolean isReady() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 

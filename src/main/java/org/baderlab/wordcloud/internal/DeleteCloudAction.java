@@ -24,10 +24,14 @@ package org.baderlab.wordcloud.internal;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
 
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 
 /**
  * This is the action associated with deleting a Semantic Summary Tag Cloud
@@ -81,14 +85,28 @@ public class DeleteCloudAction extends AbstractSemanticSummaryAction
 		
 			//Delete if cloud is not null
 			if (cloudParams != null && 
-					cloudParams != cloudManager.getNullCloudParameters())
-			{
+					cloudParams != cloudManager.getNullCloudParameters()) {
 				String cloudName = cloudParams.getCloudName();
 			
+				CyNetwork network = networkParams.getNetwork();
+				
 				//Remove cloud from list
 				networkParams.getClouds().remove(cloudName);
-				if (networkParams.getNetwork().getDefaultNodeTable().getColumn(cloudName) != null) {
-					networkParams.getNetwork().getDefaultNodeTable().deleteColumn(cloudName);
+				if (network.getDefaultNodeTable().getColumn(cloudName) != null) {
+					network.getDefaultNodeTable().deleteColumn(cloudName);
+				}
+				
+				CyTable clusterTable = cloudParams.getClusterTable();
+				if (clusterTable != null) {
+					ArrayList<String> cloudRow = new ArrayList<String>();
+					cloudRow.add(cloudParams.getCloudName());
+					clusterTable.deleteRows(cloudRow);
+					if (clusterTable.getRowCount() == 0) {
+						// Delete column in network table with wordCloud ID
+						network.getDefaultNetworkTable().deleteColumn(cloudParams.getClusterTable().getTitle());
+						// Delete wordCloud table
+						networkParams.getModelManager().getTableManager().deleteTable(cloudParams.getClusterTable().getSUID());						
+					}
 				}
 				
 				//Update Current network
