@@ -93,7 +93,7 @@ public class CreateWordCloudCommandHandlerTask implements Task {
 		createCloudCommandAction.actionPerformed(new ActionEvent("", 0, ""));
 	}
 	
-	public void createColumn(CyTable nodeTable, String columnName) {
+	private void createColumn(CyTable nodeTable, String columnName) {
 		CyColumn column = nodeTable.getColumn(columnName);
 		if (column != null) {
 			nodeTable.deleteColumn(columnName);

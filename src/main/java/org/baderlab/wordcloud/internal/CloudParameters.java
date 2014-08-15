@@ -1014,6 +1014,9 @@ public class CloudParameters implements Comparable<CloudParameters>
 			CyColumn column = table.getColumn(cloudName);
 			column.setName(name);
 		} else {
+			if (table.getColumn(name) != null) {
+				table.deleteColumn(name);
+			}
 			table.createColumn(name, Boolean.class, false);
 		}
 		cloudName = name;
