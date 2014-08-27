@@ -24,6 +24,7 @@ package org.baderlab.wordcloud.internal;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -42,6 +44,8 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelName;
 
 /**
  * The CloudDisplayPanel class defines the panel that displays a Semantic 
@@ -51,7 +55,7 @@ import org.cytoscape.application.CyApplicationManager;
  * @version 1.0
  */
 
-public class CloudDisplayPanel extends JPanel
+public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 {
 
 	private static final long serialVersionUID = 5996569544692738989L;
@@ -239,6 +243,27 @@ public class CloudDisplayPanel extends JPanel
 	public void setCloudParameters(CloudParameters params)
 	{
 		curCloud = params;
+	}
+
+	@Override
+	public Component getComponent() {
+		return this;
+	}
+
+	@Override
+	public CytoPanelName getCytoPanelName() {
+		return CytoPanelName.SOUTH;
+	}
+
+	@Override
+	public Icon getIcon() {
+		return null;
+	}
+
+	@Override
+	public String getTitle() {
+		// TODO Auto-generated method stub
+		return "WordCloud Display";
 	}
 	
 	/*
