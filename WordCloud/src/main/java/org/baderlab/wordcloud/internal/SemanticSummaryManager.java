@@ -77,6 +77,7 @@ public class SemanticSummaryManager implements SetCurrentNetworkListener, SetCur
 	//Create only one instance of the input and cloud panels
 	private SemanticSummaryInputPanel inputWindow;
 	private CloudDisplayPanel cloudWindow;
+	private DualPanelDocker docker;
 	
 	//Keep track of current network and cloud
 	private SemanticSummaryParameters curNetwork;
@@ -413,12 +414,14 @@ public class SemanticSummaryManager implements SetCurrentNetworkListener, SetCur
 	}
 	
 	/**
-	 * Sets reference to the SemanticSummaryInputPanel (WEST)
+	 * Sets reference to the panels.
 	 * @param SemanticSummaryInputPanel - reference to panel
 	 */
-	public void setInputWindow(SemanticSummaryInputPanel inputWindow)
+	public void setPanels(DualPanelDocker docker, SemanticSummaryInputPanel inputWindow, CloudDisplayPanel cloudWindow)
 	{
 		this.inputWindow = inputWindow;
+		this.cloudWindow = cloudWindow;
+		this.docker = docker;
 	}
 	
 	/**
@@ -430,13 +433,9 @@ public class SemanticSummaryManager implements SetCurrentNetworkListener, SetCur
 		return cloudWindow;
 	}
 	
-	/**
-	 * Sets reference to the CloudDisplayPanel (SOUTH)
-	 * @param CloudDisplayPanel - reference to panel
-	 */
-	public void setCloudDisplayWindow(CloudDisplayPanel cloudWindow)
+	public DualPanelDocker getDocker() 
 	{
-		this.cloudWindow = cloudWindow;
+		return docker;
 	}
 	
 	/**

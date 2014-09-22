@@ -114,7 +114,7 @@ public class CloudListSelectionHandler implements ListSelectionListener
 			}
 			
 			//Move windows to the forefront
-			pluginAction.loadCloudPanel();
+			pluginAction.loadPanels();
 		}
 	}
 }

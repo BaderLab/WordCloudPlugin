@@ -25,6 +25,8 @@ package org.baderlab.wordcloud.internal;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +38,7 @@ import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -43,6 +46,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
+import org.baderlab.wordcloud.internal.DualPanelDocker.DockCallback;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -60,12 +64,11 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 
 	private static final long serialVersionUID = 5996569544692738989L;
 	
-	//VARIABLES
 	JPanel tagCloudFlowPanel;//add JLabels here for words
-	JScrollPane cloudScroll;
+	public JScrollPane cloudScroll; // MKTODO this is being accessed directly
 	CloudParameters curCloud;
-	JPanel saveCloudPanel;
-	//JButton saveCloudButton;
+	
+	private JButton dockButton;
 
 	private CyApplicationManager applicationManager;
 	private SemanticSummaryManager cloudManager;
@@ -87,16 +90,29 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 		cloudScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		add(cloudScroll, BorderLayout.CENTER);
 		
-		/*
-		saveCloudButton = new JButton("Export Cloud to File");
-		saveCloudButton.setEnabled(false);
-		saveCloudButton.setToolTipText("Saves the current cloud as an image file");
-		saveCloudButton.addActionListener(new SaveCloudAction());
 		
-		saveCloudPanel = new JPanel(new BorderLayout());
-		saveCloudPanel.add(saveCloudButton,BorderLayout.EAST);
-		add(saveCloudPanel, BorderLayout.SOUTH);
-		*/
+	}
+	
+	public void setDocker(final DualPanelDocker docker) {
+		dockButton = new JButton("Undock");
+		JPanel dockButtonPanel = new JPanel(new BorderLayout());
+		dockButtonPanel.add(dockButton, BorderLayout.EAST);
+		add(dockButtonPanel, BorderLayout.SOUTH);
+		
+		dockButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				docker.flip();
+			}
+		});
+		
+		docker.setCallback(new DockCallback() {
+			public void undocked() {
+				dockButton.setText("Dock");
+			}
+			public void docked() {
+				dockButton.setText("Undock");
+			}
+		});
 	}
 	
 	//METHODS
@@ -266,11 +282,5 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 		return "WordCloud Display";
 	}
 	
-	/*
-	public JButton getSaveCloudButton()
-	{
-		return saveCloudButton;
-	}
-	*/
 
 }

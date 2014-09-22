@@ -186,8 +186,7 @@ public class CloudWordInfo implements Comparable<CloudWordInfo>
 				SelectionUtils.setColumns(network, nodes, CyNetwork.SELECTED, Boolean.TRUE);
 			
 				//Bring panels to the front
-				pluginAction.loadCloudPanel();
-				pluginAction.loadInputPanel();
+				pluginAction.loadPanels();
 			}
 			
 			public void mouseEntered(MouseEvent me)

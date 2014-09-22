@@ -225,8 +225,7 @@ public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, Ses
 		}
 		
 		//Initialize and load panels
-		pluginAction.loadInputPanel();
-		pluginAction.loadCloudPanel();
+		pluginAction.loadPanels();
 		
 		try
 		{

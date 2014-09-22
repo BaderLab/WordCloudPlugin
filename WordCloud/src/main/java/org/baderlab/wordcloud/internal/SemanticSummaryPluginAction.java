@@ -47,27 +47,18 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * @version 1.0
  */
 
-public class SemanticSummaryPluginAction extends AbstractCyAction
-{
-	//VARIABLES
+public class SemanticSummaryPluginAction extends AbstractCyAction {
+	
 	private static final long serialVersionUID = -5407980202304156167L;
+	
 	private SemanticSummaryManager cloudManager;
 	private CyApplicationManager applicationManager;
 	private SemanticSummaryInputPanelFactory inputPanelFactory;
 	private CySwingApplication application;
 	private CyServiceRegistrar registrar;
 	
-	//CONSTRUCTORS
 	
-	/**
-	 * SemanticSummaryPluginAction constructor
-	 * @param registrar 
-	 * @param modelManager 
-	 * @param fileUtil 
-	 * 
-	 */
-	public SemanticSummaryPluginAction(SemanticSummaryManager cloudManager, CyApplicationManager applicationManager, SemanticSummaryInputPanelFactory inputPanelFactory, CySwingApplication application, CyServiceRegistrar registrar)
-	{
+	public SemanticSummaryPluginAction(SemanticSummaryManager cloudManager, CyApplicationManager applicationManager, SemanticSummaryInputPanelFactory inputPanelFactory, CySwingApplication application, CyServiceRegistrar registrar) {
 		super("Settings");
 		this.cloudManager = cloudManager;
 		this.applicationManager = applicationManager;
@@ -76,7 +67,6 @@ public class SemanticSummaryPluginAction extends AbstractCyAction
 		this.registrar = registrar;
 	}
 	
-	//METHODS
 	
 	/**
 	 * Method called when Semantic Summary is chosen from Plugins menu. Loads
@@ -85,128 +75,43 @@ public class SemanticSummaryPluginAction extends AbstractCyAction
 	 * @param ActionEvent - event created when choosing Semantic Summary from
 	 * the Plugins menu.
 	 */
-	public void actionPerformed(ActionEvent ae)
-	{
-		
+	public void actionPerformed(ActionEvent ae) {
 		doRealAction();
 	}
 	
-	public void doRealAction()
-	{
-		//Create Null Cloud in Manager
+	public void doRealAction() {
 		CloudParameters nullCloud = cloudManager.getNullCloudParameters();
-		if (nullCloud == null)
-		{
+		if (nullCloud == null) {
 			cloudManager.setupNullCloudParams();
 		}
 		
-		
-		boolean loaded = this.loadInputPanel();
-		this.loadCloudPanel();
-		
+		boolean loaded = this.loadPanels();
 		if (!loaded)
 			cloudManager.setupCurrentNetwork(applicationManager.getCurrentNetwork());
 	}
 	
 	/**
-	 * Loads the InputPanel or brings it into the forefront.  Returns false
-	 * if this is the first time that the input panel has been loaded.
+	 * Loads both the input panel and the cloud panel and brings them to the front.
+	 * Returns false if this is the first time that the input panel has been loaded.
 	 */
-	public boolean loadInputPanel()
-	{
-		boolean loaded = false;
-		
-		CytoPanel cytoPanel = application.getCytoPanel(CytoPanelName.WEST);
-		
-		//Check if panel already exists
-		SemanticSummaryInputPanel inputWindow = cloudManager.getInputWindow();
-		
-		if(inputWindow == null)
-		{
-			inputWindow = inputPanelFactory.createPanel();
+	public boolean loadPanels() {
+		if(cloudManager.getDocker() == null) {
+			SemanticSummaryInputPanel inputWindow = inputPanelFactory.createPanel();
 			inputWindow.setPreferredSize(new Dimension(450, 300));
-
-			//Set input window in the manager
-			cloudManager.setInputWindow(inputWindow);
 			
-			//Add panel to display
-			CytoPanelComponent panelComponent = createCytoPanelComponent("WordCloud", null, CytoPanelName.WEST, inputWindow);
-			registrar.registerService(panelComponent, CytoPanelComponent.class, new Properties());
+			CloudDisplayPanel cloudWindow = new CloudDisplayPanel(applicationManager, cloudManager, this);  // MKTODO why the reference to this?
 			
-			//Move to front of display
-			int index = cytoPanel.indexOfComponent(inputWindow);
-			cytoPanel.setSelectedIndex(index);
-		}//end if not loaded
-		
-		else
-		{
-			//Move to front of display
-			int index = cytoPanel.indexOfComponent(inputWindow);
-			cytoPanel.setSelectedIndex(index);
-			loaded = true;
-		}//end else
-		
-		return loaded;
-	}//end loadInputPanel() method
-	
-	
-	
-	/**
-	 * Loads the CloudPanel or brings it into the forefront.
-	 */
-	public void loadCloudPanel()
-	{
-		CytoPanel cytoPanel = application.getCytoPanel(CytoPanelName.SOUTH);
-		//Check if panel already exists
-		CloudDisplayPanel cloudWindow = cloudManager.getCloudWindow();
-		
-		if(cloudWindow == null)
-		{
+			DualPanelDocker docker = new DualPanelDocker(inputWindow, cloudWindow, application, registrar);
+			cloudWindow.setDocker(docker);
 			
-			cloudWindow = new CloudDisplayPanel(applicationManager, cloudManager, this);
-			
-			//Set input window in the manager
-			cloudManager.setCloudDisplayWindow(cloudWindow);
-			
-			CytoPanelComponent panelComponent = createCytoPanelComponent("WordCloud Display", null, CytoPanelName.SOUTH, cloudWindow);
-			registrar.registerService(panelComponent, CytoPanelComponent.class, new Properties());
-
-			//Move to front of display
-			int index = cytoPanel.indexOfComponent(cloudWindow);
-			cytoPanel.setSelectedIndex(index);
-		}//end if not loaded
-		
-		else
-		{
-			//Move to front of display
-			int index = cytoPanel.indexOfComponent(cloudWindow);
-			cytoPanel.setSelectedIndex(index);
-		}//end else
-	}//end loadCloudPanel() method
-	
-	CytoPanelComponent createCytoPanelComponent(final String title, final Icon icon, final CytoPanelName position, final Component component) {
-		return new CytoPanelComponent() {
-			
-			@Override
-			public String getTitle() {
-				return title;
-			}
-			
-			@Override
-			public Icon getIcon() {
-				return icon;
-			}
-			
-			@Override
-			public CytoPanelName getCytoPanelName() {
-				return position;
-			}
-			
-			@Override
-			public Component getComponent() {
-				return component;
-			}
-		};
+			cloudManager.setPanels(docker, inputWindow, cloudWindow);
+			return false;
+		}
+		else {
+			DualPanelDocker docker = cloudManager.getDocker();
+			docker.bringToFront();
+			return true;
+		}
 	}
 }
 

@@ -18,7 +18,7 @@ public class CloudListSelectionHandlerFactory {
 		this.pluginAction = pluginAction;
 	}
 	
-	CloudListSelectionHandler createHandler(Component parent) {
+	public CloudListSelectionHandler createHandler(Component parent) {
 		return new CloudListSelectionHandler(parent, cloudManager, pluginAction, viewManager);
 	}
 }

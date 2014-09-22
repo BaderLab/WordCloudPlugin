@@ -234,7 +234,7 @@ public class SaveCloudAction extends AbstractSemanticSummaryAction
 		panel.add(scroll, BorderLayout.CENTER);
 		
 		
-		pluginAction.loadCloudPanel();
+		pluginAction.loadPanels();
 		
 	}
 

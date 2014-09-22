@@ -112,8 +112,7 @@ public class DeleteCloudAction extends AbstractSemanticSummaryAction
 				//Update Current network
 				cloudManager.setupCurrentNetwork(networkParams.getNetwork());
 			
-				pluginAction.loadCloudPanel();
-				pluginAction.loadInputPanel();
+				pluginAction.loadPanels();
 			}
 		}
 	}
