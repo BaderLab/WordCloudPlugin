@@ -35,19 +35,17 @@ import org.baderlab.wordcloud.internal.prefuse.NumberRangeModel;
 
 public class SliderBarPanel extends JPanel {
 
-    //height of panel
     private final int DIM_HEIGHT = 72;
-    //width of panel
     private final int DIM_WIDTH = 150;
 
     //min and max values for the slider
     private int min;
     private int max;
-    private NumberRangeModel rangeModel;
+//    private NumberRangeModel rangeModel;
 
     //precision that the slider can be adjusted to
-    private double precision = 1000.0;
-    private int dec_precision = (int) Math.log10(precision);
+    private final double precision = 100.0;
+    private int dec_precision = (int) Math.log10(precision); // number of decimals for given precision
 
     private JLabel label;
     private String sliderLabel;
@@ -65,7 +63,7 @@ public class SliderBarPanel extends JPanel {
      * @param desired_width
      * @param cloudManager 
      */
-    public SliderBarPanel(double min, double max, String sliderLabel,String attrib, int desired_width, SemanticSummaryManager cloudManager, UpdateCloudAction updateCloudAction) {
+    public SliderBarPanel(double min, double max, String sliderLabel, int desired_width, SemanticSummaryManager cloudManager, UpdateCloudAction updateCloudAction) {
         this.setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
         this.setLayout(new BorderLayout(0,0));
         this.setOpaque(false);
@@ -85,7 +83,7 @@ public class SliderBarPanel extends JPanel {
         Dimension currentsize = label.getPreferredSize();
         currentsize.height = DIM_HEIGHT/12;
         label.setPreferredSize(currentsize);
-        initPanel(attrib, desired_width, cloudManager, updateCloudAction);
+        initPanel(desired_width, cloudManager, updateCloudAction);
     }
 
     /**
@@ -95,21 +93,20 @@ public class SliderBarPanel extends JPanel {
      * @param desired_width
      * @param updateCloudAction 
      */
-    private void initPanel(String attrib, int desired_width, SemanticSummaryManager cloudManager, UpdateCloudAction updateCloudAction){
+    private void initPanel(int desired_width, SemanticSummaryManager cloudManager, UpdateCloudAction updateCloudAction){
 
-        slider = new JSlider(JSlider.HORIZONTAL,
-                                      min, max, min);
+        slider = new JSlider(JSlider.HORIZONTAL, min, max, min);
 
-        slider.addChangeListener(new SliderBarActionListener(this,attrib, cloudManager, updateCloudAction));
+        slider.addChangeListener(new SliderBarActionListener(this, cloudManager, updateCloudAction));
 
         slider.setMajorTickSpacing((max-min)/5);
         slider.setPaintTicks(true);
 
         //Create the label table
-        Hashtable labelTable = new Hashtable();
-        labelTable.put( new Integer( min ), new JLabel(""+ min/precision));
-        labelTable.put( new Integer( max ), new JLabel("" + max/precision));
-        slider.setLabelTable( labelTable );
+        Hashtable<Integer,JLabel> labelTable = new Hashtable<Integer,JLabel>();
+        labelTable.put(min, new JLabel(String.valueOf(min/precision)));
+        labelTable.put(max, new JLabel(String.valueOf(max/precision)));
+        slider.setLabelTable(labelTable);
 
         slider.setPaintLabels(true);
 
@@ -118,27 +115,26 @@ public class SliderBarPanel extends JPanel {
         currentsize.height = (DIM_HEIGHT/12) * 11;
         slider.setPreferredSize(currentsize);
 
-        this.setLayout(new GridLayout(2,1));
+        setLayout(new GridLayout(2,1));
 
-        this.add(label, BorderLayout.NORTH);
+        add(label, BorderLayout.NORTH);
+        add(slider, BorderLayout.SOUTH);
 
-        this.add(slider,  BorderLayout.SOUTH);
-
-        this.revalidate();
+        revalidate();
     }
     
     /**
      * Translates the provided network normalization value to an integer that this
      * sliderBarPanel can handle and sets the pointer appropriately.
-     * @param val
-     * @return
      */
-    public void setNetNormValue(Double val)
-    {
+    public void setNetNormValue(double val) {
     	long value = Math.round(val * this.getPrecision());
 		int intValue = (int)value;
-		
-		this.getSlider().setValue(intValue);
+		slider.setValue(intValue);
+    }
+    
+    public double getNetNormValue() {
+    	return slider.getValue()/getPrecision();
     }
     
 
@@ -180,16 +176,18 @@ public class SliderBarPanel extends JPanel {
         this.max = (int) (max*precision);
     }
 
-    public NumberRangeModel getRangeModel() {
-        return rangeModel;
-    }
-
-    public void setRangeModel(NumberRangeModel rangeModel) {
-        this.rangeModel = rangeModel;
-    }
     
-    public JSlider getSlider()
-    {
-    	return slider;
-    }
+    
+//    public NumberRangeModel getRangeModel() {
+//        return rangeModel;
+//    }
+//
+//    public void setRangeModel(NumberRangeModel rangeModel) {
+//        this.rangeModel = rangeModel;
+//    }
+//    
+//    public JSlider getSlider()
+//    {
+//    	return slider;
+//    }
 }

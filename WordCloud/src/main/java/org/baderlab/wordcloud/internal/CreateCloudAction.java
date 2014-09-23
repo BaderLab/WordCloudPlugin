@@ -140,8 +140,8 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 		//Update list of clouds
 		//inputPanel.setNetworkList(params);
 		inputPanel.addNewCloud(cloudParams);
-		inputPanel.getCreateNetworkButton().setEnabled(true);
-		inputPanel.getSaveCloudButton().setEnabled(true);
+//		inputPanel.getCreateNetworkButton().setEnabled(true);
+//		inputPanel.getSaveCloudButton().setEnabled(true);
 		
 		//displayPanel.getSaveCloudButton().setEnabled(true);
 		

@@ -31,11 +31,7 @@ public class SliderBarActionListener implements ChangeListener {
 
     private SliderBarPanel panel;
 
-    //attribute that the slider bar is specific to
-    private String attribute;
-
 	private SemanticSummaryManager cloudManager;
-
 	private UpdateCloudAction updateCloudAction;
 
     /**
@@ -45,11 +41,10 @@ public class SliderBarActionListener implements ChangeListener {
      * @param params - cloud parameters for current cloud
      * @param attrib - attribute that the slider bar is specific to (i.e. network normalization)
      */
-    public SliderBarActionListener(SliderBarPanel panel,String attrib, SemanticSummaryManager cloudManager, UpdateCloudAction updateCloudAction) {
+    public SliderBarActionListener(SliderBarPanel panel, SemanticSummaryManager cloudManager, UpdateCloudAction updateCloudAction) {
         this.panel = panel;
         this.cloudManager = cloudManager;
         this.updateCloudAction = updateCloudAction;
-        attribute = attrib;
     }
 
     /**
@@ -59,7 +54,6 @@ public class SliderBarActionListener implements ChangeListener {
      * @param e
      */
     public void stateChanged(ChangeEvent e){
-
         JSlider source = (JSlider)e.getSource();
         Double value = source.getValue()/panel.getPrecision();
 
@@ -68,9 +62,7 @@ public class SliderBarActionListener implements ChangeListener {
         //Change Cloud Parameters with new value and update cloud
         CloudParameters curCloud = cloudManager.getCurCloud();
         
-        if (curCloud != cloudManager.getNullCloudParameters() && 
-        		curCloud != null)
-        {
+        if (curCloud != cloudManager.getNullCloudParameters() && curCloud != null) {
         	curCloud.setNetWeightFactor(value);
         }
        

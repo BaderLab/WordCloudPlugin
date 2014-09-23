@@ -105,14 +105,14 @@ public class DualPanelDocker {
 		registrar.unregisterService(inputPanel, CytoPanelComponent.class);
 		registrar.unregisterService(cloudPanel, CytoPanelComponent.class);
 		
-		dialog = new JDialog(swingApplication.getJFrame(), "Title", false);
+		dialog = new JDialog(swingApplication.getJFrame(), "WordCloud", false);
 		dialog.setLayout(new BorderLayout());
 		dialog.add(inputPanel, BorderLayout.WEST);
 		dialog.add(cloudPanel, BorderLayout.CENTER);
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		Dimension inputSize = inputPanel.getPreferredSize();
 		Dimension cloudSize = cloudPanel.getPreferredSize();
-		dialog.setSize(new Dimension(inputSize.width + cloudSize.width, inputSize.height));
+		dialog.setSize(new Dimension(inputSize.width + Math.max(cloudSize.width, 400), inputSize.height));
 		dialog.setVisible(true);
 		dialog.pack();
 		

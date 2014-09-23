@@ -90,7 +90,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 	private boolean countInitialized = false; //true when network counts are initialized
 	private boolean selInitialized = false; //true when selected counts initialized
 	private boolean ratiosInitialized = false; //true when ratios are computed
-	private boolean useNetNormal = false; //true when network counts are used
+//	private boolean useNetNormal = false; //true when network counts are used
 	
 	//String Delimeters
 	private static final String NODEDELIMITER = "CloudParamNodeDelimiter";
@@ -177,14 +177,14 @@ public class CloudParameters implements Comparable<CloudParameters>
 		}
 		
 		//Backwards compatibale useNetNormal
-		String val = props.get("UseNetNormal");
-		if (val == null)
-		{this.useNetNormal = true;}
-		else
-		{this.useNetNormal = Boolean.parseBoolean(props.get("UseNetNormal"));}
+//		String val = props.get("UseNetNormal");
+//		if (val == null)
+//		{this.useNetNormal = true;}
+//		else
+//		{this.useNetNormal = Boolean.parseBoolean(props.get("UseNetNormal"));}
 		
 		//Backwards compatible meanRatio
-		val = props.get("MeanRatio");
+		String val = props.get("MeanRatio");
 		if (val == null)
 		{this.ratiosInitialized = false;}
 		else
@@ -692,11 +692,10 @@ public class CloudParameters implements Comparable<CloudParameters>
 	{
 		//Network Weight Stuff
 		SliderBarPanel panel = inputPanel.getSliderBarPanel();
-		JSlider slider = panel.getSlider();
-		double netNorm = slider.getValue()/panel.getPrecision();
+		double netNorm = panel.getNetNormValue();
 		this.setNetWeightFactor(netNorm);
-		Boolean selected = inputPanel.getUseNetworkCounts().isSelected();
-		this.useNetNormal = selected;
+//		Boolean selected = true; // inputPanel.getUseNetworkCounts().isSelected();
+//		this.useNetNormal = selected;
 		
 		
 		//Attribute
@@ -715,36 +714,36 @@ public class CloudParameters implements Comparable<CloudParameters>
 		setAttributeNames(attributeList);
 			
 		//Max Words
-		JFormattedTextField maxWordsTextField = inputPanel.getMaxWordsTextField();
+//		JFormattedTextField maxWordsTextField = inputPanel.getMaxWordsTextField();
 		
-		Number value = (Number) maxWordsTextField.getValue();
-		if ((value != null) && (value.intValue() >= 0))
-		{
-			setMaxWords(value.intValue()); 
-		}
-		else
-		{
-			maxWordsTextField.setValue(defaultMaxWords);
+//		Number value = (Number) maxWordsTextField.getValue();
+//		if ((value != null) && (value.intValue() >= 0))
+//		{
+//			setMaxWords(value.intValue()); 
+//		}
+//		else
+//		{
+//			maxWordsTextField.setValue(defaultMaxWords);
 			setMaxWords(defaultMaxWords);
-			String message = "The maximum number of words to display must be greater than or equal to 0.";
-			JOptionPane.showMessageDialog(inputPanel, message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-		}
+//			String message = "The maximum number of words to display must be greater than or equal to 0.";
+//			JOptionPane.showMessageDialog(inputPanel, message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+//		}
 		
-		//Cluster Cutoff
-		JFormattedTextField clusterCutoffTextField = inputPanel.getClusterCutoffTextField();
-		
-		value = (Number) clusterCutoffTextField.getValue();
-		if ((value != null) && (value.doubleValue() >= 0.0))
-		{
-			setClusterCutoff(value.doubleValue()); //sets all necessary flags
-		}
-		else
-		{
-			clusterCutoffTextField.setValue(defaultClusterCutoff);
+//		//Cluster Cutoff
+//		JFormattedTextField clusterCutoffTextField = inputPanel.getClusterCutoffTextField();
+//		
+//		value = (Number) clusterCutoffTextField.getValue();
+//		if ((value != null) && (value.doubleValue() >= 0.0))
+//		{
+//			setClusterCutoff(value.doubleValue()); //sets all necessary flags
+//		}
+//		else
+//		{
+//			clusterCutoffTextField.setValue(defaultClusterCutoff);
 			setClusterCutoff(defaultClusterCutoff);
-			String message = "The cluster cutoff must be greater than or equal to 0";
-			JOptionPane.showMessageDialog(inputPanel, message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-		}
+//			String message = "The cluster cutoff must be greater than or equal to 0";
+//			JOptionPane.showMessageDialog(inputPanel, message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+//		}
 		
 		//Style
 		Object style = inputPanel.getCMBStyle().getSelectedItem();
@@ -794,7 +793,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 		paramVariables.append("MaxWeight\t" + maxWeight + "\n");
 		paramVariables.append("MinWeight\t" + minWeight + "\n");
 		paramVariables.append("CloudNum\t" + cloudNum + "\n");
-		paramVariables.append("UseNetNormal\t" + useNetNormal + "\n");
+//		paramVariables.append("UseNetNormal\t" + useNetNormal + "\n");
 		paramVariables.append("NetworkCount\t" + networkCount + "\n");
 		if (clusterTable != null) {
 			paramVariables.append("ClusterTableName\t" + clusterTable.getTitle() + "\n");
@@ -1368,15 +1367,15 @@ public class CloudParameters implements Comparable<CloudParameters>
 		displayStyle = style;
 	}
 	
-	public boolean getUseNetNormal()
-	{
-		return useNetNormal;
-	}
-	
-	public void setUseNetNormal(boolean val)
-	{
-		useNetNormal = val;
-	}
+//	public boolean getUseNetNormal()
+//	{
+//		return useNetNormal;
+//	}
+//	
+//	public void setUseNetNormal(boolean val)
+//	{
+//		useNetNormal = val;
+//	}
 
 	public String getClusterColumnName() {
 		return clusterColumnName;
