@@ -25,6 +25,8 @@ package org.baderlab.wordcloud.internal;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -37,12 +39,15 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
@@ -68,7 +73,7 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 	public JScrollPane cloudScroll; // MKTODO this is being accessed directly
 	CloudParameters curCloud;
 	
-	private JButton dockButton;
+	private JRootPane rootPane;
 
 	private CyApplicationManager applicationManager;
 	private SemanticSummaryManager cloudManager;
@@ -88,16 +93,33 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 		tagCloudFlowPanel = initializeTagCloud();
 		cloudScroll = new JScrollPane(tagCloudFlowPanel);
 		cloudScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		add(cloudScroll, BorderLayout.CENTER);
 		
+		rootPane = new JRootPane(); // use to layer dock button on top
+		rootPane.getContentPane().setLayout(new BorderLayout());
+		rootPane.getContentPane().add(cloudScroll, BorderLayout.CENTER);
 		
+		add(rootPane, BorderLayout.CENTER);
 	}
 	
+	
+	
 	public void setDocker(final DualPanelDocker docker) {
-		dockButton = new JButton("Undock");
-		JPanel dockButtonPanel = new JPanel(new BorderLayout());
-		dockButtonPanel.add(dockButton, BorderLayout.EAST);
-		add(dockButtonPanel, BorderLayout.SOUTH);
+		final JButton dockButton = new JButton("Undock");
+		
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+		buttonPanel.add(dockButton);
+		buttonPanel.setOpaque(false);
+		
+		// add some space so the floating button doesn't overlap the scrollbar
+		int scrollWidth = ((Integer)UIManager.get("ScrollBar.width")).intValue(); 
+		buttonPanel.add(Box.createRigidArea(new Dimension(scrollWidth, 0)));
+		
+		JPanel glassPane = (JPanel) rootPane.getGlassPane();
+		glassPane.setLayout(new BorderLayout());
+		glassPane.setVisible(true);
+		glassPane.add(buttonPanel, BorderLayout.SOUTH);
+		
 		
 		dockButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -113,6 +135,7 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 				dockButton.setText("Undock");
 			}
 		});
+		
 	}
 	
 	//METHODS
