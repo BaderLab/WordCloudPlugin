@@ -41,7 +41,7 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 	private CyApplicationManager applicationManager;
 	private SemanticSummaryManager cloudManager;
 	private SemanticSummaryParametersFactory parametersFactory;
-	private String nameColumnName;
+	private List<String> attributeNames;
 	private List<CloudWordInfo> wordInfo;
 	private String cloudName;
 	private CyTable clusterTable;
@@ -54,7 +54,7 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 	 * @param pluginAction 
 	 */
 
-	public CreateCloudCommandAction(CyApplicationManager applicationManager, CySwingApplication application, SemanticSummaryManager cloudManager, SemanticSummaryParametersFactory parametersFactory)
+	public CreateCloudCommandAction(CyApplicationManager applicationManager, SemanticSummaryManager cloudManager, SemanticSummaryParametersFactory parametersFactory)
 	{
 		super("Create Cloud");
 		this.applicationManager = applicationManager;
@@ -64,8 +64,8 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 
 	//GETTERS AND SETTERS
 	
-	public void setAttributeColumn(String columnName) {
-		this.nameColumnName = columnName;
+	public void setAttributeColumns(List<String> columnNames) {
+		this.attributeNames = columnNames;
 	}
 
 	public void setCloudName(String cloudName) {
@@ -134,9 +134,7 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 
 		// Select specified attribute column
 		SemanticSummaryInputPanel inputPanel = cloudManager.getInputWindow();
-		ArrayList<String> attributes = new ArrayList<String>();
-		attributes.add(nameColumnName);
-		inputPanel.setAttributeNames(attributes);
+		inputPanel.setAttributeNames(attributeNames);
 
 		//Retrieve values from input panel
 		cloudParams.retrieveInputVals(inputPanel);
@@ -156,9 +154,9 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 		//Update the list of filter words and checkbox
 		inputPanel.refreshNetworkSettings();
 
-		//Enable adding of words to exclusion list
-		inputPanel.getAddWordTextField().setEditable(true);
-		inputPanel.getAddWordButton().setEnabled(true);
+//		//Enable adding of words to exclusion list
+//		inputPanel.getAddWordTextField().setEditable(true);
+//		inputPanel.getAddWordButton().setEnabled(true);
 
 		// Add wordInfo to table
 		this.wordInfo = cloudParams.getCloudWordInfoList();

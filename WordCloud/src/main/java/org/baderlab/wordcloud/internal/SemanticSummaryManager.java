@@ -300,6 +300,24 @@ public class SemanticSummaryManager implements SetCurrentNetworkListener, SetCur
 			curNetwork = params;
 		}
 		
+		
+		boolean hasDummy = false;
+		for(CloudParameters cloud : curNetwork.getClouds().values()) {
+			if(cloud.getCloudNum() == -99) {
+				hasDummy = true;
+				break;
+			}
+		}
+		
+		if(!hasDummy) {
+			CloudParameters cloudParams = new CloudParameters(curNetwork);
+			cloudParams.setCloudNum(-99);
+			cloudParams.setCloudName("Synchronize with selection");
+			cloudParams.setAttributeNames(getColumnNames(network, CyNode.class));
+			curNetwork.addCloud(cloudParams.getCloudName(), cloudParams);
+		}
+		
+		// MKTODO I think an NPE happens here
 		//Update cloud list and update attributes
 		getInputWindow().setNetworkList(curNetwork);
 		getCloudWindow().clearCloud();

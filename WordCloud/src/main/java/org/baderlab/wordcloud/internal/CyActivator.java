@@ -17,6 +17,7 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NodeViewTaskFactory;
@@ -70,7 +71,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(context, cloudManager, new Properties());
 		
 		CreateCloudAction createCloudAction = new CreateCloudAction(applicationManager, application, cloudManager, parametersFactory);
-		CreateCloudCommandAction createCloudNoDisplayAction = new CreateCloudCommandAction(applicationManager, application, cloudManager, parametersFactory);
+		CreateCloudCommandAction createCloudNoDisplayAction = new CreateCloudCommandAction(applicationManager, cloudManager, parametersFactory);
 		DeleteCloudAction deleteCloudAction = new DeleteCloudAction(application, cloudManager);
 		UpdateCloudAction updateCloudAction = new UpdateCloudAction(cloudManager, applicationManager);
 		SaveCloudAction saveCloudAction = new SaveCloudAction(application, fileUtil, cloudManager);
@@ -81,7 +82,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		
 		CloudListSelectionHandlerFactory handlerFactory = new CloudListSelectionHandlerFactory(cloudManager, viewManager);
-		SemanticSummaryInputPanelFactory inputPanelFactory = new SemanticSummaryInputPanelFactory(modelManager, applicationManager, application, fileUtil, cloudManager, createCloudAction, deleteCloudAction, updateCloudAction, saveCloudAction, handlerFactory);
+		SemanticSummaryInputPanelFactory inputPanelFactory = new SemanticSummaryInputPanelFactory(modelManager, applicationManager, application, registrar, fileUtil, cloudManager, createCloudAction, deleteCloudAction, updateCloudAction, saveCloudAction, handlerFactory);
 		SemanticSummaryPluginAction pluginAction = new SemanticSummaryPluginAction(cloudManager, applicationManager, inputPanelFactory, application, registrar);
 
 		// Original code had a circular dependency on

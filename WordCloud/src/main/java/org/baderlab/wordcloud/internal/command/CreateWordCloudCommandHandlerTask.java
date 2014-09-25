@@ -2,6 +2,7 @@ package org.baderlab.wordcloud.internal.command;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -86,7 +87,7 @@ public class CreateWordCloudCommandHandlerTask implements Task {
 			network.getRow(network).set(cloudGroupTableName, cloudGroupTable.getSUID());
 		}
 
-		createCloudCommandAction.setAttributeColumn(wordColumnName);
+		createCloudCommandAction.setAttributeColumns(Arrays.asList(wordColumnName));
 		createCloudCommandAction.setCloudName(cloudName);
 		createCloudCommandAction.setClusterTable(cloudGroupTable);
 		createCloudCommandAction.setNodes(nodes);

@@ -37,6 +37,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
@@ -45,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -54,6 +58,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -74,6 +79,9 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.CheckBoxJList;
 import org.cytoscape.util.swing.FileUtil;
 
@@ -98,13 +106,13 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 	//Text Fields
 //	private JFormattedTextField maxWordsTextField;
 //	private JFormattedTextField clusterCutoffTextField;
-	private JTextField addWordTextField;
+//	private JTextField addWordTextField;
 	
-	//JComboBox
-	private JComboBox cmbRemoval;
+//	//JComboBox
+//	private JComboBox cmbRemoval;
 	private JComboBox cmbStyle;
-	private JComboBox cmbDelimiterRemoval;
-	private JComboBox cmbDelimiterAddition;
+//	private JComboBox cmbDelimiterRemoval;
+//	private JComboBox cmbDelimiterAddition;
 	
 	//JLabels
 	private JLabel networkLabel;
@@ -115,15 +123,15 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 	private CloudListSelectionHandler handler;
 	
 	//Buttons
-	private JButton removeWordButton;
-	private JButton addWordButton;
-	private JButton addDelimiterButton;
-	private JButton removeDelimiterButton;
+//	private JButton removeWordButton;
+//	private JButton addWordButton;
+//	private JButton addDelimiterButton;
+//	private JButton removeDelimiterButton;
 //	private JButton createNetworkButton;
 //	private JButton saveCloudButton;
 	
 	//Checkbox
-	private JCheckBox numExclusion;
+//	private JCheckBox numExclusion;
 //	private JCheckBox useNetworkCounts;
 //	private JCheckBox stemmer;
 	
@@ -163,12 +171,15 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 	
 	private static final int DEF_ROW_HEIGHT = 20;
 
+	private CyServiceRegistrar registrar;
+
 	
 	//CONSTRUCTORS
-	public SemanticSummaryInputPanel(ModelManager modelManager, CyApplicationManager applicationManager, CySwingApplication application, FileUtil fileUtil, SemanticSummaryManager cloudManager, SemanticSummaryPluginAction pluginAction, CreateCloudAction createCloudAction, DeleteCloudAction deleteCloudAction, UpdateCloudAction updateCloudAction, SaveCloudAction saveCloudAction, CloudListSelectionHandlerFactory handlerFactory)
+	public SemanticSummaryInputPanel(ModelManager modelManager, CyApplicationManager applicationManager, CySwingApplication application, CyServiceRegistrar registrar, FileUtil fileUtil, SemanticSummaryManager cloudManager, SemanticSummaryPluginAction pluginAction, CreateCloudAction createCloudAction, DeleteCloudAction deleteCloudAction, UpdateCloudAction updateCloudAction, SaveCloudAction saveCloudAction, CloudListSelectionHandlerFactory handlerFactory)
 	{
 		this.modelManager = modelManager;
 		this.application = application;
+		this.registrar = registrar;
 		this.cloudManager = cloudManager;
 		this.createCloudAction = createCloudAction;
 		this.deleteCloudAction = deleteCloudAction;
@@ -206,7 +217,41 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		add(optionsScroll,BorderLayout.CENTER);
 		add(bottomPanel,BorderLayout.SOUTH);
 	
+		
+		RowsSetListener nodeSelectionListener = new RowsSetListener() {
+			public void handleEvent(RowsSetEvent e) {
+				updateSyncCloud();
+			}
+		};
+		registrar.registerService(nodeSelectionListener, RowsSetListener.class, new Properties());
 	}
+
+	
+	public void updateSyncCloud() {
+		CloudParameters cloudParams = cloudManager.getCurCloud();
+		if(cloudParams.getCloudNum() == -99) {
+			SemanticSummaryParameters networkParams = cloudParams.getNetworkParams();
+			CyNetwork network = networkParams.getNetwork();
+			
+			Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
+			cloudParams.setSelectedNodes(nodes);
+			
+			//Retrieve values from input panel
+			cloudParams.retrieveInputVals(this);
+			
+			cloudParams.updateRatios();
+			cloudParams.calculateFontSizes();
+			
+			CloudDisplayPanel cloudPanel = cloudManager.getCloudWindow();
+			cloudPanel.updateCloudDisplay(cloudParams);
+			
+			
+			//Update the list of filter words and checkbox
+			refreshNetworkSettings();
+			
+		}
+	}
+	
 	
 	//METHODS
 	
@@ -241,6 +286,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		ListSelectionModel listSelectionModel = cloudList.getSelectionModel();
 		handler = handlerFactory.createHandler(this);
 		listSelectionModel.addListSelectionListener(handler);
+		
 		JScrollPane listScrollPane = new JScrollPane(cloudList);
 		listScrollPane.setBorder(BorderFactory.createEmptyBorder());
 		
@@ -294,20 +340,39 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 //		collapsiblePanel2.getTitleComponent().setToolTipText("Text processing parameters that will be applied to all clouds created from the current network");
 		
 		JPanel networkPanel = new JPanel();
-		networkPanel.setLayout(new BoxLayout(networkPanel, BoxLayout.Y_AXIS));
+		networkPanel.setLayout(new FlowLayout());
 		
-		networkPanel.add(Box.createVerticalStrut(15));
-		//Word Exclusion
-		CollapsiblePanel exclusionList = createExclusionListPanel();
-		exclusionList.setCollapsed(true);
+//		networkPanel.add(Box.createVerticalStrut(15));
+//		//Word Exclusion
+//		CollapsiblePanel exclusionList = createExclusionListPanel();
+////		exclusionList.setCollapsed(true);
+//		
+//		networkPanel.add(exclusionList);
+//		
+//		//Delimiter/Tokenization Panel
+//		CollapsiblePanel tokenizationPanel = createTokenizationPanel();
+//		tokenizationPanel.setCollapsed(true);
+//		
+//		networkPanel.add(tokenizationPanel);
 		
-		networkPanel.add(exclusionList);
 		
-		//Delimiter/Tokenization Panel
-		CollapsiblePanel tokenizationPanel = createTokenizationPanel();
-		tokenizationPanel.setCollapsed(true);
+		JButton excludedWordsButton = new JButton("Excluded Words...");
+		excludedWordsButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				WordSelectPanel wordSelectPanel = new WordSelectPanel(cloudManager.getCurNetwork());
+				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame());
+				dialog.setVisible(true);
+				cloudManager.getCurNetwork().networkChanged();
+				updateCloudAction.doRealAction();
+			}
+		});
+		networkPanel.add(excludedWordsButton);
 		
-		networkPanel.add(tokenizationPanel);
+		JButton delimetersButton = new JButton("Delimiters...");
+		networkPanel.add(delimetersButton);
+		
+		
+		
 		
 		//Stemmer Panel
 //		CollapsiblePanel stemmingPanel = createStemmingPanel();
@@ -324,7 +389,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		newPanel.setLayout(new BorderLayout());
 		newPanel.add(panel, BorderLayout.NORTH);
 		
-		newPanel.add(networkPanel, BorderLayout.CENTER);
+		newPanel.add(networkPanel, BorderLayout.SOUTH);
 				
 		return newPanel;
 	}
@@ -542,258 +607,258 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		return panel;
 	}
 	
-	/**
-	 * Creates a CollapsiblePanel that holds the word exclusion list information.
-	 * @return CollapsiblePanel - word exclusion list panel interface.
-	 */
-	private CollapsiblePanel createExclusionListPanel()
-	{
-		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Word Exclusion List");
-		
-		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(0,1));
-		
-		//Add Word
-		JLabel addWordLabel = new JLabel("Add Word");
-		addWordTextField = new JFormattedTextField();
-		addWordTextField.setColumns(15);
-		
-		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-		if (networkParams.equals(cloudManager.getNullSemanticSummary()))
-			addWordTextField.setEditable(false);
-		else
-			addWordTextField.setEditable(true);
-		
-		addWordTextField.setText("");
-		addWordTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
-		
-		StringBuffer buf = new StringBuffer();
-		buf.append("<html>" + "Allows for specification of an additional word to be excluded when doing semantic analysis" + "<br>");
-		buf.append("<b>Acceptable Values:</b> Only alpha numeric values - no spaces allowed" + "</html>");
-		addWordTextField.setToolTipText(buf.toString());
-		
-		addWordButton = new JButton();
-		addWordButton.setText("Add");
-		addWordButton.setEnabled(false);
-		addWordButton.addActionListener(this);
-		
-		//Word panel
-		JPanel wordPanel = new JPanel();
-		wordPanel.setLayout(new GridBagLayout());
-		
-		GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagConstraints.insets = new Insets(5,0,0,0);
-		wordPanel.add(addWordLabel, gridBagConstraints);
-		
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(5,10,0,10);
-		wordPanel.add(addWordTextField, gridBagConstraints);
-		
-		//Button stuff
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.anchor = GridBagConstraints.EAST;
-		gridBagConstraints.insets = new Insets(5,0,0,0);
-		wordPanel.add(addWordButton, gridBagConstraints);
-		
-		
-		// Word Removal Label
-		JLabel removeWordLabel = new JLabel("Remove Word");
-		
-		//Word Removal Combo Box
-		WidestStringComboBoxModel wscbm = new WidestStringComboBoxModel();
-		cmbRemoval = new JComboBox(wscbm);
-		cmbRemoval.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
-		cmbRemoval.setEditable(false);
-	    Dimension d = cmbRemoval.getPreferredSize();
-	    cmbRemoval.setPreferredSize(new Dimension(15, d.height));
-	    cmbRemoval.addItemListener(this);
-	    cmbRemoval.setToolTipText("Allows for selection a word to remove from the semantic analysis exclusion list");
-
-	    //Word Removal Button
-	    removeWordButton = new JButton();
-	    removeWordButton.setText("Remove");
-	    removeWordButton.setEnabled(false);
-	    removeWordButton.addActionListener(this);
-		
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagConstraints.insets = new Insets(5,0,0,0);
-		wordPanel.add(removeWordLabel, gridBagConstraints);
-		
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(5, 10, 0, 10);
-		wordPanel.add(cmbRemoval, gridBagConstraints);
-		
-		//Button stuff
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = GridBagConstraints.EAST;
-		gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-		wordPanel.add(removeWordButton, gridBagConstraints);
-
-		refreshRemovalCMB();
-		
-		//Number Exclusion Stuff
-		
-		//Checkbox
-		numExclusion = new JCheckBox("Add the numbers 0 - 999 to the word exclusion list");
-		
-		buf = new StringBuffer();
-		buf.append("<html>" + "Causes numbers in the range 0 - 999 that appear as <b>separate words</b> to be excluded" + "<br>");
-		buf.append("<b>Hint:</b> To exclude numbers that appear within a word, either add the entire word to the exclusion list" + "<br>");
-		buf.append("or add the specific number to the list of delimiters used for word tokenization" + "</html>");
-		numExclusion.setToolTipText(buf.toString());
-		numExclusion.addActionListener(this);
-		numExclusion.setSelected(false);
-		numExclusion.setEnabled(false);
-		
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.gridwidth = 3;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagConstraints.insets = new Insets(5,0,0,0);
-		wordPanel.add(numExclusion, gridBagConstraints);
-		
-		//Add components to main panel
-		panel.add(wordPanel);
-		
-		//Add to collapsible panel
-		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-		
-		return collapsiblePanel;
-	}
-	
-	/**
-	 * Creates a CollapsiblePanel that holds the word tokenization information.
-	 * @return CollapsiblePanel - word tokenization panel interface.
-	 */
-	private CollapsiblePanel createTokenizationPanel()
-	{
-		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Word Tokenization");
-		
-		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(0,1));
-		
-		//Add Delimiter
-		JLabel addDelimiterLabel = new JLabel("Add Delimiter");
-
-		//Delimiter Addition Combo Box
-		WidestStringComboBoxModel wscbm = new WidestStringComboBoxModel();
-		cmbDelimiterAddition = new JComboBox(wscbm);
-		cmbDelimiterAddition.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
-		cmbDelimiterAddition.setEditable(false);
-	    Dimension d = cmbDelimiterAddition.getPreferredSize();
-	    cmbDelimiterAddition.setPreferredSize(new Dimension(15, d.height));
-	    cmbDelimiterAddition.addItemListener(this);
-	    
-	    StringBuffer buf = new StringBuffer();
-		buf.append("<html>" + "Allows for specification of an additional delimiter to be used when tokenizing nodes" + "<br>");
-		buf.append("<b>Acceptable Values:</b> Values entered must have proper escape character if necessary" + "</html>");
-		cmbDelimiterAddition.setToolTipText(buf.toString());
-		
-		addDelimiterButton = new JButton();
-		addDelimiterButton.setText("Add");
-		addDelimiterButton.setEnabled(false);
-		addDelimiterButton.addActionListener(this);
-		
-		//Word panel
-		JPanel wordPanel = new JPanel();
-		wordPanel.setLayout(new GridBagLayout());
-		
-		GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagConstraints.insets = new Insets(5,0,0,0);
-		wordPanel.add(addDelimiterLabel, gridBagConstraints);
-		
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(5,10,0,10);
-		wordPanel.add(cmbDelimiterAddition, gridBagConstraints);
-		
-		//Button stuff
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.anchor = GridBagConstraints.EAST;
-		gridBagConstraints.insets = new Insets(5,0,0,0);
-		wordPanel.add(addDelimiterButton, gridBagConstraints);
-		
-		
-		// Word Removal Label
-		JLabel removeDelimiterLabel = new JLabel("Remove Delimiter");
-		
-		//Word Removal Combo Box
-		wscbm = new WidestStringComboBoxModel();
-		cmbDelimiterRemoval = new JComboBox(wscbm);
-		cmbDelimiterRemoval.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
-		cmbDelimiterRemoval.setEditable(false);
-	    d = cmbDelimiterRemoval.getPreferredSize();
-	    cmbDelimiterRemoval.setPreferredSize(new Dimension(15, d.height));
-	    cmbDelimiterRemoval.addItemListener(this);
-	    cmbDelimiterRemoval.setToolTipText("Allows for selection of a delimiter to remove from the list used when tokenizing");
-
-	    //Word Removal Button
-	    removeDelimiterButton = new JButton();
-	    removeDelimiterButton.setText("Remove");
-	    removeDelimiterButton.setEnabled(false);
-	    removeDelimiterButton.addActionListener(this);
-		
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagConstraints.insets = new Insets(5,0,0,0);
-		wordPanel.add(removeDelimiterLabel, gridBagConstraints);
-		
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(5, 10, 0, 10);
-		wordPanel.add(cmbDelimiterRemoval, gridBagConstraints);
-		
-		//Button stuff
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = GridBagConstraints.EAST;
-		gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-		wordPanel.add(removeDelimiterButton, gridBagConstraints);
-
-		updateDelimiterCMBs();
-		
-		//Add components to main panel
-		panel.add(wordPanel);
-		
-		//Add to collapsible panel
-		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-		
-		return collapsiblePanel;
-	}
-	
+//	/**
+//	 * Creates a CollapsiblePanel that holds the word exclusion list information.
+//	 * @return CollapsiblePanel - word exclusion list panel interface.
+//	 */
+//	private CollapsiblePanel createExclusionListPanel()
+//	{
+//		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Word Exclusion List");
+//		
+//		JPanel panel = new JPanel();
+//		panel.setLayout(new GridLayout(0,1));
+//		
+//		//Add Word
+//		JLabel addWordLabel = new JLabel("Add Word");
+//		addWordTextField = new JFormattedTextField();
+//		addWordTextField.setColumns(15);
+//		
+//		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
+//		if (networkParams.equals(cloudManager.getNullSemanticSummary()))
+//			addWordTextField.setEditable(false);
+//		else
+//			addWordTextField.setEditable(true);
+//		
+//		addWordTextField.setText("");
+//		addWordTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
+//		
+//		StringBuffer buf = new StringBuffer();
+//		buf.append("<html>" + "Allows for specification of an additional word to be excluded when doing semantic analysis" + "<br>");
+//		buf.append("<b>Acceptable Values:</b> Only alpha numeric values - no spaces allowed" + "</html>");
+//		addWordTextField.setToolTipText(buf.toString());
+//		
+//		addWordButton = new JButton();
+//		addWordButton.setText("Add");
+//		addWordButton.setEnabled(false);
+//		addWordButton.addActionListener(this);
+//		
+//		//Word panel
+//		JPanel wordPanel = new JPanel();
+//		wordPanel.setLayout(new GridBagLayout());
+//		
+//		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 0;
+//		gridBagConstraints.gridy = 0;
+//		gridBagConstraints.anchor = GridBagConstraints.WEST;
+//		gridBagConstraints.insets = new Insets(5,0,0,0);
+//		wordPanel.add(addWordLabel, gridBagConstraints);
+//		
+//		gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 1;
+//		gridBagConstraints.gridy = 0;
+//		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+//		gridBagConstraints.weightx = 1.0;
+//		gridBagConstraints.insets = new Insets(5,10,0,10);
+//		wordPanel.add(addWordTextField, gridBagConstraints);
+//		
+//		//Button stuff
+//		gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 2;
+//		gridBagConstraints.gridy = 0;
+//		gridBagConstraints.anchor = GridBagConstraints.EAST;
+//		gridBagConstraints.insets = new Insets(5,0,0,0);
+//		wordPanel.add(addWordButton, gridBagConstraints);
+//		
+//		
+//		// Word Removal Label
+//		JLabel removeWordLabel = new JLabel("Remove Word");
+//		
+//		//Word Removal Combo Box
+//		WidestStringComboBoxModel wscbm = new WidestStringComboBoxModel();
+//		cmbRemoval = new JComboBox(wscbm);
+//		cmbRemoval.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
+//		cmbRemoval.setEditable(false);
+//	    Dimension d = cmbRemoval.getPreferredSize();
+//	    cmbRemoval.setPreferredSize(new Dimension(15, d.height));
+//	    cmbRemoval.addItemListener(this);
+//	    cmbRemoval.setToolTipText("Allows for selection a word to remove from the semantic analysis exclusion list");
+//
+//	    //Word Removal Button
+//	    removeWordButton = new JButton();
+//	    removeWordButton.setText("Remove");
+//	    removeWordButton.setEnabled(false);
+//	    removeWordButton.addActionListener(this);
+//		
+//		gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 0;
+//		gridBagConstraints.gridy = 1;
+//		gridBagConstraints.anchor = GridBagConstraints.WEST;
+//		gridBagConstraints.insets = new Insets(5,0,0,0);
+//		wordPanel.add(removeWordLabel, gridBagConstraints);
+//		
+//		gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 1;
+//		gridBagConstraints.gridy = 1;
+//		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+//		gridBagConstraints.weightx = 1.0;
+//		gridBagConstraints.insets = new Insets(5, 10, 0, 10);
+//		wordPanel.add(cmbRemoval, gridBagConstraints);
+//		
+//		//Button stuff
+//		gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 2;
+//		gridBagConstraints.gridy = 1;
+//		gridBagConstraints.anchor = GridBagConstraints.EAST;
+//		gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+//		wordPanel.add(removeWordButton, gridBagConstraints);
+//
+//		refreshRemovalCMB();
+//		
+//		//Number Exclusion Stuff
+//		
+//		//Checkbox
+//		numExclusion = new JCheckBox("Add the numbers 0 - 999 to the word exclusion list");
+//		
+//		buf = new StringBuffer();
+//		buf.append("<html>" + "Causes numbers in the range 0 - 999 that appear as <b>separate words</b> to be excluded" + "<br>");
+//		buf.append("<b>Hint:</b> To exclude numbers that appear within a word, either add the entire word to the exclusion list" + "<br>");
+//		buf.append("or add the specific number to the list of delimiters used for word tokenization" + "</html>");
+//		numExclusion.setToolTipText(buf.toString());
+//		numExclusion.addActionListener(this);
+//		numExclusion.setSelected(false);
+//		numExclusion.setEnabled(false);
+//		
+//		gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 0;
+//		gridBagConstraints.gridy = 2;
+//		gridBagConstraints.gridwidth = 3;
+//		gridBagConstraints.anchor = GridBagConstraints.WEST;
+//		gridBagConstraints.insets = new Insets(5,0,0,0);
+//		wordPanel.add(numExclusion, gridBagConstraints);
+//		
+//		//Add components to main panel
+//		panel.add(wordPanel);
+//		
+//		//Add to collapsible panel
+//		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
+//		
+//		return collapsiblePanel;
+//	}
+//	
+//	/**
+//	 * Creates a CollapsiblePanel that holds the word tokenization information.
+//	 * @return CollapsiblePanel - word tokenization panel interface.
+//	 */
+//	private CollapsiblePanel createTokenizationPanel()
+//	{
+//		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Word Tokenization");
+//		
+//		JPanel panel = new JPanel();
+//		panel.setLayout(new GridLayout(0,1));
+//		
+//		//Add Delimiter
+//		JLabel addDelimiterLabel = new JLabel("Add Delimiter");
+//
+//		//Delimiter Addition Combo Box
+//		WidestStringComboBoxModel wscbm = new WidestStringComboBoxModel();
+//		cmbDelimiterAddition = new JComboBox(wscbm);
+//		cmbDelimiterAddition.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
+//		cmbDelimiterAddition.setEditable(false);
+//	    Dimension d = cmbDelimiterAddition.getPreferredSize();
+//	    cmbDelimiterAddition.setPreferredSize(new Dimension(15, d.height));
+//	    cmbDelimiterAddition.addItemListener(this);
+//	    
+//	    StringBuffer buf = new StringBuffer();
+//		buf.append("<html>" + "Allows for specification of an additional delimiter to be used when tokenizing nodes" + "<br>");
+//		buf.append("<b>Acceptable Values:</b> Values entered must have proper escape character if necessary" + "</html>");
+//		cmbDelimiterAddition.setToolTipText(buf.toString());
+//		
+//		addDelimiterButton = new JButton();
+//		addDelimiterButton.setText("Add");
+//		addDelimiterButton.setEnabled(false);
+//		addDelimiterButton.addActionListener(this);
+//		
+//		//Word panel
+//		JPanel wordPanel = new JPanel();
+//		wordPanel.setLayout(new GridBagLayout());
+//		
+//		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 0;
+//		gridBagConstraints.gridy = 0;
+//		gridBagConstraints.anchor = GridBagConstraints.WEST;
+//		gridBagConstraints.insets = new Insets(5,0,0,0);
+//		wordPanel.add(addDelimiterLabel, gridBagConstraints);
+//		
+//		gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 1;
+//		gridBagConstraints.gridy = 0;
+//		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+//		gridBagConstraints.weightx = 1.0;
+//		gridBagConstraints.insets = new Insets(5,10,0,10);
+//		wordPanel.add(cmbDelimiterAddition, gridBagConstraints);
+//		
+//		//Button stuff
+//		gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 2;
+//		gridBagConstraints.gridy = 0;
+//		gridBagConstraints.anchor = GridBagConstraints.EAST;
+//		gridBagConstraints.insets = new Insets(5,0,0,0);
+//		wordPanel.add(addDelimiterButton, gridBagConstraints);
+//		
+//		
+//		// Word Removal Label
+//		JLabel removeDelimiterLabel = new JLabel("Remove Delimiter");
+//		
+//		//Word Removal Combo Box
+//		wscbm = new WidestStringComboBoxModel();
+//		cmbDelimiterRemoval = new JComboBox(wscbm);
+//		cmbDelimiterRemoval.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
+//		cmbDelimiterRemoval.setEditable(false);
+//	    d = cmbDelimiterRemoval.getPreferredSize();
+//	    cmbDelimiterRemoval.setPreferredSize(new Dimension(15, d.height));
+//	    cmbDelimiterRemoval.addItemListener(this);
+//	    cmbDelimiterRemoval.setToolTipText("Allows for selection of a delimiter to remove from the list used when tokenizing");
+//
+//	    //Word Removal Button
+//	    removeDelimiterButton = new JButton();
+//	    removeDelimiterButton.setText("Remove");
+//	    removeDelimiterButton.setEnabled(false);
+//	    removeDelimiterButton.addActionListener(this);
+//		
+//		gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 0;
+//		gridBagConstraints.gridy = 1;
+//		gridBagConstraints.anchor = GridBagConstraints.WEST;
+//		gridBagConstraints.insets = new Insets(5,0,0,0);
+//		wordPanel.add(removeDelimiterLabel, gridBagConstraints);
+//		
+//		gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 1;
+//		gridBagConstraints.gridy = 1;
+//		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+//		gridBagConstraints.weightx = 1.0;
+//		gridBagConstraints.insets = new Insets(5, 10, 0, 10);
+//		wordPanel.add(cmbDelimiterRemoval, gridBagConstraints);
+//		
+//		//Button stuff
+//		gridBagConstraints = new GridBagConstraints();
+//		gridBagConstraints.gridx = 2;
+//		gridBagConstraints.gridy = 1;
+//		gridBagConstraints.anchor = GridBagConstraints.EAST;
+//		gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+//		wordPanel.add(removeDelimiterButton, gridBagConstraints);
+//
+//		updateDelimiterCMBs();
+//		
+//		//Add components to main panel
+//		panel.add(wordPanel);
+//		
+//		//Add to collapsible panel
+//		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
+//		
+//		return collapsiblePanel;
+//	}
+//	
 //	/**
 //	 * Creates a CollapsiblePanel that holds the word stemming information.
 //	 * @return CollapsiblePanel - word stemming panel interface.
@@ -1003,18 +1068,15 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		List<CloudParameters> clouds = new ArrayList<CloudParameters>(params.getClouds().values());
 		Collections.sort(clouds);
 		
-		Iterator<CloudParameters> iter = clouds.iterator();
-		while (iter.hasNext())
-		{
-			CloudParameters curParam = iter.next();
-			String curCloud = curParam.getCloudName();
-			listValues.addElement(curCloud);
+		for(CloudParameters curParam : clouds) {
+			listValues.addElement(curParam.getCloudName());
 		}
 		
 		//Update Manager variables
 		cloudManager.setCurNetwork(params);
-		cloudManager.setCurCloud(
-				cloudManager.getNullCloudParameters());
+		cloudManager.setCurCloud(cloudManager.getNullCloudParameters());
+		
+		updateSyncCloud();
 	}
 	
 	public void setAttributeNames(List<String> names) {
@@ -1038,7 +1100,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 //		maxWordsTextField.setValue(params.getMaxWords());
 //		clusterCutoffTextField.setValue(params.getClusterCutoff());
 		cmbStyle.setSelectedItem(params.getDisplayStyle());
-		addWordTextField.setText("");
+//		addWordTextField.setText("");
 		this.setupNetworkNormalization(params);
 		
 		
@@ -1047,17 +1109,17 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		
 		if (networkParams.equals(cloudManager.getNullSemanticSummary()))
 			{
-			addWordTextField.setEditable(false);
-			addWordButton.setEnabled(false);
-			numExclusion.setEnabled(false);
+//			addWordTextField.setEditable(false);
+//			addWordButton.setEnabled(false);
+//			numExclusion.setEnabled(false);
 //			useNetworkCounts.setEnabled(false);
 //			stemmer.setEnabled(false);
 			}
 		else
 		{
-			addWordTextField.setEditable(true);
-			addWordButton.setEnabled(true);
-			numExclusion.setEnabled(true);
+//			addWordTextField.setEditable(true);
+//			addWordButton.setEnabled(true);
+//			numExclusion.setEnabled(true);
 //			useNetworkCounts.setEnabled(true);
 //			stemmer.setEnabled(true);
 		}
@@ -1081,6 +1143,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		cloudManager.setCurCloud(params);
 		this.refreshNetworkSettings();
 	}
+	
 	
 	
 	/**
@@ -1125,167 +1188,167 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		this.refreshNetworkSettings();
 	}
 	
-	/**
-	 * Update the delimiter combo boxes.
-	 */
-	private void updateDelimiterCMBs()
-	{
-		// Add Box
-		DefaultComboBoxModel cmb;
-		cmb = ((DefaultComboBoxModel)cmbDelimiterAddition.getModel());
-		cmb.removeAllElements();
-		
-		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-		WordDelimiters curDelimiters = networkParams.getDelimiter();
-		
-		//Check if we are dealing with the Null SemanticSummaryParameters
-		Boolean isNull = false;
-		if (networkParams.equals(cloudManager.getNullSemanticSummary()))
-				isNull = true;
-		
-		//Common Delimiters
-		cmb.addElement(commonDelimiters);
-		
-		if (!isNull)
-		{	
-			//Add alphabetically order list of delimiters
-			for(Iterator<String> iter = curDelimiters.getDelimsToAdd().iterator(); iter.hasNext();)
-			{
-				String curDelim = iter.next();
-				cmb.addElement(curDelim);
-			}
-		}
-		
-		//User to add
-		cmb.addElement(userAddDelimiters);
-		
-		if (!isNull)
-		{
-			cmb.addElement(selectMe);
-		}
-		
-		cmbDelimiterAddition.repaint();
-		
-		//Remove Box
-		cmb = ((DefaultComboBoxModel)cmbDelimiterRemoval.getModel());
-		cmb.removeAllElements();
-		
-		//Common Delimiters
-		cmb.addElement(commonDelimiters);
-		
-		if (!isNull)
-		{	
-			//Add alphabetically order list of delimiters
-			for(Iterator<String> iter = curDelimiters.getDelimsInUse().iterator(); iter.hasNext();)
-			{
-				String curDelim = iter.next();
-				cmb.addElement(curDelim);
-			}
-		}
-		
-		//User to add
-		cmb.addElement(userAddDelimiters);
-		
-		if (!isNull)
-		{
-			//Add alphabetically order list of delimiters
-			for(Iterator<String> iter = curDelimiters.getUserDelims().iterator(); iter.hasNext();)
-			{
-				String curDelim = iter.next();
-				cmb.addElement(curDelim);
-			}
-		}
-		
-		cmbDelimiterRemoval.repaint();
-	}
+//	/**
+//	 * Update the delimiter combo boxes.
+//	 */
+//	private void updateDelimiterCMBs()
+//	{
+//		// Add Box
+//		DefaultComboBoxModel cmb;
+//		cmb = ((DefaultComboBoxModel)cmbDelimiterAddition.getModel());
+//		cmb.removeAllElements();
+//		
+//		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
+//		WordDelimiters curDelimiters = networkParams.getDelimiter();
+//		d
+//		//Check if we are dealing with the Null SemanticSummaryParameters
+//		Boolean isNull = false;
+//		if (networkParams.equals(cloudManager.getNullSemanticSummary()))
+//				isNull = true;
+//		
+//		//Common Delimiters
+//		cmb.addElement(commonDelimiters);
+//		
+//		if (!isNull)
+//		{	
+//			//Add alphabetically order list of delimiters
+//			for(Iterator<String> iter = curDelimiters.getDelimsToAdd().iterator(); iter.hasNext();)
+//			{
+//				String curDelim = iter.next();
+//				cmb.addElement(curDelim);
+//			}
+//		}
+//		
+//		//User to add
+//		cmb.addElement(userAddDelimiters);
+//		
+//		if (!isNull)
+//		{
+//			cmb.addElement(selectMe);
+//		}
+//		
+//		cmbDelimiterAddition.repaint();
+//		
+//		//Remove Box
+//		cmb = ((DefaultComboBoxModel)cmbDelimiterRemoval.getModel());
+//		cmb.removeAllElements();
+//		
+//		//Common Delimiters
+//		cmb.addElement(commonDelimiters);
+//		
+//		if (!isNull)
+//		{	
+//			//Add alphabetically order list of delimiters
+//			for(Iterator<String> iter = curDelimiters.getDelimsInUse().iterator(); iter.hasNext();)
+//			{
+//				String curDelim = iter.next();
+//				cmb.addElement(curDelim);
+//			}
+//		}
+//		
+//		//User to add
+//		cmb.addElement(userAddDelimiters);
+//		
+//		if (!isNull)
+//		{
+//			//Add alphabetically order list of delimiters
+//			for(Iterator<String> iter = curDelimiters.getUserDelims().iterator(); iter.hasNext();)
+//			{
+//				String curDelim = iter.next();
+//				cmb.addElement(curDelim);
+//			}
+//		}
+//		
+//		cmbDelimiterRemoval.repaint();
+//	}
 	
-	/**
-	 * Update the remove word list in the remove combobox.
-	 */
-	private void updateCMBRemoval()
-	{
-		DefaultComboBoxModel cmb;
-		cmb = ((DefaultComboBoxModel)cmbRemoval.getModel());
-		cmb.removeAllElements();
-		
-		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-		WordFilter curFilter = networkParams.getFilter();
-		
-		//Check if we are dealing with the Null SemanticSummaryParameters
-		Boolean isNull = false;
-		if (networkParams.equals(cloudManager.getNullSemanticSummary()))
-				isNull = true;
-		
-		//Added words
-		cmb.addElement(addedSeparator);
-		
-		if (!isNull)
-		{	
-			//Add alphabetically order list of words
-			ArrayList<String> addedList = new ArrayList<String>();
-			for(Iterator<String> iter = curFilter.getAddedWords().iterator(); iter.hasNext();)
-			{
-				String curWord = iter.next();
-				addedList.add(curWord);
-			}
-			
-			Collections.sort(addedList);
-			for (int i = 0; i < addedList.size(); i++)
-			{
-				String curWord = addedList.get(i);
-				cmb.addElement(curWord);
-			}
-		}
-		
-		//Flagged words
-		cmb.addElement(flaggedSeparator);
-		
-		if (!isNull)
-		{
-			ArrayList<String> flaggedList = new ArrayList<String>();
-			for(Iterator<String> iter = curFilter.getFlaggedWords().iterator(); iter.hasNext();)
-			{
-				String curWord = iter.next();
-				flaggedList.add(curWord);
-			}
-			
-			Collections.sort(flaggedList);
-			for (int i = 0; i < flaggedList.size(); i++)
-			{
-				String curWord = flaggedList.get(i);
-				cmb.addElement(curWord);
-			}
-		}
-		
-		//Stop words
-		cmb.addElement(stopSeparator);
-		
-		if (!isNull)
-		{
-			ArrayList<String> stopList = new ArrayList<String>();
-			for(Iterator<String> iter = curFilter.getStopWords().iterator(); iter.hasNext();)
-			{
-				String curWord = iter.next();
-				stopList.add(curWord);
-			}
-			
-			Collections.sort(stopList);
-			for (int i = 0; i < stopList.size(); i++)
-			{
-				String curWord = stopList.get(i);
-				cmb.addElement(curWord);
-			}
-		}
-	}
-	
-	/**
-	 * Refreshes the list of words that can be removed from the exclusion list.
-	 */
-	public void refreshRemovalCMB()
-	{
-		updateCMBRemoval();
-		cmbRemoval.repaint();
-	}
+//	/**
+//	 * Update the remove word list in the remove combobox.
+//	 */
+//	private void updateCMBRemoval()
+//	{
+//		DefaultComboBoxModel cmb;
+//		cmb = ((DefaultComboBoxModel)cmbRemoval.getModel());
+//		cmb.removeAllElements();
+//		
+//		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
+//		WordFilter curFilter = networkParams.getFilter();
+//		
+//		//Check if we are dealing with the Null SemanticSummaryParameters
+//		Boolean isNull = false;
+//		if (networkParams.equals(cloudManager.getNullSemanticSummary()))
+//				isNull = true;
+//		
+//		//Added words
+//		cmb.addElement(addedSeparator);
+//		
+//		if (!isNull)
+//		{	
+//			//Add alphabetically order list of words
+//			ArrayList<String> addedList = new ArrayList<String>();
+//			for(Iterator<String> iter = curFilter.getAddedWords().iterator(); iter.hasNext();)
+//			{
+//				String curWord = iter.next();
+//				addedList.add(curWord);
+//			}
+//			
+//			Collections.sort(addedList);
+//			for (int i = 0; i < addedList.size(); i++)
+//			{
+//				String curWord = addedList.get(i);
+//				cmb.addElement(curWord);
+//			}
+//		}
+//		
+//		//Flagged words
+//		cmb.addElement(flaggedSeparator);
+//		
+//		if (!isNull)
+//		{
+//			ArrayList<String> flaggedList = new ArrayList<String>();
+//			for(Iterator<String> iter = curFilter.getFlaggedWords().iterator(); iter.hasNext();)
+//			{
+//				String curWord = iter.next();
+//				flaggedList.add(curWord);
+//			}
+//			
+//			Collections.sort(flaggedList);
+//			for (int i = 0; i < flaggedList.size(); i++)
+//			{
+//				String curWord = flaggedList.get(i);
+//				cmb.addElement(curWord);
+//			}
+//		}
+//		
+//		//Stop words
+//		cmb.addElement(stopSeparator);
+//		
+//		if (!isNull)
+//		{
+//			ArrayList<String> stopList = new ArrayList<String>();
+//			for(Iterator<String> iter = curFilter.getStopWords().iterator(); iter.hasNext();)
+//			{
+//				String curWord = iter.next();
+//				stopList.add(curWord);
+//			}
+//			
+//			Collections.sort(stopList);
+//			for (int i = 0; i < stopList.size(); i++)
+//			{
+//				String curWord = stopList.get(i);
+//				cmb.addElement(curWord);
+//			}
+//		}
+//	}
+//	
+//	/**
+//	 * Refreshes the list of words that can be removed from the exclusion list.
+//	 */
+//	public void refreshRemovalCMB()
+//	{
+//		updateCMBRemoval();
+//		cmbRemoval.repaint();
+//	}
 	
 	/**
 	 * Sets the numExclusion checkbox based on the current network.
@@ -1295,7 +1358,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
 		WordFilter curFilter = networkParams.getFilter();
 		Boolean val = curFilter.getFilterNums();
-		numExclusion.setSelected(val);
+//		numExclusion.setSelected(val);
 	}
 	
 	/**
@@ -1313,9 +1376,9 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 	 */
 	public void refreshNetworkSettings()
 	{
-		this.refreshRemovalCMB();
+//		this.refreshRemovalCMB();
 		this.updateNumExclusionBox();
-		this.updateDelimiterCMBs();
+//		this.updateDelimiterCMBs();
 		this.updateStemmingBox();
 	}
 	
@@ -1409,49 +1472,49 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		
 		if (source instanceof JComboBox)
 		{
-			JComboBox cmb = (JComboBox) source;
-			if (cmb == cmbRemoval)
-			{
-				Object selectObject = cmbRemoval.getSelectedItem();
-				if (selectObject != null)
-				{
-					String selectItem = selectObject.toString();
-					if (selectItem.equalsIgnoreCase(addedSeparator) || 
-							selectItem.equalsIgnoreCase(flaggedSeparator) ||
-							selectItem.equalsIgnoreCase(stopSeparator))
-						removeWordButton.setEnabled(false);
-						else
-							removeWordButton.setEnabled(true);
-				}//end if not null
-			}//end if cmbRemoval
-			
-			if (cmb == cmbDelimiterRemoval)
-			{
-				Object selectObject = cmbDelimiterRemoval.getSelectedItem();
-				if (selectObject != null)
-				{
-					String selectItem = selectObject.toString();
-					if (selectItem.equalsIgnoreCase(commonDelimiters) || 
-							selectItem.equalsIgnoreCase(userAddDelimiters))
-						removeDelimiterButton.setEnabled(false);
-						else
-							removeDelimiterButton.setEnabled(true);
-				}//end if not null
-			}//end if cmbDelimiterRemoval
-			
-			if (cmb == cmbDelimiterAddition)
-			{
-				Object selectObject = cmbDelimiterAddition.getSelectedItem();
-				if (selectObject != null)
-				{
-					String selectItem = selectObject.toString();
-					if (selectItem.equalsIgnoreCase(commonDelimiters) || 
-							selectItem.equalsIgnoreCase(userAddDelimiters))
-						addDelimiterButton.setEnabled(false);
-						else
-							addDelimiterButton.setEnabled(true);
-				}//end if not null
-			}//end if cmbDelimiterRemoval
+//			JComboBox cmb = (JComboBox) source;
+//			if (cmb == cmbRemoval)
+//			{
+//				Object selectObject = cmbRemoval.getSelectedItem();
+//				if (selectObject != null)
+//				{
+//					String selectItem = selectObject.toString();
+//					if (selectItem.equalsIgnoreCase(addedSeparator) || 
+//							selectItem.equalsIgnoreCase(flaggedSeparator) ||
+//							selectItem.equalsIgnoreCase(stopSeparator))
+//						removeWordButton.setEnabled(false);
+//						else
+//							removeWordButton.setEnabled(true);
+//				}//end if not null
+//			}//end if cmbRemoval
+//			
+//			if (cmb == cmbDelimiterRemoval)
+//			{
+//				Object selectObject = cmbDelimiterRemoval.getSelectedItem();
+//				if (selectObject != null)
+//				{
+//					String selectItem = selectObject.toString();
+//					if (selectItem.equalsIgnoreCase(commonDelimiters) || 
+//							selectItem.equalsIgnoreCase(userAddDelimiters))
+//						removeDelimiterButton.setEnabled(false);
+//						else
+//							removeDelimiterButton.setEnabled(true);
+//				}//end if not null
+//			}//end if cmbDelimiterRemoval
+//			
+//			if (cmb == cmbDelimiterAddition)
+//			{
+//				Object selectObject = cmbDelimiterAddition.getSelectedItem();
+//				if (selectObject != null)
+//				{
+//					String selectItem = selectObject.toString();
+//					if (selectItem.equalsIgnoreCase(commonDelimiters) || 
+//							selectItem.equalsIgnoreCase(userAddDelimiters))
+//						addDelimiterButton.setEnabled(false);
+//						else
+//							addDelimiterButton.setEnabled(true);
+//				}//end if not null
+//			}//end if cmbDelimiterRemoval
 			
 		}//end if combo box
 	}
@@ -1470,143 +1533,143 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		{
 			JButton _btn = (JButton)_actionObject;
 			
-			if (_btn == removeWordButton)
-			{
-				//Get Selected word
-				Object selectObject = cmbRemoval.getSelectedItem();
-				if (selectObject != null)
-				{
-					String selectItem = selectObject.toString();
-					if (!selectItem.equalsIgnoreCase(addedSeparator) || 
-							!selectItem.equalsIgnoreCase(flaggedSeparator) ||
-							!selectItem.equalsIgnoreCase(stopSeparator))
-					{
-						SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-						WordFilter curFilter = networkParams.getFilter();
-						
-						//Remove from filter
-						curFilter.remove(selectItem);
-						
-						//Reset flags
-						networkParams.networkChanged();
-						
-						//Refresh word removal list
-						this.refreshRemovalCMB();
-					}//end if appropriate selection
-				}//end if not null selected
-			}//end remove word button
-			
-			if (_btn == addWordButton)
-			{
-				String value = (String)addWordTextField.getText();
-				if (value.matches(""))
-					return;
-				
-				else if (value.matches("[\\w]*"))
-				{ 
-					//add value to filter and update
-					SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-					WordFilter curFilter = networkParams.getFilter();
-					value.toLowerCase();
-					curFilter.add(value);
-					
-					//Reset flags
-					networkParams.networkChanged();
-					
-					//Refresh view
-					this.refreshRemovalCMB();
-					addWordTextField.setText(null);
-				}
-				else
-				{
-					addWordTextField.setSelectionStart(0);
-					addWordTextField.setSelectionEnd(value.length());
-					String message = "You can only add a word that contains letters or numbers and no spaces";
-					JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-				}
-			}
-			
-			if (_btn == removeDelimiterButton)
-			{
-				//Get Selected word
-				Object selectObject = cmbDelimiterRemoval.getSelectedItem();
-				if (selectObject != null)
-				{
-					String selectItem = selectObject.toString();
-					if (!selectItem.equalsIgnoreCase(commonDelimiters) || 
-							!selectItem.equalsIgnoreCase(userAddDelimiters))
-					{
-						SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-						WordDelimiters curDelimiters = networkParams.getDelimiter();
-						
-						//Remove from delimiters
-						curDelimiters.removeDelimiter(selectItem);
-						
-						//Reset flags
-						networkParams.networkChanged();
-						
-						//Refresh word removal list
-						this.updateDelimiterCMBs();
-					}//end if appropriate selection
-				}//end if not null selected
-			}//end remove delimiter button
-			
-			if (_btn == addDelimiterButton)
-			{
-				//Get Selected word
-				Object selectObject = cmbDelimiterAddition.getSelectedItem();
-				if (selectObject != null)
-				{
-					String selectItem = selectObject.toString();
-					if (!selectItem.equalsIgnoreCase(commonDelimiters) || 
-							!selectItem.equalsIgnoreCase(userAddDelimiters))
-					{
-						//Dialog if user add
-						if (selectItem.equals(selectMe))
-						{
-							Component parent = application.getJFrame();
-							AddDelimiterDialog dialog = new AddDelimiterDialog(parent, true);
-							dialog.setLocationRelativeTo(parent);
-							dialog.setVisible(true);
-							
-							selectItem = dialog.getNewDelimiter();
-						}
-						
-						if (!selectItem.equals(""))
-						{
-							SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-							WordDelimiters curDelimiters = networkParams.getDelimiter();
-						
-							//Add to delimiters
-							curDelimiters.addDelimToUse(selectItem);
-						
-							//Reset flags
-							networkParams.networkChanged();
-						
-							//Refresh word removal list
-							this.updateDelimiterCMBs();
-						}
-					}//end if appropriate selection
-				}//end if not null selected
-			}//end remove delimiter button
+//			if (_btn == removeWordButton)
+//			{
+//				//Get Selected word
+//				Object selectObject = cmbRemoval.getSelectedItem();
+//				if (selectObject != null)
+//				{
+//					String selectItem = selectObject.toString();
+//					if (!selectItem.equalsIgnoreCase(addedSeparator) || 
+//							!selectItem.equalsIgnoreCase(flaggedSeparator) ||
+//							!selectItem.equalsIgnoreCase(stopSeparator))
+//					{
+//						SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
+//						WordFilter curFilter = networkParams.getFilter();
+//						
+//						//Remove from filter
+//						curFilter.remove(selectItem);
+//						
+//						//Reset flags
+//						networkParams.networkChanged();
+//						
+//						//Refresh word removal list
+//						this.refreshRemovalCMB();
+//					}//end if appropriate selection
+//				}//end if not null selected
+//			}//end remove word button
+//			
+//			if (_btn == addWordButton)
+//			{
+//				String value = (String)addWordTextField.getText();
+//				if (value.matches(""))
+//					return;
+//				
+//				else if (value.matches("[\\w]*"))
+//				{ 
+//					//add value to filter and update
+//					SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
+//					WordFilter curFilter = networkParams.getFilter();
+//					value.toLowerCase();
+//					curFilter.add(value);
+//					
+//					//Reset flags
+//					networkParams.networkChanged();
+//					
+//					//Refresh view
+//					this.refreshRemovalCMB();
+//					addWordTextField.setText(null);
+//				}
+//				else
+//				{
+//					addWordTextField.setSelectionStart(0);
+//					addWordTextField.setSelectionEnd(value.length());
+//					String message = "You can only add a word that contains letters or numbers and no spaces";
+//					JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+//				}
+//			}
+//			
+//			if (_btn == removeDelimiterButton)
+//			{
+//				//Get Selected word
+//				Object selectObject = cmbDelimiterRemoval.getSelectedItem();
+//				if (selectObject != null)
+//				{
+//					String selectItem = selectObject.toString();
+//					if (!selectItem.equalsIgnoreCase(commonDelimiters) || 
+//							!selectItem.equalsIgnoreCase(userAddDelimiters))
+//					{
+//						SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
+//						WordDelimiters curDelimiters = networkParams.getDelimiter();
+//						
+//						//Remove from delimiters
+//						curDelimiters.removeDelimiter(selectItem);
+//						
+//						//Reset flags
+//						networkParams.networkChanged();
+//						
+//						//Refresh word removal list
+//						this.updateDelimiterCMBs();
+//					}//end if appropriate selection
+//				}//end if not null selected
+//			}//end remove delimiter button
+//			
+//			if (_btn == addDelimiterButton)
+//			{
+//				//Get Selected word
+//				Object selectObject = cmbDelimiterAddition.getSelectedItem();
+//				if (selectObject != null)
+//				{
+//					String selectItem = selectObject.toString();
+//					if (!selectItem.equalsIgnoreCase(commonDelimiters) || 
+//							!selectItem.equalsIgnoreCase(userAddDelimiters))
+//					{
+//						//Dialog if user add
+//						if (selectItem.equals(selectMe))
+//						{
+//							Component parent = application.getJFrame();
+//							AddDelimiterDialog dialog = new AddDelimiterDialog(parent, true);
+//							dialog.setLocationRelativeTo(parent);
+//							dialog.setVisible(true);
+//							
+//							selectItem = dialog.getNewDelimiter();
+//						}
+//						
+//						if (!selectItem.equals(""))
+//						{
+//							SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
+//							WordDelimiters curDelimiters = networkParams.getDelimiter();
+//						
+//							//Add to delimiters
+//							curDelimiters.addDelimToUse(selectItem);
+//						
+//							//Reset flags
+//							networkParams.networkChanged();
+//						
+//							//Refresh word removal list
+//							this.updateDelimiterCMBs();
+//						}
+//					}//end if appropriate selection
+//				}//end if not null selected
+//			}//end remove delimiter button
 		}//end button	
 		
 		else if (_actionObject instanceof JCheckBox)
 		{
 			JCheckBox _box = (JCheckBox)_actionObject;
-			
-			if (_box == numExclusion)
-			{
-				Boolean selected = numExclusion.isSelected();
-				
-				//add value to filter and update
-				SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-				WordFilter curFilter = networkParams.getFilter();
-				curFilter.setFilterNums(selected);
-				
-				//Reset flags
-				networkParams.networkChanged();
-			}
+//			
+//			if (_box == numExclusion)
+//			{
+//				Boolean selected = numExclusion.isSelected();
+//				
+//				//add value to filter and update
+//				SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
+//				WordFilter curFilter = networkParams.getFilter();
+//				curFilter.setFilterNums(selected);
+//				
+//				//Reset flags
+//				networkParams.networkChanged();
+//			}
 			
 //			if (_box == useNetworkCounts)
 //			{
@@ -1738,22 +1801,22 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 //		return clusterCutoffTextField;
 //	}
 
-	public JTextField getAddWordTextField()
-	{
-		return addWordTextField;
-	}
-
-	public JButton getAddWordButton()
-	{
-		return addWordButton;
-	}
+//	public JTextField getAddWordTextField()
+//	{
+//		return addWordTextField;
+//	}
+//
+//	public JButton getAddWordButton()
+//	{
+//		return addWordButton;
+//	}
 	
 	public JLabel getNetworkLabel()
 	{
 		return networkLabel;
 	}
 	
-	public DefaultListModel getListValues()
+	public DefaultListModel<String> getListValues()
 	{
 		return listValues;
 	}
@@ -1764,10 +1827,10 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 	}
 	
 	
-	public JComboBox getCMBRemoval()
-	{
-		return cmbRemoval;
-	}
+//	public JComboBox getCMBRemoval()
+//	{
+//		return cmbRemoval;
+//	}
 	
 	public JComboBox getCMBStyle()
 	{
@@ -1780,36 +1843,36 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		return handler;
 	}
 	
-	public JCheckBox getNumExclusion()
-	{
-		return numExclusion;
-	}
-	
-	public void setNumExclusion(JCheckBox box)
-	{
-		numExclusion = box;
-	}
-	
-	public JComboBox getCMBDelimiterRemoval()
-	{
-		return cmbDelimiterRemoval;
-	}
-	
-	public JComboBox getCMBDelimiterAddition()
-	{
-		return cmbDelimiterAddition;
-	}
-	
-	public JButton getAddDelimiterButton()
-	{
-		return addDelimiterButton;
-	}
-	
-	public JButton getRemoveDelimiterButton()
-	{
-		return removeDelimiterButton;
-	}
-	
+//	public JCheckBox getNumExclusion()
+//	{
+//		return numExclusion;
+//	}
+//	
+//	public void setNumExclusion(JCheckBox box)
+//	{
+//		numExclusion = box;
+//	}
+//	
+//	public JComboBox getCMBDelimiterRemoval()
+//	{
+//		return cmbDelimiterRemoval;
+//	}
+//	
+//	public JComboBox getCMBDelimiterAddition()
+//	{
+//		return cmbDelimiterAddition;
+//	}
+//	
+//	public JButton getAddDelimiterButton()
+//	{
+//		return addDelimiterButton;
+//	}
+//	
+//	public JButton getRemoveDelimiterButton()
+//	{
+//		return removeDelimiterButton;
+//	}
+//	
 //	public JCheckBox getUseNetworkCounts()
 //	{
 //		return useNetworkCounts;
@@ -1898,24 +1961,24 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 //					invalid = true;
 //				}
 //			}
-			
-			if (source == addWordTextField)
-			{
-				String value = (String)addWordTextField.getText();
-				if (value.equals("") || value.matches("[\\w]*"))
-				{ 
-					//All is well, leave it be
-				}
-				else
-				{
-					//addWordTextField.setValue("");
-					//message += "You can only add a word that contains letters or numbers and no spaces";
-					//invalid = true;
-				}
-			}
-			
-			if (invalid)
-				JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+//			
+//			if (source == addWordTextField)
+//			{
+//				String value = (String)addWordTextField.getText();
+//				if (value.equals("") || value.matches("[\\w]*"))
+//				{ 
+//					//All is well, leave it be
+//				}
+//				else
+//				{
+//					//addWordTextField.setValue("");
+//					//message += "You can only add a word that contains letters or numbers and no spaces";
+//					//invalid = true;
+//				}
+//			}
+//			
+//			if (invalid)
+//				JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
 		}
 	}	
 }

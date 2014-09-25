@@ -148,8 +148,8 @@ public class CreateCloudAction extends AbstractSemanticSummaryAction
 		//Update the list of filter words and checkbox
 		inputPanel.refreshNetworkSettings();
 		
-		//Enable adding of words to exclusion list
-		inputPanel.getAddWordTextField().setEditable(true);
-		inputPanel.getAddWordButton().setEnabled(true);
+//		//Enable adding of words to exclusion list
+//		inputPanel.getAddWordTextField().setEditable(true);
+//		inputPanel.getAddWordButton().setEnabled(true);
 	}
 }
