@@ -159,15 +159,15 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 
 	private CloudListSelectionHandlerFactory handlerFactory;
 	
-	//String Constants for Separators in remove word combo box
-	private static final String addedSeparator = "--Added Words--";
-	private static final String flaggedSeparator = "--Flagged Words--";
-	private static final String stopSeparator = "--Stop Words--";
-	
-	//String COnstants for Separators in delimiter combo boxes
-	private static final String commonDelimiters = "--Common Delimiters--";
-	private static final String userAddDelimiters = "--User Defined--";
-	private static final String selectMe = "Select to add your own";
+//	//String Constants for Separators in remove word combo box
+//	private static final String addedSeparator = "--Added Words--";
+//	private static final String flaggedSeparator = "--Flagged Words--";
+//	private static final String stopSeparator = "--Stop Words--";
+//	
+//	//String COnstants for Separators in delimiter combo boxes
+//	private static final String commonDelimiters = "--Common Delimiters--";
+//	private static final String userAddDelimiters = "--User Defined--";
+//	private static final String selectMe = "Select to add your own";
 	
 	private static final int DEF_ROW_HEIGHT = 20;
 
@@ -359,16 +359,27 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		JButton excludedWordsButton = new JButton("Excluded Words...");
 		excludedWordsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				WordSelectPanel wordSelectPanel = new WordSelectPanel(cloudManager.getCurNetwork());
-				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame());
+				SemanticSummaryParameters network = cloudManager.getCurNetwork();
+				WordSelectPanel wordSelectPanel = new WordSelectPanel(network.getFilter());
+				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), network.getNetworkName());
 				dialog.setVisible(true);
-				cloudManager.getCurNetwork().networkChanged();
+				network.networkChanged();
 				updateCloudAction.doRealAction();
 			}
 		});
 		networkPanel.add(excludedWordsButton);
 		
 		JButton delimetersButton = new JButton("Delimiters...");
+		delimetersButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				SemanticSummaryParameters network = cloudManager.getCurNetwork();
+				WordSelectPanel wordSelectPanel = new WordSelectPanel(network.getDelimiter());
+				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), network.getNetworkName());
+				dialog.setVisible(true);
+				network.networkChanged();
+				updateCloudAction.doRealAction();
+			}
+		});
 		networkPanel.add(delimetersButton);
 		
 		
@@ -1200,7 +1211,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 //		
 //		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
 //		WordDelimiters curDelimiters = networkParams.getDelimiter();
-//		d
+//		
 //		//Check if we are dealing with the Null SemanticSummaryParameters
 //		Boolean isNull = false;
 //		if (networkParams.equals(cloudManager.getNullSemanticSummary()))

@@ -7,17 +7,18 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -31,20 +32,99 @@ import javax.swing.ListModel;
 @SuppressWarnings("serial")
 public class WordSelectPanel extends JPanel {
 	
+
+	public static interface Model {
+		List<String> getCurrent();
+		List<String> getAvailable();
+		void add(String s);
+		void remove(String s);
+		boolean validate(Component parent, String s);
+	}
 	
-	//String Constants for Separators in remove word combo box
-	private static final String addedSeparator   = "--Added Words--";
-	private static final String flaggedSeparator = "--Flagged Words--";
-	private static final String stopSeparator    = "--Stop Words--";
-	
-	private final SemanticSummaryParameters networkParams;
+	private final Model model;
 	
 	
-	public WordSelectPanel(SemanticSummaryParameters networkParams) {
-		this.networkParams = networkParams;
+	public WordSelectPanel(Model model) {
+		this.model = model;
 		createPanel();
 	}
 
+	
+	public WordSelectPanel(final WordFilter filter) {
+		this(new Model() {
+			
+			public void remove(String word) {
+				filter.remove(word);
+			}
+			
+			public void add(String word) {
+				filter.add(word);
+			}
+			
+			public List<String> getCurrent() {
+				List<String> words = new ArrayList<String>();
+				words.add("--Added Words--");
+				words.addAll(sorted(filter.getAddedWords()));
+				words.add("--Flagged Words--");
+				words.addAll(sorted(filter.getFlaggedWords()));
+				words.add("--Stop Words--");
+				words.addAll(sorted(filter.getStopWords()));
+				return words;
+			}
+			
+			public List<String> getAvailable() {
+				return null;
+			}
+			
+			public boolean validate(Component parent, String word) {
+				if(word.matches("[\\w]*")) {
+					return true;
+				} else {
+					String message = "Word must contain only letters and numbers (no spaces).";
+					JOptionPane.showMessageDialog(parent, message, "Cannot add word", JOptionPane.WARNING_MESSAGE);
+					return false;
+				}
+			}
+			
+		});
+	}
+	
+	
+	public WordSelectPanel(final WordDelimiters delimeters) {
+		this(new Model() {
+			
+			public void remove(String s) {
+				delimeters.removeDelimiter(s);
+			}
+			
+			public void add(String s) {
+				delimeters.addDelimToUse(s);
+			}
+			
+			public List<String> getCurrent() {
+				List<String> delims = new ArrayList<String>();
+				delims.add("--Common Delimiters--");
+				delims.addAll(delimeters.getDelimsInUse());
+				delims.add("--User Defined--");
+				delims.addAll(delimeters.getUserDelims());
+				return delims;
+			}
+			
+			public List<String> getAvailable() {
+				List<String> delims = new ArrayList<String>();
+				delims.add("--Common Delimiters--");
+				delims.addAll(delimeters.getDelimsToAdd());
+				return delims;
+			}
+			
+			public boolean validate(Component parent, String s) {
+				return true;
+			}
+			
+		});
+	}
+	
+	
 	
 	private void createPanel() {
 		setLayout(new GridBagLayout());
@@ -62,8 +142,7 @@ public class WordSelectPanel extends JPanel {
 		add(title, c);
 		
 		
-		ListModel<String> wordListModel = createListModel();
-		final JList<String> wordList = new JList<String>(wordListModel);
+		final JList<String> wordList = new JList<String>(createListModel());
 		JScrollPane wordScroll = new JScrollPane();
 		wordScroll.setPreferredSize(wordList.getPreferredSize());
 		wordScroll.setViewportView(wordList);
@@ -87,13 +166,27 @@ public class WordSelectPanel extends JPanel {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		add(removeButton, c);
 		
-		final JTextField addWordTextField = new JTextField();
+		
+		// create either a text field or a combo box for the add field
+		JComponent text;
+		final JComboBox<String> addWordCombo;
+		final JTextField addWordTextField;
+		List<String> available = model.getAvailable();
+		if(available == null) {
+			text = addWordTextField = new JTextField();
+			addWordCombo = null;
+		}
+		else {
+			text = addWordCombo = new JComboBox<String>(createComboModel());
+			addWordCombo.setEditable(true);
+			addWordTextField = null;
+		}
 		c = new GridBagConstraints();
 		c.insets = insets;
 		c.gridx = 0;
 		c.gridy = 2;
 		c.fill = GridBagConstraints.HORIZONTAL;
-		add(addWordTextField, c);
+		add(text, c);
 		
 		JButton addButton = new JButton("Add");
 		c = new GridBagConstraints();
@@ -103,14 +196,14 @@ public class WordSelectPanel extends JPanel {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		add(addButton, c);
 		
-		JCheckBox checkBox = new JCheckBox("Exclude Numbers 0-999");
-		c = new GridBagConstraints();
-		c.insets = insets;
-		c.gridx = 0;
-		c.gridy = 3;
-		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.WEST;
-		add(checkBox, c);
+//		JCheckBox checkBox = new JCheckBox("Exclude Numbers 0-999");
+//		c = new GridBagConstraints();
+//		c.insets = insets;
+//		c.gridx = 0;
+//		c.gridy = 3;
+//		c.gridwidth = 2;
+//		c.anchor = GridBagConstraints.WEST;
+//		add(checkBox, c);
 		
 		// MKTODO
 //		JButton restoreDefaultsButton = new JButton("Restore Defaults");
@@ -134,9 +227,8 @@ public class WordSelectPanel extends JPanel {
 		
 		removeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				WordFilter filter = networkParams.getFilter();
 				for(String word : wordList.getSelectedValuesList()) {
-					filter.remove(word);
+					model.remove(word);
 				}
 				wordList.setModel(createListModel());
 			}
@@ -145,19 +237,21 @@ public class WordSelectPanel extends JPanel {
 		
 		addButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				WordFilter filter = networkParams.getFilter();
-				String word = addWordTextField.getText().trim();
+				String word;
+				if(addWordTextField != null)
+					word = addWordTextField.getText().trim();
+				else
+					word = (String) addWordCombo.getSelectedItem();
+				
 				if(word.length() == 0)
 					return;
-				
-				if(word.matches("[\\w]*")) {
-					filter.add(word.toLowerCase());
-					addWordTextField.setText(null);
+				if(model.validate(WordSelectPanel.this, word)) {
+					model.add(word.toLowerCase());
 					wordList.setModel(createListModel());
-				}
-				else {
-					String message = "Word must contain only letters and numbers (no spacdf aes).";
-					JOptionPane.showMessageDialog(WordSelectPanel.this, message, "Cannot add word", JOptionPane.WARNING_MESSAGE);
+					if(addWordCombo != null)
+						addWordCombo.setModel(createComboModel());
+					else
+						addWordTextField.setText(null);
 				}
 			}
 		});
@@ -165,24 +259,21 @@ public class WordSelectPanel extends JPanel {
 	
 	
 	private ListModel<String> createListModel() {
-		WordFilter wordFilter = networkParams.getFilter();
-		
-		DefaultListModel<String> wordListModel = new DefaultListModel<String>();
-		wordListModel.addElement(addedSeparator);
-		for(String word : sorted(wordFilter.getAddedWords())) {
-			wordListModel.addElement(word);
+		DefaultListModel<String> listModel = new DefaultListModel<String>();
+		for(String word : model.getCurrent()) {
+			listModel.addElement(word);
 		}
-		wordListModel.addElement(flaggedSeparator);
-		for(String word : sorted(wordFilter.getFlaggedWords())) {
-			wordListModel.addElement(word);
-		}
-		wordListModel.addElement(stopSeparator);
-		for(String word : sorted(wordFilter.getStopWords())) {
-			wordListModel.addElement(word);
-		}
-		return wordListModel;
+		return listModel;
 	}
 	
+	private ComboBoxModel<String> createComboModel() {
+		DefaultComboBoxModel<String> comboModel = new DefaultComboBoxModel<String>();
+		comboModel.addElement("");
+		for(String s : model.getAvailable()) {
+			comboModel.addElement(s);
+		}
+		return comboModel;
+	}
 	
 	private static <T extends Comparable<T>> List<T> sorted(Collection<T> collection) {
 		List<T> result = new ArrayList<T>(collection);
@@ -191,22 +282,17 @@ public class WordSelectPanel extends JPanel {
 	}
 	
 	
-	public JDialog createDialog(Component parent) {
+	public JDialog createDialog(Component parent, String title) {
 		JOptionPane optionPane = new JOptionPane();
 		optionPane.setMessage(this);
 		optionPane.setIcon(null);
-		optionPane.setPreferredSize(new Dimension(300, 400));
+		optionPane.setPreferredSize(new Dimension(350, 400));
 		optionPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		JDialog dialog = optionPane.createDialog(parent, networkParams.getNetworkName());
+		JDialog dialog = optionPane.createDialog(parent, title);
 		return dialog;
 	}
 	
 	
-	public static interface Model {
-		List<String> getCurrent();
-		List<String> getAvailable();
-		void add(String s);
-		void remove(String s);
-	}
+	
 
 }
