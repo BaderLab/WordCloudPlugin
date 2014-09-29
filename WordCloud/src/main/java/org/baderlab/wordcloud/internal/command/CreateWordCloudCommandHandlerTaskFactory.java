@@ -1,8 +1,7 @@
 package org.baderlab.wordcloud.internal.command;
 
-import org.baderlab.wordcloud.internal.CreateCloudCommandAction;
-import org.baderlab.wordcloud.internal.SemanticSummaryManager;
-import org.baderlab.wordcloud.internal.SemanticSummaryParametersFactory;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryParametersFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyTableFactory;

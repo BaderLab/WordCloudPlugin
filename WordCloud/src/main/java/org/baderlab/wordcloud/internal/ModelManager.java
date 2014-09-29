@@ -8,6 +8,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -46,16 +47,20 @@ public class ModelManager implements AddedNodesListener, RemovedNodesListener, A
 	private ApplyPreferredLayoutTaskFactory layoutTaskFactory;
 	private TaskManager<?, ?> taskManager;
 	private Map<CyNetwork, Object> changedNetworks;
-	private WordCloudVisualStyleFactory cloudStyleFactory;
+	private StreamUtil streamUtil;
+//	private WordCloudVisualStyleFactory cloudStyleFactory;
 
 	public ModelManager(CyNetworkTableManager networkTableManager,
-			CyTableManager tableManager, CyTableFactory tableFactory,
+			CyTableManager tableManager, 
+			CyTableFactory tableFactory,
 			CyNetworkFactory networkFactory,
 			CyNetworkViewFactory networkViewFactory,
-			CyNetworkManager networkManager, CyNetworkViewManager viewManager,
+			CyNetworkManager networkManager, 
+			CyNetworkViewManager viewManager,
 			VisualMappingManager visualMappingManager,
 			ApplyPreferredLayoutTaskFactory layoutTaskFactory,
-			TaskManager<?, ?> taskManager, WordCloudVisualStyleFactory cloudStyleFactory) {
+			TaskManager<?, ?> taskManager,
+			StreamUtil streamUtil) {
 
 		this.networkTableManager = networkTableManager;
 		this.tableManager = tableManager;
@@ -67,7 +72,8 @@ public class ModelManager implements AddedNodesListener, RemovedNodesListener, A
 		this.visualMappingManager = visualMappingManager;
 		this.layoutTaskFactory = layoutTaskFactory;
 		this.taskManager = taskManager;
-		this.cloudStyleFactory = cloudStyleFactory;
+//		this.cloudStyleFactory = cloudStyleFactory;
+		this.streamUtil = streamUtil;
 		
 		changedNetworks = new WeakHashMap<CyNetwork, Object>();
 	}
@@ -132,22 +138,23 @@ public class ModelManager implements AddedNodesListener, RemovedNodesListener, A
 		viewManager.addNetworkView(view);
 	}
 
-	public void applyVisualStyle(CyNetworkView view, CloudParameters cloud) {
-		CyNetwork network = view.getModel();
-		String newNetworkName = network.getRow(network).get(CyNetwork.NAME,
-				String.class);
-		String vs_name = newNetworkName + "WordCloud_style";
-
-		// check to see if the style exists
-		VisualStyle vs = getVisualStyle(vs_name);
-		if (vs == null) {
-			vs = cloudStyleFactory.createVisualStyle(vs_name, cloud);
-			visualMappingManager.addVisualStyle(vs);
-		}
-
-		visualMappingManager.setVisualStyle(vs, view);
-		vs.apply(view);
-	}
+//	// MKTODO used when creating a network, does not need to be in the manager
+//	public void applyVisualStyle(CyNetworkView view, CloudParameters cloud) {
+//		CyNetwork network = view.getModel();
+//		String newNetworkName = network.getRow(network).get(CyNetwork.NAME,
+//				String.class);
+//		String vs_name = newNetworkName + "WordCloud_style";
+//
+//		// check to see if the style exists
+//		VisualStyle vs = getVisualStyle(vs_name);
+//		if (vs == null) {
+//			vs = cloudStyleFactory.createVisualStyle(vs_name, cloud);
+//			visualMappingManager.addVisualStyle(vs);
+//		}
+//
+//		visualMappingManager.setVisualStyle(vs, view);
+//		vs.apply(view);
+//	}
 
 	public VisualStyle getVisualStyle(String name) {
 		for (VisualStyle style : visualMappingManager.getAllVisualStyles()) {
@@ -220,4 +227,9 @@ public class ModelManager implements AddedNodesListener, RemovedNodesListener, A
 	public CyTableManager getTableManager() {
 		return tableManager;
 	}
+
+	public StreamUtil getStreamUtil() {
+		return streamUtil;
+	}
+
 }

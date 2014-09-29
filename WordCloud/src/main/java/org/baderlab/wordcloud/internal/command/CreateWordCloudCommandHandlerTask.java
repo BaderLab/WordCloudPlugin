@@ -2,15 +2,15 @@ package org.baderlab.wordcloud.internal.command;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.baderlab.wordcloud.internal.CreateCloudCommandAction;
 import org.baderlab.wordcloud.internal.SelectionUtils;
-import org.baderlab.wordcloud.internal.SemanticSummaryManager;
-import org.baderlab.wordcloud.internal.SemanticSummaryParametersFactory;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryParametersFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.command.util.NodeList;
@@ -90,7 +90,7 @@ public class CreateWordCloudCommandHandlerTask implements Task {
 			network.getRow(network).set(cloudGroupTableName, cloudGroupTable.getSUID());
 		}
 
-		createCloudCommandAction.setAttributeColumn(wordColumnName);
+		createCloudCommandAction.setAttributeColumns(Arrays.asList(wordColumnName));
 		createCloudCommandAction.setCloudName(cloudName);
 		createCloudCommandAction.setClusterTable(cloudGroupTable);
 		createCloudCommandAction.setNodes(new HashSet<CyNode>(nodes));
