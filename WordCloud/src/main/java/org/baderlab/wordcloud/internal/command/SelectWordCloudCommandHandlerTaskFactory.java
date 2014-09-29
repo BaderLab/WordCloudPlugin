@@ -1,6 +1,6 @@
 package org.baderlab.wordcloud.internal.command;
 
-import org.baderlab.wordcloud.internal.SemanticSummaryManager;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;

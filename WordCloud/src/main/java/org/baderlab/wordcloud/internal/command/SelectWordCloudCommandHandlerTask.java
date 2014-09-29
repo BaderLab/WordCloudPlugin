@@ -2,8 +2,8 @@ package org.baderlab.wordcloud.internal.command;
 
 import javax.swing.JList;
 
-import org.baderlab.wordcloud.internal.SemanticSummaryManager;
-import org.baderlab.wordcloud.internal.SemanticSummaryParameters;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryParameters;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
