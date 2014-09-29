@@ -2,9 +2,9 @@ package org.baderlab.wordcloud.internal.command;
 
 import java.awt.event.ActionEvent;
 
-import org.baderlab.wordcloud.internal.DeleteCloudAction;
-import org.baderlab.wordcloud.internal.SemanticSummaryManager;
-import org.baderlab.wordcloud.internal.SemanticSummaryParameters;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryParameters;
+import org.baderlab.wordcloud.internal.ui.DeleteCloudAction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;

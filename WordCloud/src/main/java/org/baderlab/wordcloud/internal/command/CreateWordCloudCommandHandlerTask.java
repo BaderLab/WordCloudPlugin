@@ -8,10 +8,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.baderlab.wordcloud.internal.CreateCloudCommandAction;
 import org.baderlab.wordcloud.internal.SelectionUtils;
-import org.baderlab.wordcloud.internal.SemanticSummaryManager;
-import org.baderlab.wordcloud.internal.SemanticSummaryParametersFactory;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryParametersFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyColumn;

@@ -35,6 +35,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryParameters;
+import org.baderlab.wordcloud.internal.model.SemanticSummaryParametersFactory;
+import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.next.ModelManager;
+import org.baderlab.wordcloud.internal.model.next.WordDelimiters;
+import org.baderlab.wordcloud.internal.model.next.WordFilter;
+import org.baderlab.wordcloud.internal.ui.SemanticSummaryPluginAction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
