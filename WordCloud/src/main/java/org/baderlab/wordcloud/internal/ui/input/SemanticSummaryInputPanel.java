@@ -32,14 +32,10 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -49,7 +45,6 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -78,17 +73,11 @@ import org.cytoscape.util.swing.CheckBoxJList;
  * The SemanticSummaryInputPanel class defines the panel that appears for 
  * the Semantic Summary Plugin in the West control panel.  It contains fields
  * necessary for viewing and creating new Semantic Summaries.
- * 
- * @author Layla Oesper
- * @version 1.0
  */
 
-public class SemanticSummaryInputPanel extends JPanel implements ItemListener, ActionListener {
+public class SemanticSummaryInputPanel extends JPanel {
 	
 	private static final long serialVersionUID = 2453517387682663100L;
-	
-	private DecimalFormat decFormat; //used in formatted text fields with decimals
-	private NumberFormat intFormat; //used in formatted text fields with integers
 	
 	
 	private final UIManager uiManager;
@@ -108,9 +97,9 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 	private JLabel networkLabel;
 	
 	//JListData
-	private DefaultListModel listValues;
+//	private DefaultListModel listValues;
 	private JList cloudList;
-//	private CloudListSelectionHandler handler;
+	private CloudListSelectionHandler handler;
 	
 	//Buttons
 //	private JButton removeWordButton;
@@ -192,11 +181,6 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 //		this.saveCloudAction = saveCloudAction;
 //		this.handlerFactory = handlerFactory;
 		
-		decFormat = new DecimalFormat();
-		decFormat.setParseIntegerOnly(false);
-		
-		intFormat = NumberFormat.getIntegerInstance();
-		intFormat.setParseIntegerOnly(true);
 		
 		setLayout(new BorderLayout());
 		
@@ -264,7 +248,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 	 * Creates the cloud list panel for the currently selected network.
 	 * @return JPanel - the cloud list panel.
 	 */
-	public JPanel createCloudListPanel(CyApplicationManager applicationManager)
+	private JPanel createCloudListPanel(CyApplicationManager applicationManager)
 	{
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
@@ -277,20 +261,16 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		networkPanel.add(networkLabel);
 		networkPanel.setBorder(BorderFactory.createEmptyBorder());
 		
-		//List of Clouds
-		listValues = new DefaultListModel();
-		
-		cloudList = new JList(listValues);
+		// list of clouds
+		cloudList = new JList(new DefaultListModel());
 		cloudList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		cloudList.setSelectedIndex(0);
 		cloudList.setVisibleRowCount(10);
 		cloudList.setFixedCellHeight(DEF_ROW_HEIGHT);
 //		cloudList.addMouseListener(new CloudListMouseListener(this));
 		
-//		//Setup Selection Listener
-//		ListSelectionModel listSelectionModel = cloudList.getSelectionModel();
-//		handler = handlerFactory.createHandler(this);
-//		listSelectionModel.addListSelectionListener(handler);
+		handler = new CloudListSelectionHandler(uiManager);
+		cloudList.addListSelectionListener(handler);
 		
 		JScrollPane listScrollPane = new JScrollPane(cloudList);
 		listScrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -309,7 +289,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 	 * 
 	 * @return collapsiblePanel - main panel with cloud parameters
 	 */
-	public JPanel createOptionsPanel()
+	private JPanel createOptionsPanel()
 	{
 //		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Cloud Parameters");
 //		collapsiblePanel.setCollapsed(false);
@@ -1065,50 +1045,35 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		
 		return panel;
 	}
+
 	
-//	/**
-//	 * Sets the list of clouds to be for the supplied network.
-//	 * @param SemanticSummaryParameter - parameter for the network to display.
-//	 */
-//	public void setNetworkList(SemanticSummaryParameters params)
-//	{
-//		
-//		//clear current values
-//		networkLabel.setText("");
-//		listValues.clear();
-//		
-//		//Set new current values
-//		networkLabel.setText(params.getNetworkName());
-//		
-//		//Ensure list is in order of creation
-//		List<CloudParameters> clouds = new ArrayList<CloudParameters>(params.getClouds().values());
-//		Collections.sort(clouds);
-//		
-//		for(CloudParameters curParam : clouds) {
-//			listValues.addElement(curParam.getCloudName());
-//		}
-//		
-//		//Update Manager variables
-//		cloudManager.setCurNetwork(params);
-//		cloudManager.setCurCloud(cloudManager.getNullCloudParameters());
-//		
-//		updateSyncCloud();
-//	}
-	
-	public void setAttributeNames(List<String> names) {
+	private void setAttributeNames(List<String> names) {
 		attributeList.setSelectedItems(names);
 		updateAttNames();
 	}
 	
-	/**
-	 * Loads the values from a specified cloud in the user supplied parameters
-	 * and sets it as the current cloud.
-	 * Assumes that parent list is already updated.
-	 * @param CloudParameters - of the cloud to load.
-	 */
-//	public void loadCurrentCloud(CloudParameters params)
-//	{
-//		List<String> attributeNames = params.getAttributeNames();
+
+
+	
+	
+	public void setCurrentCloud(CloudParameters params) {
+		cloudList.removeListSelectionListener(handler);
+		
+		List<CloudParameters> networkClouds = params.getNetworkParams().getClouds();
+		DefaultListModel listModel = new DefaultListModel();
+		for(CloudParameters cloud : networkClouds) {
+			listModel.addElement(cloud.getCloudName());
+		}
+		cloudList.setModel(listModel);
+		
+		String cloudName = params.getCloudName();
+		int index = listModel.lastIndexOf(cloudName);
+		cloudList.setSelectedIndex(index);
+		
+		networkLabel.setText(params.getNetworkParams().getNetworkName());
+		
+		// MKTODO: update all the other controls to show this cloud
+		List<String> attributeNames = params.getAttributeNames();
 //		if (attributeNames == null) {
 //			attributeNames = Collections.emptyList();
 //		}
@@ -1118,72 +1083,8 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 //		cmbStyle.setSelectedItem(params.getDisplayStyle());
 ////		addWordTextField.setText("");
 //		this.setupNetworkNormalization(params);
-//		
-//		
-//		//Get current network
-//		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-//		
-//		if (networkParams.equals(cloudManager.getNullSemanticSummary()))
-//			{
-////			addWordTextField.setEditable(false);
-////			addWordButton.setEnabled(false);
-////			numExclusion.setEnabled(false);
-////			useNetworkCounts.setEnabled(false);
-////			stemmer.setEnabled(false);
-//			}
-//		else
-//		{
-////			addWordTextField.setEditable(true);
-////			addWordButton.setEnabled(true);
-////			numExclusion.setEnabled(true);
-////			useNetworkCounts.setEnabled(true);
-////			stemmer.setEnabled(true);
-//		}
-//		
-//		CloudDisplayPanel displayPanel = cloudManager.getCloudWindow();
-//		
-//		//Enable button based on cloud
-//		if (params.equals(cloudManager.getNullCloudParameters()))
-//		{
-////			createNetworkButton.setEnabled(false);
-////			saveCloudButton.setEnabled(false);
-//			//displayPanel.getSaveCloudButton().setEnabled(false);
-//		}
-//		else
-//		{
-////			createNetworkButton.setEnabled(true);
-////			saveCloudButton.setEnabled(true);
-//			//displayPanel.getSaveCloudButton().setEnabled(true);
-//		}
-//		
-//		cloudManager.setCurCloud(params);
-//		this.refreshNetworkSettings();
-//	}
-	
-	
-	
-	/**
-	 * Adds the cloud to the list and sets it to be the selected cloud.
-	 * @param CloudParameters - cloud to add to list.
-	 */
-	public void addNewCloud(CloudParameters params)
-	{
-		//Turn off listener while doing work
-		ListSelectionModel listSelectionModel = cloudList.getSelectionModel();
-//		listSelectionModel.removeListSelectionListener(handler);
 		
-		//Update current cloud and add to list
-//		cloudManager.setCurCloud(params);
-		String cloudName = params.getCloudName();
-		listValues.addElement(cloudName);
-		
-		int index = listValues.lastIndexOf(cloudName);
-		
-		//Set to be selected
-		cloudList.setSelectedIndex(index);
-		
-		//Turn listener back on
-//		listSelectionModel.addListSelectionListener(handler);
+		cloudList.addListSelectionListener(handler);
 	}
 	
 	
@@ -1206,167 +1107,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 //		this.refreshNetworkSettings();
 //	}
 //	
-//	/**
-//	 * Update the delimiter combo boxes.
-//	 */
-//	private void updateDelimiterCMBs()
-//	{
-//		// Add Box
-//		DefaultComboBoxModel cmb;
-//		cmb = ((DefaultComboBoxModel)cmbDelimiterAddition.getModel());
-//		cmb.removeAllElements();
-//		
-//		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-//		WordDelimiters curDelimiters = networkParams.getDelimiter();
-//		
-//		//Check if we are dealing with the Null SemanticSummaryParameters
-//		Boolean isNull = false;
-//		if (networkParams.equals(cloudManager.getNullSemanticSummary()))
-//				isNull = true;
-//		
-//		//Common Delimiters
-//		cmb.addElement(commonDelimiters);
-//		
-//		if (!isNull)
-//		{	
-//			//Add alphabetically order list of delimiters
-//			for(Iterator<String> iter = curDelimiters.getDelimsToAdd().iterator(); iter.hasNext();)
-//			{
-//				String curDelim = iter.next();
-//				cmb.addElement(curDelim);
-//			}
-//		}
-//		
-//		//User to add
-//		cmb.addElement(userAddDelimiters);
-//		
-//		if (!isNull)
-//		{
-//			cmb.addElement(selectMe);
-//		}
-//		
-//		cmbDelimiterAddition.repaint();
-//		
-//		//Remove Box
-//		cmb = ((DefaultComboBoxModel)cmbDelimiterRemoval.getModel());
-//		cmb.removeAllElements();
-//		
-//		//Common Delimiters
-//		cmb.addElement(commonDelimiters);
-//		
-//		if (!isNull)
-//		{	
-//			//Add alphabetically order list of delimiters
-//			for(Iterator<String> iter = curDelimiters.getDelimsInUse().iterator(); iter.hasNext();)
-//			{
-//				String curDelim = iter.next();
-//				cmb.addElement(curDelim);
-//			}
-//		}
-//		
-//		//User to add
-//		cmb.addElement(userAddDelimiters);
-//		
-//		if (!isNull)
-//		{
-//			//Add alphabetically order list of delimiters
-//			for(Iterator<String> iter = curDelimiters.getUserDelims().iterator(); iter.hasNext();)
-//			{
-//				String curDelim = iter.next();
-//				cmb.addElement(curDelim);
-//			}
-//		}
-//		
-//		cmbDelimiterRemoval.repaint();
-//	}
-	
-//	/**
-//	 * Update the remove word list in the remove combobox.
-//	 */
-//	private void updateCMBRemoval()
-//	{
-//		DefaultComboBoxModel cmb;
-//		cmb = ((DefaultComboBoxModel)cmbRemoval.getModel());
-//		cmb.removeAllElements();
-//		
-//		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-//		WordFilter curFilter = networkParams.getFilter();
-//		
-//		//Check if we are dealing with the Null SemanticSummaryParameters
-//		Boolean isNull = false;
-//		if (networkParams.equals(cloudManager.getNullSemanticSummary()))
-//				isNull = true;
-//		
-//		//Added words
-//		cmb.addElement(addedSeparator);
-//		
-//		if (!isNull)
-//		{	
-//			//Add alphabetically order list of words
-//			ArrayList<String> addedList = new ArrayList<String>();
-//			for(Iterator<String> iter = curFilter.getAddedWords().iterator(); iter.hasNext();)
-//			{
-//				String curWord = iter.next();
-//				addedList.add(curWord);
-//			}
-//			
-//			Collections.sort(addedList);
-//			for (int i = 0; i < addedList.size(); i++)
-//			{
-//				String curWord = addedList.get(i);
-//				cmb.addElement(curWord);
-//			}
-//		}
-//		
-//		//Flagged words
-//		cmb.addElement(flaggedSeparator);
-//		
-//		if (!isNull)
-//		{
-//			ArrayList<String> flaggedList = new ArrayList<String>();
-//			for(Iterator<String> iter = curFilter.getFlaggedWords().iterator(); iter.hasNext();)
-//			{
-//				String curWord = iter.next();
-//				flaggedList.add(curWord);
-//			}
-//			
-//			Collections.sort(flaggedList);
-//			for (int i = 0; i < flaggedList.size(); i++)
-//			{
-//				String curWord = flaggedList.get(i);
-//				cmb.addElement(curWord);
-//			}
-//		}
-//		
-//		//Stop words
-//		cmb.addElement(stopSeparator);
-//		
-//		if (!isNull)
-//		{
-//			ArrayList<String> stopList = new ArrayList<String>();
-//			for(Iterator<String> iter = curFilter.getStopWords().iterator(); iter.hasNext();)
-//			{
-//				String curWord = iter.next();
-//				stopList.add(curWord);
-//			}
-//			
-//			Collections.sort(stopList);
-//			for (int i = 0; i < stopList.size(); i++)
-//			{
-//				String curWord = stopList.get(i);
-//				cmb.addElement(curWord);
-//			}
-//		}
-//	}
-//	
-//	/**
-//	 * Refreshes the list of words that can be removed from the exclusion list.
-//	 */
-//	public void refreshRemovalCMB()
-//	{
-//		updateCMBRemoval();
-//		cmbRemoval.repaint();
-//	}
+
 	
 //	/**
 //	 * Sets the numExclusion checkbox based on the current network.
@@ -1400,68 +1141,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 //		this.updateStemmingBox();
 //	}
 //	
-//	
-//	/**
-//	 * Update the attribute list in the attribute combobox.
-//	 */
-//	private void updateCMBAttributes()
-//	{
-//		//Turn off listeners
-//		ListSelectionListener[] listeners = attributeList.getListSelectionListeners();
-//		for (int i = 0; i < listeners.length; i++)
-//		{
-//			ListSelectionListener curListener = listeners[i];
-//			attributeList.removeListSelectionListener(curListener);
-//		}
-//		
-//		//Updated GUI
-//		DefaultListModel listModel;
-//		listModel = ((DefaultListModel)attributeList.getModel());
-//		listModel.removeAllElements();
-//		
-//		
-//		CyNetwork network = cloudManager.getCurNetwork().getNetwork();
-//		if (network != null) {
-//			for (String name : cloudManager.getColumnNames(network, CyNode.class))
-//			{
-//				listModel.addElement(name);
-//			}
-//		}
-//		
-//		//Turn listeners back on
-//		for (int i = 0; i < listeners.length; i++)
-//		{
-//			ListSelectionListener curListener = listeners[i];
-//			attributeList.addListSelectionListener(curListener);
-//		}
-//	}
-//	
-//	
-//	/**
-//	 * Refreshes the list of attributes
-//	 */
-//	public void refreshAttributeCMB()
-//	{
-//		updateCMBAttributes();
-//		CloudParameters curCloud = cloudManager.getCurCloud();
-//		
-//		//Updated GUI
-//		List<String> curAttList;
-//		if (curCloud == cloudManager.getNullCloudParameters())
-//			curAttList = curCloud.getAttributeNames();
-//		else
-//			//curAttribute = curCloud.getAttributeName();
-//			curAttList = curCloud.getAttributeNames();
-//		
-//		if (curAttList == null) {
-//			curAttList = cloudManager.getColumnNames(curCloud.getNetworkParams().getNetwork(), CyNode.class);
-//		}
-//		
-//		attributeList.setSelectedItems(curAttList);
-//		attributeList.repaint();
-//		//updateAttNames();
-//		
-//	}
+
 	
 	/**
 	 * Builds the combo box of cloud style choices
@@ -1479,283 +1159,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		cmbStyle.repaint();
 	}
 	
-	/**
-	 * Handles the activation of the add/remove buttons for the word
-	 * exclusion list.
-	 * @param ItemEvent - event that triggered this reaction.
-	 */
-	public void itemStateChanged(ItemEvent e)
-	{
-		Object source = e.getSource();
-		
-		if (source instanceof JComboBox)
-		{
-//			JComboBox cmb = (JComboBox) source;
-//			if (cmb == cmbRemoval)
-//			{
-//				Object selectObject = cmbRemoval.getSelectedItem();
-//				if (selectObject != null)
-//				{
-//					String selectItem = selectObject.toString();
-//					if (selectItem.equalsIgnoreCase(addedSeparator) || 
-//							selectItem.equalsIgnoreCase(flaggedSeparator) ||
-//							selectItem.equalsIgnoreCase(stopSeparator))
-//						removeWordButton.setEnabled(false);
-//						else
-//							removeWordButton.setEnabled(true);
-//				}//end if not null
-//			}//end if cmbRemoval
-//			
-//			if (cmb == cmbDelimiterRemoval)
-//			{
-//				Object selectObject = cmbDelimiterRemoval.getSelectedItem();
-//				if (selectObject != null)
-//				{
-//					String selectItem = selectObject.toString();
-//					if (selectItem.equalsIgnoreCase(commonDelimiters) || 
-//							selectItem.equalsIgnoreCase(userAddDelimiters))
-//						removeDelimiterButton.setEnabled(false);
-//						else
-//							removeDelimiterButton.setEnabled(true);
-//				}//end if not null
-//			}//end if cmbDelimiterRemoval
-//			
-//			if (cmb == cmbDelimiterAddition)
-//			{
-//				Object selectObject = cmbDelimiterAddition.getSelectedItem();
-//				if (selectObject != null)
-//				{
-//					String selectItem = selectObject.toString();
-//					if (selectItem.equalsIgnoreCase(commonDelimiters) || 
-//							selectItem.equalsIgnoreCase(userAddDelimiters))
-//						addDelimiterButton.setEnabled(false);
-//						else
-//							addDelimiterButton.setEnabled(true);
-//				}//end if not null
-//			}//end if cmbDelimiterRemoval
-			
-		}//end if combo box
-	}
-	
-	
-	/**
-	 * Handles button presses in the Input Panel.
-	 * @param ActionEvent - event that triggered this method.
-	 */
-	public void actionPerformed(ActionEvent e)
-	{
-		Object _actionObject = e.getSource();
-		
-		//Handle button events
-		if (_actionObject instanceof JButton)
-		{
-			JButton _btn = (JButton)_actionObject;
-			
-//			if (_btn == removeWordButton)
-//			{
-//				//Get Selected word
-//				Object selectObject = cmbRemoval.getSelectedItem();
-//				if (selectObject != null)
-//				{
-//					String selectItem = selectObject.toString();
-//					if (!selectItem.equalsIgnoreCase(addedSeparator) || 
-//							!selectItem.equalsIgnoreCase(flaggedSeparator) ||
-//							!selectItem.equalsIgnoreCase(stopSeparator))
-//					{
-//						SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-//						WordFilter curFilter = networkParams.getFilter();
-//						
-//						//Remove from filter
-//						curFilter.remove(selectItem);
-//						
-//						//Reset flags
-//						networkParams.networkChanged();
-//						
-//						//Refresh word removal list
-//						this.refreshRemovalCMB();
-//					}//end if appropriate selection
-//				}//end if not null selected
-//			}//end remove word button
-//			
-//			if (_btn == addWordButton)
-//			{
-//				String value = (String)addWordTextField.getText();
-//				if (value.matches(""))
-//					return;
-//				
-//				else if (value.matches("[\\w]*"))
-//				{ 
-//					//add value to filter and update
-//					SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-//					WordFilter curFilter = networkParams.getFilter();
-//					value.toLowerCase();
-//					curFilter.add(value);
-//					
-//					//Reset flags
-//					networkParams.networkChanged();
-//					
-//					//Refresh view
-//					this.refreshRemovalCMB();
-//					addWordTextField.setText(null);
-//				}
-//				else
-//				{
-//					addWordTextField.setSelectionStart(0);
-//					addWordTextField.setSelectionEnd(value.length());
-//					String message = "You can only add a word that contains letters or numbers and no spaces";
-//					JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-//				}
-//			}
-//			
-//			if (_btn == removeDelimiterButton)
-//			{
-//				//Get Selected word
-//				Object selectObject = cmbDelimiterRemoval.getSelectedItem();
-//				if (selectObject != null)
-//				{
-//					String selectItem = selectObject.toString();
-//					if (!selectItem.equalsIgnoreCase(commonDelimiters) || 
-//							!selectItem.equalsIgnoreCase(userAddDelimiters))
-//					{
-//						SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-//						WordDelimiters curDelimiters = networkParams.getDelimiter();
-//						
-//						//Remove from delimiters
-//						curDelimiters.removeDelimiter(selectItem);
-//						
-//						//Reset flags
-//						networkParams.networkChanged();
-//						
-//						//Refresh word removal list
-//						this.updateDelimiterCMBs();
-//					}//end if appropriate selection
-//				}//end if not null selected
-//			}//end remove delimiter button
-//			
-//			if (_btn == addDelimiterButton)
-//			{
-//				//Get Selected word
-//				Object selectObject = cmbDelimiterAddition.getSelectedItem();
-//				if (selectObject != null)
-//				{
-//					String selectItem = selectObject.toString();
-//					if (!selectItem.equalsIgnoreCase(commonDelimiters) || 
-//							!selectItem.equalsIgnoreCase(userAddDelimiters))
-//					{
-//						//Dialog if user add
-//						if (selectItem.equals(selectMe))
-//						{
-//							Component parent = application.getJFrame();
-//							AddDelimiterDialog dialog = new AddDelimiterDialog(parent, true);
-//							dialog.setLocationRelativeTo(parent);
-//							dialog.setVisible(true);
-//							
-//							selectItem = dialog.getNewDelimiter();
-//						}
-//						
-//						if (!selectItem.equals(""))
-//						{
-//							SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-//							WordDelimiters curDelimiters = networkParams.getDelimiter();
-//						
-//							//Add to delimiters
-//							curDelimiters.addDelimToUse(selectItem);
-//						
-//							//Reset flags
-//							networkParams.networkChanged();
-//						
-//							//Refresh word removal list
-//							this.updateDelimiterCMBs();
-//						}
-//					}//end if appropriate selection
-//				}//end if not null selected
-//			}//end remove delimiter button
-		}//end button	
-		
-		else if (_actionObject instanceof JCheckBox)
-		{
-			JCheckBox _box = (JCheckBox)_actionObject;
-//			
-//			if (_box == numExclusion)
-//			{
-//				Boolean selected = numExclusion.isSelected();
-//				
-//				//add value to filter and update
-//				SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-//				WordFilter curFilter = networkParams.getFilter();
-//				curFilter.setFilterNums(selected);
-//				
-//				//Reset flags
-//				networkParams.networkChanged();
-//			}
-			
-//			if (_box == useNetworkCounts)
-//			{
-//				Boolean selected = useNetworkCounts.isSelected();
-//				CloudParameters cloudParams = cloudManager.getCurCloud();
-//				
-//				if (!cloudParams.equals(cloudManager.getNullCloudParameters()))
-//						cloudParams.setUseNetNormal(selected);
-//				
-//				//Enable or disable slider bar stuff and reset network weights
-//				if (selected)
-//				{
-//					sliderPanel.setVisible(true);
-//					sliderPanel.setEnabled(true);
-//					
-//					Double netNormalization = cloudParams.getNetWeightFactor();
-//					sliderPanel.setNetNormValue(netNormalization);
-//				}
-//				else
-//				{
-//					//Confirm continuation
-//					Component parent = application.getJFrame();
-//					int value = JOptionPane.NO_OPTION;
-//					
-//					value = JOptionPane.showConfirmDialog(parent,"Network normalization will now be set to 0.  Do you want to continue?", 
-//							"Network Normalization",
-//							JOptionPane.YES_NO_OPTION);
-//					
-//					if (value == JOptionPane.YES_OPTION)
-//					{
-//						sliderPanel.setVisible(false);
-//						sliderPanel.setEnabled(false);
-//					
-//						//reset network param
-//						cloudParams.setNetWeightFactor(0.0);
-//						sliderPanel.setNetNormValue(0.0);
-//						
-//						//Update cloud display
-//						updateCloudAction.doRealAction();
-//					}//end if yes option
-//					else
-//					{
-//						//Reset Values
-//						sliderPanel.setVisible(true);
-//						sliderPanel.setEnabled(true);
-//						
-//						Double netNormalization = cloudParams.getNetWeightFactor();
-//						sliderPanel.setNetNormValue(netNormalization);
-//						
-//						useNetworkCounts.setSelected(true);
-//						cloudParams.setUseNetNormal(true);
-//					}
-//				}//end collapse Network Normalization panel
-//			}//end of useNetworkCounts
-//			
-//			if (_box == stemmer)
-//			{
-//				Boolean selected = stemmer.isSelected();
-//				
-//				//add value to networkParams and update
-//				SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-//				networkParams.setIsStemming(selected);
-//				
-//				//Reset flags
-//				networkParams.networkChanged();
-//			}
-		}//end checkboxes
-	}
+//	
 	
 	/**
 	 * Sets up the network normalization panel for the given cloud.
@@ -1828,33 +1232,33 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 //	{
 //		return addWordButton;
 //	}
-	
-	public JLabel getNetworkLabel()
-	{
-		return networkLabel;
-	}
-	
-	public DefaultListModel getListValues()
-	{
-		return listValues;
-	}
-	
-	public JList getCloudList()
-	{
-		return cloudList;
-	}
-	
-	
+//	
+//	public JLabel getNetworkLabel()
+//	{
+//		return networkLabel;
+//	}
+//	
+//	public DefaultListModel getListValues()
+//	{
+//		return listValues;
+//	}
+//	
+//	public JList getCloudList()
+//	{
+//		return cloudList;
+//	}
+//	
+//	
 //	public JComboBox getCMBRemoval()
 //	{
 //		return cmbRemoval;
 //	}
-	
-	public JComboBox getCMBStyle()
-	{
-		return cmbStyle;
-	}
-	
+//	
+//	public JComboBox getCMBStyle()
+//	{
+//		return cmbStyle;
+//	}
+//	
 //	
 //	public CloudListSelectionHandler getCloudListSelectionHandler()
 //	{
@@ -1901,20 +1305,20 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 //		return sliderPanel;
 //	}
 //	
-	public CheckBoxJList getAttributeList()
-	{
-		return attributeList;
-	}
-	
-	public JPopupMenu getAttributePopupMenu()
-	{
-		return attributeSelectionPopupMenu;
-	}
-	
-	public JTextArea getAttNames()
-	{
-		return attNames;
-	}
+//	public CheckBoxJList getAttributeList()
+//	{
+//		return attributeList;
+//	}
+//	
+//	public JPopupMenu getAttributePopupMenu()
+//	{
+//		return attributeSelectionPopupMenu;
+//	}
+//	
+//	public JTextArea getAttNames()
+//	{
+//		return attNames;
+//	}
 
 //	public JButton getCreateNetworkButton()
 //	{

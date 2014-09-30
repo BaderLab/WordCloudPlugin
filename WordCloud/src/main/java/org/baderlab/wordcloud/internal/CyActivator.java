@@ -45,7 +45,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		ModelManager modelManager = new ModelManager(networkTableManager, tableManager, tableFactory, networkFactory, networkViewFactory, networkManager, viewManager, visualMappingManager, layoutTaskFactory, taskManager, streamUtil);
 		CloudModelManager cloudModelManager = new CloudModelManager(modelManager);
-		UIManager panelManager = new UIManager(cloudModelManager, applicationManager, application, registrar);
+		UIManager panelManager = new UIManager(cloudModelManager, applicationManager, application, registrar, viewManager);
 		cloudModelManager.addListener(panelManager);
 		
 		CreateCloudAction createAction = new CreateCloudAction(applicationManager, application, cloudModelManager, panelManager);

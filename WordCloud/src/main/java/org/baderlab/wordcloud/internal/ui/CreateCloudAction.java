@@ -90,47 +90,7 @@ public class CreateCloudAction extends AbstractCyAction
 		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
 		
 		NetworkParameters networkParams = cloudManager.addNetwork(network);
-		networkParams.createCloudParameters(nodes);
-//		
-//		
-//		//Create CloudParameters
-//		CloudParameters cloudParams = new CloudParameters(params);
-//		cloudParams.setCloudNum(params.getCloudCount());
-//		cloudParams.setCloudName(params.getNextCloudName());
-//		
-//		
-//		
-//		cloudParams.setSelectedNodes(nodes);
-//		
-		//Add to list of clouds
-//		params.addCloud(cloudParams.getCloudName(), cloudParams);
-		
-		// Select all attributes by default
-//		SemanticSummaryInputPanel inputPanel = cloudManager.getInputWindow();
-//		inputPanel.setAttributeNames(cloudManager.getColumnNames(network, CyNode.class));
-		
-		//Retrieve values from input panel
-//		cloudParams.retrieveInputVals(inputPanel);
-//		
-//		cloudParams.updateRatios();
-//		cloudParams.calculateFontSizes();
-		
-//		CloudDisplayPanel cloudPanel = cloudManager.getCloudWindow();
-//		cloudPanel.updateCloudDisplay(cloudParams);
-		
-		//Update list of clouds
-		//inputPanel.setNetworkList(params);
-//		inputPanel.addNewCloud(cloudParams);
-//		inputPanel.getCreateNetworkButton().setEnabled(true);
-//		inputPanel.getSaveCloudButton().setEnabled(true);
-		
-		//displayPanel.getSaveCloudButton().setEnabled(true);
-		
-		//Update the list of filter words and checkbox
-//		inputPanel.refreshNetworkSettings(); 
-		
-//		//Enable adding of words to exclusion list
-//		inputPanel.getAddWordTextField().setEditable(true);
-//		inputPanel.getAddWordButton().setEnabled(true);
+		networkParams.createCloudParameters(nodes); // fires event that will update the UI
+
 	}
 }

@@ -96,6 +96,8 @@ public class DualPanelDocker {
 		registrar.registerService(inputComponent, CytoPanelComponent.class, new Properties());
 		registrar.registerService(cloudComponent, CytoPanelComponent.class, new Properties());
 		
+		cloudPanel.setBackground(cloudPanel.getParent().getBackground());
+		
 		// Bring to front
 		bringToFront(inputComponent);
 		bringToFront(cloudComponent);
@@ -111,6 +113,7 @@ public class DualPanelDocker {
 		dialog.setLayout(new BorderLayout());
 		dialog.add(inputPanel, BorderLayout.WEST);
 		dialog.add(cloudPanel, BorderLayout.CENTER);
+		cloudPanel.setBackground(cloudPanel.getParent().getBackground());
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		Dimension inputSize = inputPanel.getPreferredSize();
 		Dimension cloudSize = cloudPanel.getPreferredSize();

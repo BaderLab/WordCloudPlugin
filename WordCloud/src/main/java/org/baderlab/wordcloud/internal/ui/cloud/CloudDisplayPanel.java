@@ -84,10 +84,13 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 		tagCloudFlowPanel = initializeTagCloud();
 		cloudScroll = new JScrollPane(tagCloudFlowPanel);
 		cloudScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		cloudScroll.setBorder(BorderFactory.createEmptyBorder());
+		cloudScroll.setBackground(getBackground());
 		
 		rootPane = new JRootPane(); // use to layer dock button on top
 		rootPane.getContentPane().setLayout(new BorderLayout());
 		rootPane.getContentPane().add(cloudScroll, BorderLayout.CENTER);
+		rootPane.setBackground(getBackground());
 		
 		add(rootPane, BorderLayout.CENTER);
 	}

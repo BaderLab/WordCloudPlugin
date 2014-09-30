@@ -82,17 +82,21 @@ public class ModelManager implements AddedNodesListener, RemovedNodesListener, A
 		return network.getDefaultNetworkTable().getColumn(Constants.NETWORK_UID) != null;
 	}
 
-	public void createCloudMetadata(CyNetwork network) {
+	public void initializeCloudMetadata(CyNetwork network) {
 		CyTable networkTable = network.getDefaultNetworkTable();
 
-		networkTable.createColumn(Constants.USE_STEMMING, Boolean.class, false);
-		networkTable.createColumn(Constants.CLOUD_COUNTER, Integer.class, false);
-		networkTable.createColumn(Constants.NETWORK_UID, Integer.class, false);
+		if(networkTable.getColumn(Constants.NETWORK_UID) == null) {
+			networkTable.createColumn(Constants.USE_STEMMING, Boolean.class, false);
+			networkTable.createColumn(Constants.CLOUD_COUNTER, Integer.class, false);
+			networkTable.createColumn(Constants.NETWORK_UID, Integer.class, false);
+		}
 
 		CyRow row = network.getRow(network);
-		row.set(Constants.USE_STEMMING, Boolean.FALSE);
-		row.set(Constants.CLOUD_COUNTER, 1);
-		row.set(Constants.NETWORK_UID, getNextNetworkUID());
+		if(row.get(Constants.NETWORK_UID, Integer.class) == null) {
+			row.set(Constants.USE_STEMMING, Boolean.FALSE);
+			row.set(Constants.CLOUD_COUNTER, 1);
+			row.set(Constants.NETWORK_UID, getNextNetworkUID());
+		}
 	}
 
 	public int getNextNetworkUID() {
@@ -114,11 +118,11 @@ public class ModelManager implements AddedNodesListener, RemovedNodesListener, A
 		}
 	}
 	
-	public void incrementCloudCounter(CyNetwork network) {
-		CyRow row = network.getRow(network);
-		int count = row.get(Constants.CLOUD_COUNTER, Integer.class);
-		row.set(Constants.CLOUD_COUNTER, count + 1);
-	}
+//	public void incrementCloudCounter(CyNetwork network) {
+//		CyRow row = network.getRow(network);
+//		int count = row.get(Constants.CLOUD_COUNTER, Integer.class);
+//		row.set(Constants.CLOUD_COUNTER, count + 1);
+//	}
 
 	public CyNetwork createNetwork(String name) {
 		CyNetwork network = networkFactory.createNetwork();

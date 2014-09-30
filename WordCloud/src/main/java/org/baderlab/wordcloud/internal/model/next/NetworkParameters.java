@@ -1,5 +1,7 @@
 package org.baderlab.wordcloud.internal.model.next;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,15 +43,31 @@ public class NetworkParameters {
 		this.filter = new WordFilter(new IoUtil(streamUtil)); // default
 		
 		ModelManager modelManager = parent.getModelManager();
-		if (!modelManager.hasCloudMetadata(network)) {
-			modelManager.createCloudMetadata(network);
-		}
+		modelManager.initializeCloudMetadata(network);
 	}
 	
 	public boolean hasNetworkChanged() {
 		return parent.getModelManager().hasChanges(network);
 	}
 	
+	
+	/**
+	 * Returns the clouds sorted by cloud num.
+	 */
+	public List<CloudParameters> getClouds() {
+		List<CloudParameters> result = new ArrayList<CloudParameters>(clouds.values());
+		Collections.sort(result);
+		return result;
+	}
+	
+	public CloudParameters getCloud(String cloudName) {
+		return clouds.get(cloudName);
+	}
+	
+	public CloudParameters getFirstCloud() {
+		List<CloudParameters> list = getClouds();
+		return (list.isEmpty() ? null : list.get(0));
+	}
 	
 	/**
 	 * Creates a new CloudParameters object for this network.
