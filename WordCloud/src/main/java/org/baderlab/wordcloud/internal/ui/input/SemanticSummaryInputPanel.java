@@ -108,8 +108,8 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 	private JLabel networkLabel;
 	
 	//JListData
-	private DefaultListModel<String> listValues;
-	private JList<String> cloudList;
+	private DefaultListModel listValues;
+	private JList cloudList;
 //	private CloudListSelectionHandler handler;
 	
 	//Buttons
@@ -278,9 +278,9 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		networkPanel.setBorder(BorderFactory.createEmptyBorder());
 		
 		//List of Clouds
-		listValues = new DefaultListModel<String>();
+		listValues = new DefaultListModel();
 		
-		cloudList = new JList<String>(listValues);
+		cloudList = new JList(listValues);
 		cloudList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		cloudList.setSelectedIndex(0);
 		cloudList.setVisibleRowCount(10);
@@ -1834,7 +1834,7 @@ public class SemanticSummaryInputPanel extends JPanel implements ItemListener, A
 		return networkLabel;
 	}
 	
-	public DefaultListModel<String> getListValues()
+	public DefaultListModel getListValues()
 	{
 		return listValues;
 	}

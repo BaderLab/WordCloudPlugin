@@ -4,7 +4,7 @@
 
 	<groupId>org.baderlab</groupId>
 	<artifactId>wordcloud</artifactId>
-	<version>2.0.3</version>
+	<version>3.0</version>
 	<packaging>bundle</packaging>
 	
 	<name>WordCloud</name>
@@ -143,6 +143,35 @@
 						<Xmaxwarns>10000</Xmaxwarns>
 						<Xmaxerrs>10000</Xmaxerrs>
 					</compilerArguments>
+					
+					<excludes>
+						<exclude>org/baderlab/wordcloud/internal/SemanticSummaryPlugin.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/command/CreateCloudCommandAction.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/command/CreateCloudNetworkAction.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/command/CreateWordCloudCommandHandlerTask.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/command/CreateWordCloudCommandHandlerTaskFactory.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/command/DeleteWordCloudCommandHandlerTask.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/command/DeleteWordCloudCommandHandlerTaskFactory.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/command/SelectWordCloudCommandHandlerTask.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/command/SelectWordCloudCommandHandlerTaskFactory.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/model/SemanticSummaryManager.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/model/SemanticSummaryParameters.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/model/SemanticSummaryParametersFactory.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/AbstractSemanticSummaryAction.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/DeleteCloudAction.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/PanelActivateAction.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/SaveCloudAction.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/UpdateCloudAction.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/WordCloudVisualStyleFactory.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/input/CloudListMouseListener.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/input/CloudListSelectionHandler.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/input/CloudListSelectionHandlerFactory.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/input/SliderBarActionListener.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/input/SliderBarPanel.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/input/WordSelectPanel.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ui/input/SemanticSummaryInputPanelFactory.java</exclude>
+					</excludes>
+					
 				</configuration>
 			</plugin>
 			<plugin>
