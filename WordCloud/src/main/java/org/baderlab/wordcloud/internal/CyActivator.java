@@ -27,6 +27,8 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext context) throws Exception {
 		
+		
+		// Get services
 		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
 		CySwingApplication application = getService(context, CySwingApplication.class);
 		
@@ -45,15 +47,22 @@ public class CyActivator extends AbstractCyActivator {
 		StreamUtil streamUtil = getService(context, StreamUtil.class);
 		
 		
+		// Managers
 		CloudModelManager cloudModelManager = new CloudModelManager(networkManager, tableManager, streamUtil);
 		registerAllServices(context, cloudModelManager, new Properties());
 		UIManager uiManager = new UIManager(cloudModelManager, applicationManager, application, registrar, viewManager);
 		cloudModelManager.addListener(uiManager);
 		registerAllServices(context, uiManager, new Properties());
 		
-		CreateCloudAction createAction = new CreateCloudAction(applicationManager, application, cloudModelManager, uiManager);
+		// Actions
+		CreateCloudAction createAction = new CreateCloudAction(applicationManager, application, cloudModelManager);
 		createAction.setPreferredMenu("Apps.WordCloud");
 		application.addAction(createAction);
+		
+		// Session persistence
+		SessionListener sessionListener = new SessionListener(cloudModelManager, new IoUtil(streamUtil), networkManager);
+		registerAllServices(context, sessionListener, new Properties());
+		
 		
 		
 //		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);

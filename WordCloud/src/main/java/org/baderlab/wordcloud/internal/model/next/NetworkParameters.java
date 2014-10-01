@@ -108,6 +108,13 @@ public class NetworkParameters {
 		return cloudParams;
 	}
 	
+	public CloudParameters createCloud(String propFile) {
+		CloudParameters cloudParams = new CloudParameters(this, propFile);
+		clouds.put(cloudParams.getCloudName(), cloudParams);
+		parent.fireCloudAdded(cloudParams);
+		return cloudParams;
+	}
+	
 	public Integer getCloudCount() {
 		return network.getRow(network).get(Constants.CLOUD_COUNTER, Integer.class);
 	}

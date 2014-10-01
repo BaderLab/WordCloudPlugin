@@ -42,15 +42,13 @@ public class CreateCloudAction extends AbstractCyAction {
 	private final CyApplicationManager applicationManager;
 	private final CySwingApplication application;
 	private final CloudModelManager cloudManager;
-	private final UIManager uiManager;
 	
 
-	public CreateCloudAction(CyApplicationManager applicationManager, CySwingApplication application, CloudModelManager cloudManager, UIManager uiManager) {
+	public CreateCloudAction(CyApplicationManager applicationManager, CySwingApplication application, CloudModelManager cloudManager) {
 		super("Create Cloud");
 		this.applicationManager = applicationManager;
 		this.application = application;
 		this.cloudManager = cloudManager;
-		this.uiManager = uiManager;
 	}
 	
 	

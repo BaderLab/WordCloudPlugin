@@ -67,7 +67,7 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 		return new NetworkParameters(this, null);
 	}
 	
-	public void removeNetwork(CyNetwork network) { // MKTODO this needs an event
+	public void removeNetwork(CyNetwork network) {
 		NetworkParameters removed = networks.remove(network);
 		fireNetworkRemoved(removed);
 	}
@@ -156,7 +156,7 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 	}
 
 	
-	protected boolean hasCloudMetadata(CyNetwork network) {
+	public static boolean hasCloudMetadata(CyNetwork network) {
 		return network.getDefaultNetworkTable().getColumn(Constants.NETWORK_UID) != null;
 	}
 
@@ -208,6 +208,7 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 	
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
+		// MKTODO is this called when the session is destroyed?
 		CyNetwork network = e.getNetwork();
 		removeNetwork(network);
 	}

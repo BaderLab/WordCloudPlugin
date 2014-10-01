@@ -29,23 +29,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
-import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
-import org.baderlab.wordcloud.internal.model.SemanticSummaryParameters;
-import org.baderlab.wordcloud.internal.model.SemanticSummaryParametersFactory;
+import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.next.CloudParameters;
-import org.baderlab.wordcloud.internal.model.next.ModelManager;
+import org.baderlab.wordcloud.internal.model.next.NetworkParameters;
 import org.baderlab.wordcloud.internal.model.next.WordDelimiters;
 import org.baderlab.wordcloud.internal.model.next.WordFilter;
-import org.baderlab.wordcloud.internal.ui.SemanticSummaryPluginAction;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
@@ -64,44 +61,26 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  */
 
-public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, SessionLoadedListener, SessionAboutToBeLoadedListener 
+public class SessionListener implements SessionAboutToBeSavedListener, SessionLoadedListener, SessionAboutToBeLoadedListener 
 {
 	
 	//Variables
 	private static final String netNameSep = "SemanticSummaryNetworkSeparator";
 	private static final String cloudNameSep = "SemanticSummaryCloudSeparator";
 	
-	private final Logger logger = LoggerFactory.getLogger(SemanticSummaryPlugin.class);
+	private final Logger logger = LoggerFactory.getLogger(SessionListener.class);
 	
-	private SemanticSummaryPluginAction pluginAction;
-	private SemanticSummaryManager cloudManager;
-	private SemanticSummaryParametersFactory parametersFactory;
-	private ModelManager modelManager;
+	private CloudModelManager cloudManager;
 	private IoUtil ioUtil;
-	private CyApplicationManager applicationManager;
-	private CySwingApplication application;
+	private CyNetworkManager networkManager;
 	
-	//CONSTRUCTORS
+
 	
-	/**
-	 * SemanticSummaryPlugin Constructor
-	 * @param pluginAction 
-	 * @param parametersFactory 
-	 * @param modelManager 
-	 * @param ioUtil 
-	 * @param applicationManager 
-	 * @param application 
-	 */
-	
-	public SemanticSummaryPlugin(SemanticSummaryPluginAction pluginAction, SemanticSummaryManager cloudManager, SemanticSummaryParametersFactory parametersFactory, ModelManager modelManager, IoUtil ioUtil, CyApplicationManager applicationManager, CySwingApplication application)
+	public SessionListener(CloudModelManager cloudManager, IoUtil ioUtil, CyNetworkManager networkManager)
 	{
-		this.pluginAction = pluginAction;
 		this.cloudManager = cloudManager;
-		this.parametersFactory = parametersFactory;
-		this.modelManager = modelManager;
 		this.ioUtil = ioUtil;
-		this.applicationManager = applicationManager;
-		this.application = application;
+		this.networkManager = networkManager;
 	}
 	
 
@@ -124,8 +103,8 @@ public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, Ses
 	
 	@Override
 	public void handleEvent(SessionAboutToBeLoadedEvent event) {
-		cloudManager.reset();
-		cloudManager.setupCurrentNetwork(null);
+//		cloudManager.reset();
+//		cloudManager.setupCurrentNetwork(null);
 	}
 	
 	@Override
@@ -146,7 +125,7 @@ public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, Ses
 			return;
 		}
 		restoreSessionState(files);
-		cloudManager.setupCurrentNetwork(applicationManager.getCurrentNetwork());
+//		cloudManager.setupCurrentNetwork(applicationManager.getCurrentNetwork());
 	}
 	
 	/**
@@ -162,17 +141,15 @@ public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, Ses
 		String tmpDir = System.getProperty("java.io.tmpdir");
 		
 		//get the networks
-		Map<CyNetwork, SemanticSummaryParameters> networks = cloudManager.getCyNetworkList();
+		Collection<NetworkParameters> networks = cloudManager.getNetworks();
 		
 		//Create a props file for each network
-		for (Entry<CyNetwork, SemanticSummaryParameters> entry : networks.entrySet())
+		for (NetworkParameters params : networks)
 		{
-			SemanticSummaryParameters params = entry.getValue();
-			
 			//Update the network if it has changed
-			CyNetwork network = entry.getKey();
-			if (params.networkHasChanged(network));
-				params.updateParameters(network);
+			CyNetwork network = params.getNetwork();
+//			if (params.networkHasChanged(network));
+//				params.updateParameters(network);
 			
 			//write out files.
 			try 
@@ -186,30 +163,23 @@ public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, Ses
 				
 				File current_delimiter = new File(tmpDir, netNameSep + uid + netNameSep + ".DELIMITER.txt");
 				BufferedWriter delimiterWriter = new BufferedWriter(new FileWriter(current_delimiter));
-				delimiterWriter.write(params.getDelimiter().toString());
+				delimiterWriter.write(params.getDelimeters().toString());
 				delimiterWriter.close();
 				pFileList.add(current_delimiter);
 				
 				//Loop on Clouds
-				if (!params.getClouds().isEmpty())
-				{
-					Map<String, CloudParameters> all_clouds = params.getClouds();
+				for(CloudParameters cloud : params.getClouds()) {
+					String cloud_name = cloud.getCloudName();
 					
-					for (Iterator<String> j=all_clouds.keySet().iterator(); j.hasNext();)
-					{
-						String cloud_name = j.next().toString();
-						
-						CloudParameters cloud = all_clouds.get(cloud_name);
-						
-						//File for CloudParameters
-						File current_cloud = new File(tmpDir, netNameSep + uid + netNameSep + 
-								cloudNameSep + cloud_name + cloudNameSep + ".CLOUDS.txt");
-						BufferedWriter subCloud1Writer = new BufferedWriter(new FileWriter(current_cloud));
-						subCloud1Writer.write(cloud.toString());
-						subCloud1Writer.close();
-						pFileList.add(current_cloud);
-					}//end iteration over clouds
-				}//end if clouds exist for network
+					//File for CloudParameters
+					File current_cloud = new File(tmpDir, netNameSep + uid + netNameSep + 
+							cloudNameSep + cloud_name + cloudNameSep + ".CLOUDS.txt");
+					BufferedWriter subCloud1Writer = new BufferedWriter(new FileWriter(current_cloud));
+					subCloud1Writer.write(cloud.toString());
+					subCloud1Writer.close();
+					pFileList.add(current_cloud);
+				}
+				
 			}//end try
 			catch (Exception ex)
 			{
@@ -217,6 +187,34 @@ public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, Ses
 			}//end catch
 		}//end network iterator
 	}//end save session method
+	
+	
+	private Set<CyNetwork> getSemanticSummaryNetworks() {
+		Set<CyNetwork> networks = new HashSet<CyNetwork>();
+		for (CyNetwork network : networkManager.getNetworkSet()) {
+			if (CloudModelManager.hasCloudMetadata(network)) {
+				networks.add(network);
+			}
+		}
+		return networks;
+	}
+	
+	private CyNetwork getNetwork(int uid) {
+		for (CyNetwork network : networkManager.getNetworkSet()) {
+			CyRow row = network.getRow(network);
+			if (row == null) {
+				continue;
+			}
+			Integer other = row.get(Constants.NETWORK_UID, Integer.class);
+			if (other == null) {
+				continue;
+			}
+			if (uid == other) {
+				return network;
+			}
+		}
+		return null;
+	}
 	
 	/**
 	 * Restore Semantic Summaries
@@ -232,14 +230,15 @@ public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, Ses
 			return; //no previous state to restore
 		}
 		
-		//Initialize and load panels
-		pluginAction.loadPanels();
+//		//Initialize and load panels
+//		pluginAction.loadPanels();
 		
 		try
 		{
-			for (CyNetwork network : modelManager.getSemanticSummaryNetworks()) {
-				SemanticSummaryParameters params = parametersFactory.createSemanticSummaryParameters(network);
-				cloudManager.registerNetwork(network, params);
+			for (CyNetwork network : getSemanticSummaryNetworks()) {
+				cloudManager.addNetwork(network);
+//				SemanticSummaryParameters params = parametersFactory.createSemanticSummaryParameters(network);
+//				cloudManager.registerNetwork(network, params);
 			}
 			
 			//Go through the prop files to create the clouds and set filters
@@ -261,12 +260,14 @@ public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, Ses
 					String cloud_name = fullname2[1];
 					
 					//Get the Network Parameters
-					CyNetwork network = modelManager.getNetwork(uid);
-					SemanticSummaryParameters networkParams = cloudManager.getCyNetworkList().get(network);
+					CyNetwork network = getNetwork(uid);
+					NetworkParameters networkParams = cloudManager.getNetworkParameters(network);
 					
-					//Given the file with all the parameters, create a new parameters
-					CloudParameters params = new CloudParameters(networkParams, fullText);
-					networkParams.addCloud(cloud_name, params);
+					networkParams.createCloud(fullText);
+					
+//					//Given the file with all the parameters, create a new parameters
+//					CloudParameters params = new CloudParameters(networkParams, fullText);
+//					networkParams.addCloud(cloud_name, params);
 					
 				}//end if .CLOUDS.txt file
 				
@@ -280,8 +281,9 @@ public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, Ses
 					int uid = Integer.parseInt(net_name);
 					
 					//Get the Network Parameters
-					CyNetwork network = modelManager.getNetwork(uid);
-					SemanticSummaryParameters networkParams = cloudManager.getCyNetworkList().get(network);
+					CyNetwork network = getNetwork(uid);
+					NetworkParameters networkParams = cloudManager.getNetworkParameters(network);
+					
 					
 					//Recreate the Filter and set pointer in cloud
 					WordFilter curFilter = new WordFilter(fullText);
@@ -298,20 +300,20 @@ public class SemanticSummaryPlugin implements SessionAboutToBeSavedListener, Ses
 					int uid = Integer.parseInt(net_name);
 					
 					//Get the Network Parameters
-					CyNetwork network = modelManager.getNetwork(uid);
-					SemanticSummaryParameters networkParams = cloudManager.getCyNetworkList().get(network);
+					CyNetwork network = getNetwork(uid);
+					NetworkParameters networkParams = cloudManager.getNetworkParameters(network);
 					
 					//Recreate the Delimiter and set pointer in cloud
-					WordDelimiters curDelimiter = new WordDelimiters(application, fullText);
-					networkParams.setDelimiter(curDelimiter);
+					WordDelimiters curDelimiter = new WordDelimiters(fullText);
+					networkParams.setDelimeters(curDelimiter);
 				}
 			}//end loop through all props files
 			
-			//Set current network and Initialize the panel appropriately
-			cloudManager.setupCurrentNetwork(applicationManager.getCurrentNetwork());
+//			//Set current network and Initialize the panel appropriately
+//			cloudManager.setupCurrentNetwork(applicationManager.getCurrentNetwork());
 
-			for (SemanticSummaryParameters parameters: cloudManager.getCyNetworkList().values()) {
-				for (CloudParameters cloud : parameters.getClouds().values()) {
+			for (NetworkParameters parameters: cloudManager.getNetworks()) {
+				for (CloudParameters cloud : parameters.getClouds()) {
 					cloud.updateSelectedCounts();
 				}
 			}
