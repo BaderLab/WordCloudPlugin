@@ -146,6 +146,7 @@
 					
 					<excludes>
 						<exclude>org/baderlab/wordcloud/internal/SemanticSummaryPlugin.java</exclude>
+						<exclude>org/baderlab/wordcloud/internal/ModelManager.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/command/CreateCloudCommandAction.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/command/CreateCloudNetworkAction.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/command/CreateWordCloudCommandHandlerTask.java</exclude>

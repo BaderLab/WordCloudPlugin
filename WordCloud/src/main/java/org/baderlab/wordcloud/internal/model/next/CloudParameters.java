@@ -169,8 +169,9 @@ public class CloudParameters implements Comparable<CloudParameters>
 		this.minRatio = new Double(props.get("MinRatio"));
 		this.maxWords = new Integer(props.get("MaxWords"));
 		this.cloudNum = new Integer(props.get("CloudNum"));
+		
 		// Reload cloud group table if it has been created (through command line)
-		for (CyTable table : networkParams.getManager().getModelManager().getTableManager().getAllTables(true)) {
+		for (CyTable table : networkParams.getManager().getTableManager().getAllTables(true)) {
 			if (table.getTitle().equals(props.get("ClusterTableName"))) {
 				this.clusterTable = table;
 			}
@@ -992,6 +993,10 @@ public class CloudParameters implements Comparable<CloudParameters>
 		networkCount++;
 		
 		return name;
+	}
+	
+	public boolean isNullCloud() {
+		return getCloudNum() == NetworkParameters.NULL_COUNT;
 	}
 	
 	

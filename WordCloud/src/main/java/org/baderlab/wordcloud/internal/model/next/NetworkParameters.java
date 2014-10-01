@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.baderlab.wordcloud.internal.Constants;
 import org.baderlab.wordcloud.internal.IoUtil;
-import org.baderlab.wordcloud.internal.ModelManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -18,12 +17,15 @@ public class NetworkParameters {
 
 	private final CloudModelManager parent;
 	private final CyNetwork network;
+	
 	private Map<String, CloudParameters> clouds = new HashMap<String, CloudParameters>();
 	
 	//Name creation variables
 	protected static final String CLOUDNAME = "Cloud";
 	protected static final String SEPARATER = "_";
 	
+	protected static final int NULL_COUNT = -99;
+	protected static final String NULL_NAME = "null";
 	
 	//Font Size Values
 	protected static final Integer MINFONTSIZE = 12; 
@@ -39,15 +41,12 @@ public class NetworkParameters {
 		this.parent = parent;
 		this.network = network;
 		this.delimiters = new WordDelimiters(); // default
-		StreamUtil streamUtil = parent.getModelManager().getStreamUtil();
+		StreamUtil streamUtil = parent.getStreamUtil();
 		this.filter = new WordFilter(new IoUtil(streamUtil)); // default
 		
-		ModelManager modelManager = parent.getModelManager();
-		modelManager.initializeCloudMetadata(network);
-	}
-	
-	public boolean hasNetworkChanged() {
-		return parent.getModelManager().hasChanges(network);
+		if(network != null) {
+			parent.initializeCloudMetadata(network);
+		}
 	}
 	
 	
@@ -69,23 +68,43 @@ public class NetworkParameters {
 		return (list.isEmpty() ? null : list.get(0));
 	}
 	
+	
 	/**
-	 * Creates a new CloudParameters object for this network.
-	 * @param nodes It is assumed that all the nodes in the list are part of this network.
+	 * Returns a special "Null" cloud that is not contained in the main list of clouds.
+	 * This is mainly for convenience, so that methods in the UI don't need special cases to handle
+	 * when a network has an empty list of clouds. Also it makes it easier to implement
+	 * features like "sync with selection" which don't require that a cloud be created first.
 	 */
-	public CloudParameters createCloudParameters(Set<CyNode> nodes) {
+	public CloudParameters getNullCloud() {
+		return createCloudParameters(Collections.<CyNode>emptySet(), NULL_COUNT, NULL_NAME);
+	}
+	
+	private CloudParameters createCloudParameters(Set<CyNode> nodes, int count, String name) {
+		List<String> attributes = null;
+		if(network == null)
+			attributes = null;
+		else
+			attributes = CloudModelManager.getColumnNames(network, CyNode.class);
+		
 		CloudParameters cloudParams = new CloudParameters(this);
-		List<String> attributes = CloudModelManager.getColumnNames(network, CyNode.class);
-		cloudParams.setCloudNum(getCloudCount());
-		cloudParams.setCloudName(getNextCloudName());
+		cloudParams.setCloudNum(count);
+		cloudParams.setCloudName(name);
 		cloudParams.setSelectedNodes(nodes);
 		cloudParams.setAttributeNames(attributes);
 		cloudParams.updateRatios();
 		cloudParams.calculateFontSizes();
+		return cloudParams;
+	}
+	
+	
+	/**
+	 * Creates a new CloudParameters object for this network.
+	 * @param nodes It is assumed that all the nodes in the list are part of this network.
+	 */
+	public CloudParameters createCloud(Set<CyNode> nodes) {
+		CloudParameters cloudParams = createCloudParameters(nodes, getCloudCount(), getNextCloudName());
 		clouds.put(cloudParams.getCloudName(), cloudParams);
-		
 		parent.fireCloudAdded(cloudParams);
-		
 		return cloudParams;
 	}
 	

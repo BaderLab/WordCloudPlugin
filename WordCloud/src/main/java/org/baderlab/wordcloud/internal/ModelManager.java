@@ -78,45 +78,7 @@ public class ModelManager implements AddedNodesListener, RemovedNodesListener, A
 		changedNetworks = new WeakHashMap<CyNetwork, Object>();
 	}
 
-	public boolean hasCloudMetadata(CyNetwork network) {
-		return network.getDefaultNetworkTable().getColumn(Constants.NETWORK_UID) != null;
-	}
-
-	public void initializeCloudMetadata(CyNetwork network) {
-		CyTable networkTable = network.getDefaultNetworkTable();
-
-		if(networkTable.getColumn(Constants.NETWORK_UID) == null) {
-			networkTable.createColumn(Constants.USE_STEMMING, Boolean.class, false);
-			networkTable.createColumn(Constants.CLOUD_COUNTER, Integer.class, false);
-			networkTable.createColumn(Constants.NETWORK_UID, Integer.class, false);
-		}
-
-		CyRow row = network.getRow(network);
-		if(row.get(Constants.NETWORK_UID, Integer.class) == null) {
-			row.set(Constants.USE_STEMMING, Boolean.FALSE);
-			row.set(Constants.CLOUD_COUNTER, 1);
-			row.set(Constants.NETWORK_UID, getNextNetworkUID());
-		}
-	}
-
-	public int getNextNetworkUID() {
-		uidLock.lock();
-		try {
-			int maxUid = 0;
-			for (CyNetwork network : networkManager.getNetworkSet()) {
-				if (!hasCloudMetadata(network)) {
-					continue;
-				}
-				Integer uid = network.getRow(network).get(Constants.NETWORK_UID, Integer.class);
-				if (uid != null && uid > maxUid) {
-					maxUid = uid;
-				}
-			}
-			return maxUid + 1;
-		} finally {
-			uidLock.unlock();
-		}
-	}
+	
 	
 //	public void incrementCloudCounter(CyNetwork network) {
 //		CyRow row = network.getRow(network);

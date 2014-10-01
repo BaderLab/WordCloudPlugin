@@ -1,4 +1,6 @@
 package org.baderlab.wordcloud.internal;
+import java.util.Properties;
+
 import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
 import org.baderlab.wordcloud.internal.ui.CreateCloudAction;
 import org.baderlab.wordcloud.internal.ui.UIManager;
@@ -43,12 +45,13 @@ public class CyActivator extends AbstractCyActivator {
 		StreamUtil streamUtil = getService(context, StreamUtil.class);
 		
 		
-		ModelManager modelManager = new ModelManager(networkTableManager, tableManager, tableFactory, networkFactory, networkViewFactory, networkManager, viewManager, visualMappingManager, layoutTaskFactory, taskManager, streamUtil);
-		CloudModelManager cloudModelManager = new CloudModelManager(modelManager);
-		UIManager panelManager = new UIManager(cloudModelManager, applicationManager, application, registrar, viewManager);
-		cloudModelManager.addListener(panelManager);
+		CloudModelManager cloudModelManager = new CloudModelManager(networkManager, tableManager, streamUtil);
+		registerAllServices(context, cloudModelManager, new Properties());
+		UIManager uiManager = new UIManager(cloudModelManager, applicationManager, application, registrar, viewManager);
+		cloudModelManager.addListener(uiManager);
+		registerAllServices(context, uiManager, new Properties());
 		
-		CreateCloudAction createAction = new CreateCloudAction(applicationManager, application, cloudModelManager, panelManager);
+		CreateCloudAction createAction = new CreateCloudAction(applicationManager, application, cloudModelManager, uiManager);
 		createAction.setPreferredMenu("Apps.WordCloud");
 		application.addAction(createAction);
 		

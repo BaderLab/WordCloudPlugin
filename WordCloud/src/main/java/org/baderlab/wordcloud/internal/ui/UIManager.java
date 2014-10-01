@@ -13,22 +13,26 @@ import org.baderlab.wordcloud.internal.model.next.NetworkParameters;
 import org.baderlab.wordcloud.internal.ui.cloud.CloudDisplayPanel;
 import org.baderlab.wordcloud.internal.ui.input.SemanticSummaryInputPanel;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 
 
 /**
- * Keeps track of the current network.
- * 
- * Maybe also keeps track of something else???
+ * Keeps track of the current network and cloud and updates the UI.
  * @author mkucera
- *
  */
-public class UIManager implements CloudModelListener {
+public class UIManager implements CloudModelListener, SetCurrentNetworkListener, SetCurrentNetworkViewListener, RowsSetListener {
 
 	// Referenes to dependencies
 	private final CloudModelManager cloudManager;
@@ -41,8 +45,6 @@ public class UIManager implements CloudModelListener {
 	private SemanticSummaryInputPanel inputWindow;
 	private CloudDisplayPanel cloudWindow;
 	private DualPanelDocker docker;
-	
-	// Currently displayed cloud
 	
 	// Remembers which cloud was selected so the selection can be restored when switching clouds.
 	private Map<NetworkParameters, CloudParameters> selectedClouds = new HashMap<NetworkParameters, CloudParameters>();
@@ -78,7 +80,7 @@ public class UIManager implements CloudModelListener {
 			return true;
 		}
 		else {
-			docker.bringToFront();
+			//docker.bringToFront();
 			return false;
 		}
 	}
@@ -95,31 +97,38 @@ public class UIManager implements CloudModelListener {
 	public NetworkParameters getCurrentNetwork() {
 		return currentNetwork;
 	}
+
 	
 	
-	@Override
-	public void cloudAdded(CloudParameters cloudParams) {
-		setCurrentCloud(cloudParams);
+	
+	public void setCurrentCloud(CyNetwork network) {
+		setCurrentCloud(cloudManager.getNetworkParameters(network));
 	}
 	
 	public void setCurrentCloud(NetworkParameters networkParams) {
-		CloudParameters selectedCloud = selectedClouds.get(networkParams);
-		if(selectedCloud != null) {
-			setCurrentCloud(selectedCloud);
+		if(networkParams == null) {
+			clear();
 		}
 		else {
-			CloudParameters defaultCloud = networkParams.getFirstCloud();
-			if(defaultCloud != null) {
-				setCurrentCloud(defaultCloud);
+			CloudParameters selectedCloud = selectedClouds.get(networkParams);
+			if(selectedCloud != null) {
+				setCurrentCloud(selectedCloud);
+			}
+			else {
+				CloudParameters defaultCloud = networkParams.getFirstCloud();
+				if(defaultCloud != null) {
+					setCurrentCloud(defaultCloud);
+				}
+				else {
+					setCurrentCloud(networkParams.getNullCloud());
+				}
 			}
 		}
 	}
 	
 	public void setCurrentCloud(NetworkParameters network, String cloudName) {
 		CloudParameters cloud = network.getCloud(cloudName);
-		if(cloud != null) {
-			setCurrentCloud(cloud);
-		}
+		setCurrentCloud(cloud == null ? network.getNullCloud() : cloud);
 	}
 	
 	
@@ -148,9 +157,82 @@ public class UIManager implements CloudModelListener {
 			networkView.updateView();
 		}
 	}
+
+	
+	public void clear() {
+		if(docker != null) {
+			cloudWindow.clearCloud();
+			inputWindow.setCurrentCloud(cloudManager.getNullNetwork().getNullCloud());
+		}
+	}
 	
 	
 	
+	public boolean isCurrentCloud(CloudParameters cloud) {
+		return cloud.getNetworkParams() == currentNetwork 
+			&& cloud == selectedClouds.get(cloud.getNetworkParams());
+	}
+	
+	
+	// Event Handler Methods
+
+	@Override
+	public void cloudAdded(CloudParameters cloudParams) {
+		System.out.println("cloudAdded");
+		setCurrentCloud(cloudParams);
+		docker.bringToFront();
+	}
+	
+	@Override
+	public void networkRemoved(NetworkParameters networkParams) {
+		// Actually, the below events take care of this just fine
+	}
+	
+	@Override
+	public void networkModified(NetworkParameters networkParams) {
+		if(networkParams == currentNetwork) {
+			// refresh current cloud
+			CloudParameters currentCloud = selectedClouds.get(currentNetwork);
+			inputWindow.setCurrentCloud(currentCloud);
+			cloudWindow.updateCloudDisplay(currentCloud);
+		}
+	}
+	
+	@Override
+	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		CyNetworkView networkView = e.getNetworkView();
+		if(networkView == null) {
+			clear();
+		} else {
+			setCurrentCloud(networkView.getModel());
+		}
+	}
+
+	@Override
+	public void handleEvent(SetCurrentNetworkEvent e) {
+		setCurrentCloud(e.getNetwork());
+	}
+	
+	
+	/**
+	 * Handle network rename.
+	 * MKTODO this could be handled through the networkModified event
+	 */
+	@Override
+	public void handleEvent(RowsSetEvent e) {
+		// Just doing an approximate calculation here, detect if ANY network has changed name.
+		boolean isNetworkRename = false;
+		for (RowSetRecord record : e.getPayloadCollection()) {
+			if (record.getColumn().equals(CyNetwork.NAME)) {
+				isNetworkRename = true;
+				break;
+			}
+		}
+		
+		if(isNetworkRename) {
+			inputWindow.updateNetworkName(currentNetwork.getNetworkName());
+		}
+	}
 	
 	
 }

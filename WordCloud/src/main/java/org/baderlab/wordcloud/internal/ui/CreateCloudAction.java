@@ -29,23 +29,14 @@ import javax.swing.JOptionPane;
 
 import org.baderlab.wordcloud.internal.SelectionUtils;
 import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
-import org.baderlab.wordcloud.internal.model.next.NetworkParameters;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
-/**
- * This is the action associated with creating a new Semantic Summary Tag Cloud
- * anywhere in the Semantic Summary Plugin.  This includes from the Plugin menu,
- * right click on a node, and from the Semantic Summary Input Panel.
- * @author Layla Oesper
- * @version 1.0
- */
 
-public class CreateCloudAction extends AbstractCyAction
-{
+public class CreateCloudAction extends AbstractCyAction {
 	private static final long serialVersionUID = 1103296239269358444L;
 	
 	private final CyApplicationManager applicationManager;
@@ -54,12 +45,7 @@ public class CreateCloudAction extends AbstractCyAction
 	private final UIManager uiManager;
 	
 
-	/**
-	 * CreateCloudAction constructor.
-	 * @param pluginAction 
-	 */
-	public CreateCloudAction(CyApplicationManager applicationManager, CySwingApplication application, CloudModelManager cloudManager, UIManager uiManager)
-	{
+	public CreateCloudAction(CyApplicationManager applicationManager, CySwingApplication application, CloudModelManager cloudManager, UIManager uiManager) {
 		super("Create Cloud");
 		this.applicationManager = applicationManager;
 		this.application = application;
@@ -67,15 +53,7 @@ public class CreateCloudAction extends AbstractCyAction
 		this.uiManager = uiManager;
 	}
 	
-	//METHODS
 	
-	/**
-	 * Method called when a Create Cloud action occurs.
-	 * @param nameColumnName 
-	 * 
-	 * @param ActionEvent - event created when choosing Create Cloud from 
-	 * any of its various locations.
-	 */
 	public void actionPerformed(ActionEvent ae) {
 		CyNetwork network = applicationManager.getCurrentNetwork();
 		if (network == null) {
@@ -89,8 +67,6 @@ public class CreateCloudAction extends AbstractCyAction
 		
 		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
 		
-		NetworkParameters networkParams = cloudManager.addNetwork(network);
-		networkParams.createCloudParameters(nodes); // fires event that will update the UI
-
+		cloudManager.addNetwork(network).createCloud(nodes); // fires event that will update the UI
 	}
 }

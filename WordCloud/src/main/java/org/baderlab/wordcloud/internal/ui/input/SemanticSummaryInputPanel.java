@@ -1088,6 +1088,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 	}
 	
 	
+	public void updateNetworkName(String networkName) {
+		networkLabel.setText(networkName);
+	}
+	
+	
 //	/**
 //	 * Sets all user input fields to their default values.
 //	 */
