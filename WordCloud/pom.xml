@@ -158,12 +158,9 @@
 						<exclude>org/baderlab/wordcloud/internal/model/SemanticSummaryParameters.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/model/SemanticSummaryParametersFactory.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/ui/AbstractSemanticSummaryAction.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/ui/DeleteCloudAction.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/ui/PanelActivateAction.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/ui/SaveCloudAction.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/ui/UpdateCloudAction.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/ui/WordCloudVisualStyleFactory.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/ui/input/CloudListMouseListener.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/ui/input/CloudListSelectionHandlerFactory.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/ui/input/SliderBarActionListener.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/ui/input/SliderBarPanel.java</exclude>

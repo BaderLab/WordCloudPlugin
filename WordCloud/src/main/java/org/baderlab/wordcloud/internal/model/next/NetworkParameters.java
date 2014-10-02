@@ -115,9 +115,32 @@ public class NetworkParameters {
 		return cloudParams;
 	}
 	
+	
+	/**
+	 * Called buy {@link CloudParameters#delete()} to remove the mapping.
+	 */
+	protected void removeCloudMapping(CloudParameters cloud) {
+		clouds.remove(cloud.getCloudName());
+	}
+	
+	/**
+	 * Called by {@link CloudParameters#rename(String)} to change the name mapping.
+	 */
+	protected void changeCloudMapping(String oldName, String newName) {
+		clouds.put(newName, clouds.remove(oldName));
+	}
+	
+	
+	
 	public Integer getCloudCount() {
 		return network.getRow(network).get(Constants.CLOUD_COUNTER, Integer.class);
 	}
+	
+	
+	public boolean containsCloud(String name) {
+		return clouds.containsKey(name);		
+	}
+	
 	
 	public void incrementCloudCounter(CyNetwork network) {
 		int count = getCloudCount();
@@ -174,6 +197,8 @@ public class NetworkParameters {
 		}
 		return network.getRow(network).get(CyNetwork.NAME, String.class);
 	}
+
+
 	
 	
 	

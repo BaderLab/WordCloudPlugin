@@ -98,7 +98,9 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		return currentNetwork;
 	}
 
-	
+	public CloudModelManager getCloudModelManager() {
+		return cloudManager;
+	}
 	
 	
 	public void setCurrentCloud(CyNetwork network) {
@@ -167,25 +169,34 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	}
 	
 	
+	public CloudParameters getCurrentCloud() {
+		return selectedClouds.get(currentNetwork);
+	}
 	
 	public boolean isCurrentCloud(CloudParameters cloud) {
 		return cloud.getNetworkParams() == currentNetwork 
 			&& cloud == selectedClouds.get(cloud.getNetworkParams());
 	}
 	
-	
-	// Event Handler Methods
 
+	
+	// CloudModelManager events
+	
 	@Override
 	public void cloudAdded(CloudParameters cloudParams) {
-		System.out.println("cloudAdded");
 		setCurrentCloud(cloudParams);
 		docker.bringToFront();
 	}
 	
 	@Override
-	public void networkRemoved(NetworkParameters networkParams) {
-		// Actually, the below events take care of this just fine
+	public void cloudDeleted(CloudParameters cloud) {
+		if(isCurrentCloud(cloud)) {
+			selectedClouds.remove(cloud.getNetworkParams());
+			setCurrentCloud(cloud.getNetworkParams());
+		}
+		else if(cloud.getNetworkParams() == currentNetwork) {
+			setCurrentCloud(cloud.getNetworkParams());
+		}
 	}
 	
 	@Override
@@ -197,6 +208,21 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 			cloudWindow.updateCloudDisplay(currentCloud);
 		}
 	}
+	
+	@Override
+	public void cloudRenamed(CloudParameters cloudParams) {
+		if(cloudParams.getNetworkParams() == currentNetwork) {
+			inputWindow.setCurrentCloud(selectedClouds.get(currentNetwork)); // this basically does a refresh
+		}
+	}
+	
+	@Override
+	public void networkRemoved(NetworkParameters networkParams) {
+		// Actually, the below events take care of this just fine
+	}
+	
+	
+	// Cytoscape Events
 	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {

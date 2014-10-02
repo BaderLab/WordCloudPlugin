@@ -23,6 +23,7 @@
 package org.baderlab.wordcloud.internal.model.next;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +44,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 
 /**
  * The CloudParameters class defines all of the variables that are
@@ -140,7 +142,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 	 * while restoring a session.  Property file is created when the session is saved.
 	 * @param propFile - the name of the property file as a String
 	 */
-	public CloudParameters(NetworkParameters networkParams, String propFile)
+	protected CloudParameters(NetworkParameters networkParams, String propFile)
 	{
 		this(networkParams);
 		
@@ -246,8 +248,44 @@ public class CloudParameters implements Comparable<CloudParameters>
 	
 	//METHODS
 	
-	//Calculate Counts
+	public void delete() {
+		CyNetwork network = networkParams.getNetwork();
+		if (network.getDefaultNodeTable().getColumn(cloudName) != null) {
+			network.getDefaultNodeTable().deleteColumn(cloudName);
+		}
+		
+		CyTable clusterTable = getClusterTable();
+		if (clusterTable != null) {
+			clusterTable.deleteRows(Arrays.asList(cloudName));
+			if (clusterTable.getRowCount() == 0) {
+				// Delete column in network table with wordCloud ID
+				network.getDefaultNetworkTable().deleteColumn(clusterTable.getTitle());
+				// Delete wordCloud table
+				networkParams.getManager().getTableManager().deleteTable(clusterTable.getSUID());						
+			}
+		}
+		
+		CloudModelManager cloudModelManager = networkParams.getManager();
+		networkParams.removeCloudMapping(this);
+		cloudModelManager.fireCloudDeleted(this);
+	}
 	
+	
+	public void rename(String newName) {
+		if(newName.equals(cloudName))
+			return;
+		if(networkParams.containsCloud(newName))
+			throw new IllegalArgumentException("Name '" + newName + "' already exists");
+		
+		String oldName = cloudName;
+		setCloudName(newName);
+		networkParams.changeCloudMapping(oldName, newName);
+		
+		CloudModelManager cloudModelManager = networkParams.getManager();
+		cloudModelManager.fireCloudRenamed(this);
+	}
+	
+	//Calculate Counts
 	/**
 	 * Constructs stringNodeMapping and networkCounts based on the list of
 	 * nodes contained in networkParams.
@@ -1006,7 +1044,7 @@ public class CloudParameters implements Comparable<CloudParameters>
 		return cloudName;
 	}
 	
-	public void setCloudName(String name)
+	protected void setCloudName(String name)
 	{
 		CyNetwork network = networkParams.getNetwork();
 		if (network == null) {
@@ -1395,18 +1433,18 @@ public class CloudParameters implements Comparable<CloudParameters>
 		this.clusterTable = clusterTable;
 	}
 	
-//	public CyTable getClusterTable() {
-//		if (clusterTable != null) {
-//			return clusterTable;
-//		} else {
-//			try {
-//				CyNetwork network = networkParams.getNetwork();
-//				CyTableManager tableManager = networkParams.getManager().getModelManager().getTableManager();
-//				String tableName = cloudName.substring(0, cloudName.indexOf(" Cloud "));
-//				return tableManager.getTable(network.getDefaultNetworkTable().getRow(network.getSUID()).get(tableName, Long.class));
-//			} catch (Exception e) {
-//				return null;
-//			}
-//		}
-//	}
+	public CyTable getClusterTable() {
+		if (clusterTable != null) {
+			return clusterTable;
+		} else {
+			try {
+				CyNetwork network = networkParams.getNetwork();
+				CyTableManager tableManager = networkParams.getManager().getTableManager();
+				String tableName = cloudName.substring(0, cloudName.indexOf(" Cloud "));
+				return tableManager.getTable(network.getDefaultNetworkTable().getRow(network.getSUID()).get(tableName, Long.class));
+			} catch (Exception e) {
+				return null;
+			}
+		}
+	}
 }

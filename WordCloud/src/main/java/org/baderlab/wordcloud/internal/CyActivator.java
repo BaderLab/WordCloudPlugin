@@ -2,8 +2,9 @@ package org.baderlab.wordcloud.internal;
 import java.util.Properties;
 
 import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
-import org.baderlab.wordcloud.internal.ui.CreateCloudAction;
 import org.baderlab.wordcloud.internal.ui.UIManager;
+import org.baderlab.wordcloud.internal.ui.action.CreateCloudAction;
+import org.baderlab.wordcloud.internal.ui.action.ExportImageAction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
@@ -19,15 +20,18 @@ import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.ServiceProperties;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 import org.osgi.framework.BundleContext;
 
 
 public class CyActivator extends AbstractCyActivator {
+	
+	private static final String APPS_MENU = "Apps.WordCloud";
+	
 	@Override
 	public void start(BundleContext context) throws Exception {
-		
-		
 		// Get services
 		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
 		CySwingApplication application = getService(context, CySwingApplication.class);
@@ -56,8 +60,15 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Actions
 		CreateCloudAction createAction = new CreateCloudAction(applicationManager, application, cloudModelManager);
-		createAction.setPreferredMenu("Apps.WordCloud");
+		createAction.setPreferredMenu(APPS_MENU);
 		application.addAction(createAction);
+		
+		ExportImageAction exportImageAction = new ExportImageAction(application, fileUtil, uiManager);
+		Properties props = new Properties();
+		props.put(ServiceProperties.PREFERRED_MENU, APPS_MENU);
+		props.put(ServiceProperties.TITLE, "Export Cloud Image");
+		registerService(context, exportImageAction.asTaskFactory(), TaskFactory.class, props);
+		
 		
 		// Session persistence
 		SessionListener sessionListener = new SessionListener(cloudModelManager, new IoUtil(streamUtil), networkManager);

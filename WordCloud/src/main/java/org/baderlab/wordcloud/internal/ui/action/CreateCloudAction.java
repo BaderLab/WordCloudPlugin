@@ -20,7 +20,7 @@
  along with this project.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.baderlab.wordcloud.internal.ui;
+package org.baderlab.wordcloud.internal.ui.action;
 
 import java.awt.event.ActionEvent;
 import java.util.Set;

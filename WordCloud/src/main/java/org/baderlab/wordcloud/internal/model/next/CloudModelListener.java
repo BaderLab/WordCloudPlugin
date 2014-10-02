@@ -8,6 +8,11 @@ public interface CloudModelListener {
 	 */
 	void cloudAdded(CloudParameters cloud);
 
+	/**
+	 * Event that signifies that the given CloudParameters object has been removed from the model.
+	 * Warning, don't do much with the given cloud, it has been deleted already.
+	 */
+	void cloudDeleted(CloudParameters cloud);
 	
 	/**
 	 * Event that indicates that a network (and all its clouds) have been removed from the model.
@@ -22,5 +27,11 @@ public interface CloudModelListener {
 	 * and needs to be repainted.
 	 */
 	void networkModified(NetworkParameters networkParams);
+
+	
+	/**
+	 * Event that indicates that the given CloudParameters object has a new name.
+	 */
+	void cloudRenamed(CloudParameters cloudParameters);
 
 }

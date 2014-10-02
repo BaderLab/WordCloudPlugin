@@ -22,207 +22,64 @@
 
 package org.baderlab.wordcloud.internal.ui.input;
 
-import java.awt.Point;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
 import org.baderlab.wordcloud.internal.model.next.CloudParameters;
 import org.baderlab.wordcloud.internal.ui.UIManager;
-import org.cytoscape.application.swing.AbstractCyAction;
+import org.baderlab.wordcloud.internal.ui.action.DeleteCloudAction;
+import org.baderlab.wordcloud.internal.ui.action.RenameCloudAction;
+import org.cytoscape.application.swing.CySwingApplication;
+
 
 /**
  * This class handles all mouse actions associated with the list of
  * clouds displayed in the Input Panel for the Semantic Summary.
- * @author Layla Oesper
- * @version 1.0
  */
-
-public class CloudListMouseListener extends MouseAdapter 
-{
-	private JComponent parent;
+public class CloudListMouseListener extends MouseAdapter {
+	
+	private JList list;
+	private CySwingApplication swingApplication;
 	private UIManager uiManager;
 
-	public CloudListMouseListener(JComponent parent, UIManager uiManager) {
-		this.parent = parent;
+	
+	public CloudListMouseListener(UIManager uiManager, CySwingApplication swingApplication, JList list) {
 		this.uiManager = uiManager;
-	}
-	
-	//Methods
-	
-	public void mousePressed(MouseEvent e)
-	{
-		/*
-		if (SwingUtilities.isRightMouseButton(e))
-		{
-			rightClickList(e);
-		}
-		
-		else if (SwingUtilities.isLeftMouseButton(e))
-		{
-			leftClickList(e);
-		}
-		*/
-		
-		if (e.isPopupTrigger())
-			rightClickList(e);
-		else
-			leftClickList(e);
-	}
-	
-	public void mouseReleased(MouseEvent e)
-	{
-		if (e.isPopupTrigger())
-			rightClickList(e);
-		else
-			leftClickList(e);
+		this.swingApplication = swingApplication;
+		this.list = list;
 	}
 	
 	
-	private void rightClickList(MouseEvent e)
-	{
-		//RightClickMenu menu = new RightClickPopUpMenu();
-		JPopupMenu menu = new JPopupMenu();
-		menu.add(new ChangeCloudNameAction(parent));
-		menu.show(e.getComponent(), e.getX(), e.getY());
+	@Override
+	public void mousePressed(MouseEvent e) {
+		showPopup(e);
 	}
 	
-	private void leftClickList(MouseEvent e)
-	{
-		Point selPoint = new Point(e.getX(), e.getY());
-		
-		//Get current name
-		JList cloudList = uiManager.getInputPanel().getCloudList();
-		
-		int selIndex = cloudList.getSelectedIndex();
-		
-		int clickIndex = cloudList.locationToIndex(selPoint);
-		
-		if (selIndex == clickIndex)
-		{
-			cloudList.clearSelection();
-			cloudList.setSelectedIndex(selIndex);
-		}
 	
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		showPopup(e);
 	}
 	
-	public class ChangeCloudNameAction extends AbstractCyAction
-	{
-
-		private static final long serialVersionUID = 3741354852598317680L;
-		private JComponent parent;
-
-		//CONSTRUCTOR
-		public ChangeCloudNameAction(JComponent parent)
-		{
-			super("Edit Cloud Name");
-			this.parent = parent;
-		}
-		
-		//METHODS
-		public void actionPerformed(ActionEvent ae)
-		{
-			//Get current name
-			JList cloudList = uiManager.getInputWindow().getCloudList();
-			
-			int index = cloudList.getSelectedIndex();
-			
-			//Check for no network selected
-			if (index == -1)
-			{
-				JOptionPane.showMessageDialog(parent, 
-				"You must fist select a Cloud.");
-				return;
+	
+	private void showPopup(MouseEvent e) {
+		if(e.isPopupTrigger()) {
+			int clicked = list.locationToIndex(e.getPoint());
+			if(clicked != -1 && list.getCellBounds(clicked, clicked).contains(e.getPoint())) {
+				list.setSelectedIndex(clicked);
+				
+				final String cloudName = (String)list.getSelectedValue();
+				CloudParameters cloud = uiManager.getCurrentNetwork().getCloud(cloudName);
+				
+				JPopupMenu menu = new JPopupMenu();
+				menu.add(new DeleteCloudAction(cloud, swingApplication));
+				menu.add(new RenameCloudAction(cloud, swingApplication, uiManager));
+				menu.show(list, e.getX(), e.getY());
 			}
-			
-			DefaultListModel listValues = uiManager.getInputWindow().getListValues();
-			
-			//Get name of currently selected cloud
-			String curName = (String) listValues.get(index);
-			
-			//Variables for use
-			String newName = "";
-			int value = JOptionPane.NO_OPTION;
-			Object[] options = { "Try Again", "Cancel"};
-			
-			//Show dialog box to change Cloud Name
-			
-			//loop until acceptable action
-			while (true)
-			{
-				//Setup Dialog
-				EditCloudNameDialog theDialog = 
-					new EditCloudNameDialog(parent, true, curName);
-				
-				theDialog.setLocationRelativeTo(parent);
-				theDialog.setVisible(true);
-				newName = theDialog.getNewCloudName();
-				
-				//Same as old name
-				if (curName.equals(newName))
-					break;
-				
-				//Blank or null name
-				else if ((newName == null) || newName.trim().equals(""))
-				{
-					newName = curName;
-					break;
-				}
-				
-				//Already taken name
-				else if (isCloudNameTaken(newName))
-				{
-					value = JOptionPane.showOptionDialog(parent,
-							"That cloud name already exists, try again.",
-							"Duplicate Cloud Name",
-							JOptionPane.WARNING_MESSAGE,
-							JOptionPane.YES_NO_CANCEL_OPTION,
-							null,
-							options,
-							options[0]);
-					
-					if (value == JOptionPane.NO_OPTION)
-					{
-						newName = curName;
-						break;
-					}
-				}
-				else 
-					break;
-			}//end while true loop
-			
-			//Set new cloud title stuffs here
-			CloudParameters cloudParams = uiManager.getCurCloud();
-			
-			SemanticSummaryParameters networkParams = uiManager.getCurNetwork();
-			
-			networkParams.getClouds().remove(curName);
-			
-			cloudParams.setCloudName(newName);
-			
-			networkParams.addCloud(newName, cloudParams);
-			
-			//Update InputPanelList
-			listValues.setElementAt(newName, index);
-			cloudList.updateUI();
-			
-		}//end actionPerformed
-		
-		/**
-		 * Returns true if the specified name is already taken in the
-		 * current network.
-		 */
-		public boolean isCloudNameTaken(String name)
-		{
-			return cloudManager.getCurNetwork().containsCloud(name);
 		}
-		
-	}//end changeCloudNameAction class
+	}
 	
 }

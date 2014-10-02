@@ -20,18 +20,17 @@
  along with this project.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.baderlab.wordcloud.internal.ui.input;
+package org.baderlab.wordcloud.internal.ui.action;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -42,7 +41,7 @@ import javax.swing.JTextField;
  * @version 1.0
  */
 
-public class EditCloudNameDialog extends JDialog implements ActionListener
+public class RenameCloudDialog extends JDialog implements ActionListener
 {
 	private static final long serialVersionUID = 6753430486708487015L;
 
@@ -63,9 +62,9 @@ public class EditCloudNameDialog extends JDialog implements ActionListener
 	 * @param modal - whether this is a modal display
 	 * @param curName - the current name of the cloud.
 	 */
-	public EditCloudNameDialog(JComponent parent, boolean modal, String curName)
+	public RenameCloudDialog(JFrame parent, boolean modal, String curName)
 	{
-		super(parent == null ? null : (Window) parent.getTopLevelAncestor(), modal ? ModalityType.APPLICATION_MODAL : ModalityType.MODELESS);
+		super(parent, modal ? ModalityType.APPLICATION_MODAL : ModalityType.MODELESS);
 		initComponents();
 		tfCloudName.setText(curName);
 		tfCloudName.setSelectionStart(0);

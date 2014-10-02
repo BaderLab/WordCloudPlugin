@@ -136,17 +136,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 //	private UpdateCloudAction updateCloudAction;
 //	private SaveCloudAction saveCloudAction;
 
-//	private CloudListSelectionHandlerFactory handlerFactory;
-	
-//	//String Constants for Separators in remove word combo box
-//	private static final String addedSeparator = "--Added Words--";
-//	private static final String flaggedSeparator = "--Flagged Words--";
-//	private static final String stopSeparator = "--Stop Words--";
-//	
-//	//String COnstants for Separators in delimiter combo boxes
-//	private static final String commonDelimiters = "--Common Delimiters--";
-//	private static final String userAddDelimiters = "--User Defined--";
-//	private static final String selectMe = "Select to add your own";
+
 	
 	private static final int DEF_ROW_HEIGHT = 20;
 
@@ -183,10 +173,6 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		
 		setLayout(new BorderLayout());
-		
-		//INITIALIZE PARAMETERS
-		
-		//Create the three main panels: CloudList, Options, and Bottom
 		
 		// Put the CloudList in a scroll pane
 		JPanel cloudList = createCloudListPanel(applicationManager);
@@ -267,13 +253,19 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloudList.setSelectedIndex(0);
 		cloudList.setVisibleRowCount(10);
 		cloudList.setFixedCellHeight(DEF_ROW_HEIGHT);
-//		cloudList.addMouseListener(new CloudListMouseListener(this));
+		cloudList.addMouseListener(new CloudListMouseListener(uiManager, application, cloudList));
 		
 		handler = new CloudListSelectionHandler(uiManager);
 		cloudList.addListSelectionListener(handler);
 		
 		JScrollPane listScrollPane = new JScrollPane(cloudList);
 		listScrollPane.setBorder(BorderFactory.createEmptyBorder());
+//		
+//		JMenuItem deleteItem = new JMenuItem(new DeleteCloudAction(application, uiManager.getCloudModelManager()));
+//		JPopupMenu popupMenu = new JPopupMenu();
+//		popupMenu.add(deleteItem);
+//		cloudList.setComponentPopupMenu(popupMenu);
+		
 		
 		//Add to panel
 		panel.add(networkPanel, BorderLayout.NORTH);

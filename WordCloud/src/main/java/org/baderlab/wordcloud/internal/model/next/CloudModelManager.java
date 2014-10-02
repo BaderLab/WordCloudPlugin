@@ -113,6 +113,18 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 		}
 	}
 	
+	protected void fireCloudDeleted(CloudParameters cloudParams) {
+		for(CloudModelListener listener : listeners) {
+			listener.cloudDeleted(cloudParams);
+		}
+	}
+	
+	protected void fireCloudRenamed(CloudParameters cloudParameters) {
+		for(CloudModelListener listener : listeners) {
+			listener.cloudRenamed(cloudParameters);
+		}
+	}
+	
 	
 	/*
 	 * Get the list of attribute names for either "node" or "edge". The attribute names will be
@@ -217,7 +229,7 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 
 	@Override
 	public synchronized void handleEvent(RemovedNodesEvent e) {
-		// MKTODO why no workey?
+		// MKTODO why doesn't this work, deleting a node the row is still in the node table
 		CyNetwork network = e.getSource();
 		NetworkParameters networkParams = networks.get(network);
 		fireNetworkModified(networkParams);
@@ -249,6 +261,9 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 //			}
 //		}
 	}
+
+
+	
 
 
 }
