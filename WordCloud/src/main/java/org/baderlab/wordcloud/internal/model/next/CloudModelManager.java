@@ -131,7 +131,7 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 	 * prefixed either with "node." or "edge.". Those attributes whose data type is not
 	 * "String" will be excluded
 	 */
-	protected static List<String> getColumnNames(CyNetwork network, Class<? extends CyIdentifiable> tableType) {
+	public static List<String> getColumnNames(CyNetwork network, Class<? extends CyIdentifiable> tableType) {
 		if (network == null) {
 			return Collections.emptyList();
 		}

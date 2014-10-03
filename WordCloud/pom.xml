@@ -161,11 +161,6 @@
 						<exclude>org/baderlab/wordcloud/internal/ui/PanelActivateAction.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/ui/UpdateCloudAction.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/ui/WordCloudVisualStyleFactory.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/ui/input/CloudListSelectionHandlerFactory.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/ui/input/SliderBarActionListener.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/ui/input/SliderBarPanel.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/ui/input/WordSelectPanel.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/ui/input/SemanticSummaryInputPanelFactory.java</exclude>
 					</excludes>
 					
 				</configuration>

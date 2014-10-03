@@ -22,21 +22,16 @@
 
 package org.baderlab.wordcloud.internal.ui.input;
 
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
-import javax.swing.*;
-
-import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
-import org.baderlab.wordcloud.internal.ui.UpdateCloudAction;
+import javax.swing.event.ChangeListener;
 
 
 public class SliderBarActionListener implements ChangeListener {
 
     private SliderBarPanel panel;
 
-	private SemanticSummaryManager cloudManager;
-	private UpdateCloudAction updateCloudAction;
+//	private SemanticSummaryManager cloudManager;
+//	private UpdateCloudAction updateCloudAction;
 
     /**
      * Class constructor
@@ -45,10 +40,10 @@ public class SliderBarActionListener implements ChangeListener {
      * @param params - cloud parameters for current cloud
      * @param attrib - attribute that the slider bar is specific to (i.e. network normalization)
      */
-    public SliderBarActionListener(SliderBarPanel panel, SemanticSummaryManager cloudManager, UpdateCloudAction updateCloudAction) {
-        this.panel = panel;
-        this.cloudManager = cloudManager;
-        this.updateCloudAction = updateCloudAction;
+    public SliderBarActionListener(SliderBarPanel panel/*, SemanticSummaryManager cloudManager, UpdateCloudAction updateCloudAction */) {
+//        this.panel = panel;
+//        this.cloudManager = cloudManager;
+//        this.updateCloudAction = updateCloudAction;
     }
 
     /**
@@ -58,20 +53,20 @@ public class SliderBarActionListener implements ChangeListener {
      * @param e
      */
     public void stateChanged(ChangeEvent e){
-        JSlider source = (JSlider)e.getSource();
-        Double value = source.getValue()/panel.getPrecision();
-
-        panel.setLabel(source.getValue());
-        
-        //Change Cloud Parameters with new value and update cloud
-        CloudParameters curCloud = cloudManager.getCurCloud();
-        
-        if (curCloud != cloudManager.getNullCloudParameters() && curCloud != null) {
-        	curCloud.setNetWeightFactor(value);
-        }
-       
-       //Update cloud
-       updateCloudAction.doRealAction();
+//        JSlider source = (JSlider)e.getSource();
+//        Double value = source.getValue()/panel.getPrecision();
+//
+//        panel.setLabel(source.getValue());
+//        
+//        //Change Cloud Parameters with new value and update cloud
+//        CloudParameters curCloud = cloudManager.getCurCloud();
+//        
+//        if (curCloud != cloudManager.getNullCloudParameters() && curCloud != null) {
+//        	curCloud.setNetWeightFactor(value);
+//        }
+//       
+//       //Update cloud
+//       updateCloudAction.doRealAction();
    }
 }
 

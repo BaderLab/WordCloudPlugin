@@ -36,16 +36,21 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -56,13 +61,18 @@ import javax.swing.JTextArea;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionListener;
 
+import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.next.NetworkParameters;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.baderlab.wordcloud.internal.ui.cloud.CloudDisplayStyles;
-import org.baderlab.wordcloud.internal.ui.cloud.ModifiedFlowLayout;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -75,47 +85,35 @@ import org.cytoscape.util.swing.CheckBoxJList;
  * necessary for viewing and creating new Semantic Summaries.
  */
 
+@SuppressWarnings("serial")
 public class SemanticSummaryInputPanel extends JPanel {
 	
-	private static final long serialVersionUID = 2453517387682663100L;
-	
+	private static final int DEF_ROW_HEIGHT = 20;
 	
 	private final UIManager uiManager;
 	
+	
 	//Text Fields
-//	private JFormattedTextField maxWordsTextField;
-//	private JFormattedTextField clusterCutoffTextField;
-//	private JTextField addWordTextField;
+	private JFormattedTextField maxWordsTextField;
+	private JFormattedTextField clusterCutoffTextField;
 	
 //	//JComboBox
-//	private JComboBox cmbRemoval;
 	private JComboBox cmbStyle;
-//	private JComboBox cmbDelimiterRemoval;
-//	private JComboBox cmbDelimiterAddition;
 	
 	//JLabels
 	private JLabel networkLabel;
 	
 	//JListData
-//	private DefaultListModel listValues;
 	private JList cloudList;
 	private CloudListSelectionHandler handler;
-	
-	//Buttons
-//	private JButton removeWordButton;
-//	private JButton addWordButton;
-//	private JButton addDelimiterButton;
-//	private JButton removeDelimiterButton;
-//	private JButton createNetworkButton;
-//	private JButton saveCloudButton;
 	
 	//Checkbox
 //	private JCheckBox numExclusion;
 //	private JCheckBox useNetworkCounts;
-//	private JCheckBox stemmer;
+	private JCheckBox stemmer;
 	
 	//SliderBar
-//	private SliderBarPanel sliderPanel;
+	private SliderBarPanel sliderPanel;
 	
 	//Checkbox list
 	private CheckBoxJList attributeList;
@@ -126,24 +124,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 	//Text Area
 	private JTextArea attNames;
 
-//	private final ModelManager modelManager;
 	private final CySwingApplication application;
-
-//	private CloudModelManager cloudManager;
-
-//	private CreateCloudAction createCloudAction;
-//	private DeleteCloudAction deleteCloudAction;
-//	private UpdateCloudAction updateCloudAction;
-//	private SaveCloudAction saveCloudAction;
-
+	private final CyServiceRegistrar registrar;
 
 	
-	private static final int DEF_ROW_HEIGHT = 20;
-
-	private CyServiceRegistrar registrar;
-
 	
-	//CONSTRUCTORS
 	public SemanticSummaryInputPanel(
 //			ModelManager modelManager, 
 			CyApplicationManager applicationManager, 
@@ -185,12 +170,12 @@ public class SemanticSummaryInputPanel extends JPanel {
 //		optionsScroll.setBorder(BorderFactory.createEmptyBorder());
 		
 		//Add button to bottom
-		JPanel bottomPanel = createBottomPanel();
+//		JPanel bottomPanel = createBottomPanel();
 		
 		//Add all the vertically aligned components to the main panel
 		add(cloudListScroll,BorderLayout.NORTH);
 		add(optionsScroll,BorderLayout.CENTER);
-		add(bottomPanel,BorderLayout.SOUTH);
+//		add(bottomPanel,BorderLayout.SOUTH);
 	
 		
 		RowsSetListener nodeSelectionListener = new RowsSetListener() {
@@ -253,19 +238,13 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloudList.setSelectedIndex(0);
 		cloudList.setVisibleRowCount(10);
 		cloudList.setFixedCellHeight(DEF_ROW_HEIGHT);
-		cloudList.addMouseListener(new CloudListMouseListener(uiManager, application, cloudList));
+		cloudList.addMouseListener(new CloudListPopupMenuListener(uiManager, application, cloudList));
 		
 		handler = new CloudListSelectionHandler(uiManager);
 		cloudList.addListSelectionListener(handler);
 		
 		JScrollPane listScrollPane = new JScrollPane(cloudList);
 		listScrollPane.setBorder(BorderFactory.createEmptyBorder());
-//		
-//		JMenuItem deleteItem = new JMenuItem(new DeleteCloudAction(application, uiManager.getCloudModelManager()));
-//		JPopupMenu popupMenu = new JPopupMenu();
-//		popupMenu.add(deleteItem);
-//		cloudList.setComponentPopupMenu(popupMenu);
-		
 		
 		//Add to panel
 		panel.add(networkPanel, BorderLayout.NORTH);
@@ -276,112 +255,65 @@ public class SemanticSummaryInputPanel extends JPanel {
 	
 	
 	/**
-	 * Creates a collapsable panel that holds all of the user entered
-	 * cloud parameters.
-	 * 
-	 * @return collapsiblePanel - main panel with cloud parameters
+	 * Creates a panel that holds all of the user entered cloud parameters.
 	 */
-	private JPanel createOptionsPanel()
-	{
-//		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Cloud Parameters");
-//		collapsiblePanel.setCollapsed(false);
-//		collapsiblePanel.getTitleComponent().setToolTipText("Parameters that can be set differently for each individual cloud");
+	private JPanel createOptionsPanel() {
+		JPanel semAnalysis = createSemAnalysisPanel();
+		JPanel cloudLayout = createCloudLayoutPanel();
+		JPanel normalizationPanel = createNormalizationPanel();
+		JPanel advancedSettings = createAdvancedSettingsPanel();
+		JPanel excludedWordsPanel = createExcludedWordsPanel();
 		
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		
-		//Semantic Analysis Panel
-		JPanel semAnalysis = createSemAnalysisPanel();
-//		semAnalysis.setCollapsed(false);
-		
-		//Display Settings
-		JPanel displaySettings = createDisplaySettingsPanel();
-//		displaySettings.setCollapsed(true);
-		
-		
-		//Cloud Layout
-		JPanel cloudLayout = createCloudLayoutPanel();
-//		cloudLayout.setCollapsed(true);
-		
-		//Add all Panels
 		panel.add(semAnalysis);
+		panel.add(Box.createVerticalStrut(5));
 		panel.add(cloudLayout);
-		panel.add(displaySettings);
+		panel.add(Box.createVerticalStrut(5));
+		panel.add(normalizationPanel);
+		panel.add(Box.createVerticalStrut(15));
+		panel.add(advancedSettings);
 		
-		
-//		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-		
-		//Network Level Panel
-//		CollapsiblePanel collapsiblePanel2 = new CollapsiblePanel("Text Processing Parameters");
-//		collapsiblePanel2.setCollapsed(false);
-//		collapsiblePanel2.getTitleComponent().setToolTipText("Text processing parameters that will be applied to all clouds created from the current network");
-		
-		JPanel networkPanel = new JPanel();
-		networkPanel.setLayout(new FlowLayout());
-		
-//		networkPanel.add(Box.createVerticalStrut(15));
-//		//Word Exclusion
-//		CollapsiblePanel exclusionList = createExclusionListPanel();
-////		exclusionList.setCollapsed(true);
-//		
-//		networkPanel.add(exclusionList);
-//		
-//		//Delimiter/Tokenization Panel
-//		CollapsiblePanel tokenizationPanel = createTokenizationPanel();
-//		tokenizationPanel.setCollapsed(true);
-//		
-//		networkPanel.add(tokenizationPanel);
-		
-		
-//		JButton excludedWordsButton = new JButton("Excluded Words...");
-//		excludedWordsButton.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				SemanticSummaryParameters network = cloudManager.getCurNetwork();
-//				WordSelectPanel wordSelectPanel = new WordSelectPanel(network.getFilter());
-//				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), network.getNetworkName());
-//				dialog.setVisible(true);
-//				network.networkChanged();
-//				updateCloudAction.doRealAction();
-//			}
-//		});
-//		networkPanel.add(excludedWordsButton);
-//		
-//		JButton delimetersButton = new JButton("Delimiters...");
-//		delimetersButton.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				SemanticSummaryParameters network = cloudManager.getCurNetwork();
-//				WordSelectPanel wordSelectPanel = new WordSelectPanel(network.getDelimiter());
-//				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), network.getNetworkName());
-//				dialog.setVisible(true);
-//				network.networkChanged();
-//				updateCloudAction.doRealAction();
-//			}
-//		});
-//		networkPanel.add(delimetersButton);
-//		
-		
-		
-		
-		//Stemmer Panel
-//		CollapsiblePanel stemmingPanel = createStemmingPanel();
-//		stemmingPanel.setCollapsed(true);
-//		
-//		networkPanel.add(stemmingPanel);
-		
-		//Add to collapsible panel
-//		collapsiblePanel2.getContentPane().add(networkPanel, BorderLayout.NORTH);
-		
-		//Container Panel for Cloud and Network parameters
 		JPanel newPanel = new JPanel();
-		newPanel.setBorder(BorderFactory.createEmptyBorder());
 		newPanel.setLayout(new BorderLayout());
 		newPanel.add(panel, BorderLayout.NORTH);
-		
-		newPanel.add(networkPanel, BorderLayout.SOUTH);
-				
+		newPanel.add(excludedWordsPanel, BorderLayout.SOUTH);
 		return newPanel;
 	}
 	
+	
+	private JPanel createExcludedWordsPanel() {
+		JPanel excludedWordsPanel = new JPanel();
+		excludedWordsPanel.setLayout(new FlowLayout());
+		
+		JButton excludedWordsButton = new JButton("Excluded Words...");
+		excludedWordsButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				NetworkParameters network = uiManager.getCurrentNetwork();
+				WordSelectPanel wordSelectPanel = new WordSelectPanel(network.getFilter());
+				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), network.getNetworkName());
+				dialog.setVisible(true);
+//				network.networkChanged();
+//				updateCloudAction.doRealAction();
+			}
+		});
+		excludedWordsPanel.add(excludedWordsButton);
+		
+		JButton delimetersButton = new JButton("Delimiters...");
+		delimetersButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				NetworkParameters network = uiManager.getCurrentNetwork();
+				WordSelectPanel wordSelectPanel = new WordSelectPanel(network.getDelimeters());
+				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), network.getNetworkName());
+				dialog.setVisible(true);
+//				network.networkChanged();
+//				updateCloudAction.doRealAction();
+			}
+		});
+		excludedWordsPanel.add(delimetersButton);
+		
+		return excludedWordsPanel;
+	}
 	/**
 	 * Creates a CollapsiblePanel that holds the Semantic Analysis information.
 	 * @return CollapsiblePanel - semantic analysis panel interface.
@@ -401,13 +333,13 @@ public class SemanticSummaryInputPanel extends JPanel {
 	    attributeList = new CheckBoxJList();
 	    DefaultListModel model = new DefaultListModel();
 	    attributeList.setModel(model);
-//	    attributeList.addPropertyChangeListener(CheckBoxJList.LIST_UPDATED, new PropertyChangeListener() {
-//			@Override
-//			public void propertyChange(PropertyChangeEvent event) {
-//				updateAttNames();
+	    attributeList.addPropertyChangeListener(CheckBoxJList.LIST_UPDATED, new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent event) {
+				updateAttNames();
 //				updateCloudAction.doRealAction();
-//			}
-//		});
+			}
+		});
 	    
 	    JScrollPane scrollPane = new JScrollPane();
 	    scrollPane.setPreferredSize(new Dimension(300, 200));
@@ -443,7 +375,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		attributePanel.add(attributeButton, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 		attributePanel.add(attListPane, new GridBagConstraints(0, 1, 2, 1, 1.0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));	
 		    
-//	    refreshAttributeCMB();
+	    refreshAttributeCMB();
 		
 		panel.add(attributePanel);
 		
@@ -487,426 +419,110 @@ public class SemanticSummaryInputPanel extends JPanel {
 		return panel;
 	}
 
+	
+	private JPanel createNormalizationPanel() {
+		sliderPanel = new SliderBarPanel(0,1," Normalize", 10);
+		
+		String tooltip =
+			"<html>" + "Determines how much weight to give the whole network when normalizing the selected nodes" + "<br>" +
+			"<b>Acceptable Values:</b> greater than or equal to 0 and less than or equal to 1" + "</html>";
+		sliderPanel.setToolTipText(tooltip);
+		
+		return sliderPanel;
+	}
+	
+	
+	
 	/**
 	 * Creates a CollapsiblePanel that holds the display settings information.
 	 * @return CollapsiblePanel - display settings panel interface.
 	 */
-	private JPanel createDisplaySettingsPanel()
+	private JPanel createAdvancedSettingsPanel()
 	{
-//		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Advanced");
+		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Advanced");
 		
 		//Used to retrieve defaults
 //		CloudParameters params = cloudManager.getCurCloud();
 		
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-//		
-//		//Max words input
-//		JLabel maxWordsLabel = new JLabel("Max Number of Words");
-//		maxWordsTextField = new JFormattedTextField(intFormat);
-//		maxWordsTextField.setColumns(10);
-//		maxWordsTextField.setValue(params.getDefaultMaxWords()); //Set to default initially
-//		maxWordsTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
-//		
-//		StringBuffer buf = new StringBuffer();
-//		buf.append("<html>" + "Sets a limit on the number of words to display in the cloud" + "<br>");
-//		buf.append("<b>Acceptable Values:</b> greater than or equal to 0" + "</html>");
-//		maxWordsTextField.setToolTipText(buf.toString());
 		
-//		//Max words panel
-//		JPanel maxWordsPanel = new JPanel();
-//		maxWordsPanel.setLayout(new BorderLayout());
-//		maxWordsPanel.add(maxWordsLabel, BorderLayout.WEST);
-//		maxWordsPanel.add(maxWordsTextField, BorderLayout.EAST);
+		//Max words input
+		JLabel maxWordsLabel = new JLabel("Max Number of Words");
+		NumberFormat intFormat = NumberFormat.getIntegerInstance();
+		intFormat.setParseIntegerOnly(true);
+		maxWordsTextField = new JFormattedTextField(intFormat);
+		maxWordsTextField.setColumns(7);
+		maxWordsTextField.setValue(40);  
+//		(params.getDefaultMaxWords()); //Set to default initially
+		maxWordsTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
 		
-		
-		//buf = new StringBuffer();
-		//buf.append("<html>" + "Determines how much weight to give the whole network when normalizing the selected nodes" + "<br>");
-		//buf.append("<b>Acceptable Values:</b> greater than or equal to 0 and less than or equal to 1" + "</html>");
+		StringBuffer buf = new StringBuffer();
+		buf.append("<html>" + "Sets a limit on the number of words to display in the cloud" + "<br>");
+		buf.append("<b>Acceptable Values:</b> greater than or equal to 0" + "</html>");
+		maxWordsTextField.setToolTipText(buf.toString());
+		//Max words panel
+		JPanel maxWordsPanel = new JPanel();
+		maxWordsPanel.setLayout(new BorderLayout());
+		maxWordsPanel.add(maxWordsLabel, BorderLayout.WEST);
+		maxWordsPanel.add(maxWordsTextField, BorderLayout.EAST);
 		
 		
-//		//Clustering Cutoff
-//		JLabel clusterCutoffLabel = new JLabel("Word Aggregation Cutoff");
-//		clusterCutoffTextField = new JFormattedTextField(decFormat);
-//		clusterCutoffTextField.setColumns(3);
-//		clusterCutoffTextField.setValue(params.getDefaultClusterCutoff()); //Set to default initially
-//		clusterCutoffTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
-//		
-//		buf = new StringBuffer();
-//		buf.append("<html>" + "Cutoff for placing two words in the same cluster - ratio of the observed joint probability of the words to their joint probability if the words appeared independently of each other" + "<br>");
-//		buf.append("<b>Acceptable Values:</b> greater than or equal to 0" + "</html>");
-//		clusterCutoffTextField.setToolTipText(buf.toString());
+		//Clustering Cutoff
+		JLabel clusterCutoffLabel = new JLabel("Word Aggregation Cutoff");
+		DecimalFormat decFormat = new DecimalFormat();
+		decFormat.setParseIntegerOnly(false);
+		clusterCutoffTextField = new JFormattedTextField(decFormat);
+		clusterCutoffTextField.setColumns(7);
+		clusterCutoffTextField.setValue(20);
+//				params.getDefaultClusterCutoff()); //Set to default initially
+		clusterCutoffTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
+		
+		buf = new StringBuffer();
+		buf.append("<html>" + "Cutoff for placing two words in the same cluster - ratio of the observed joint probability of the words to their joint probability if the words appeared independently of each other" + "<br>");
+		buf.append("<b>Acceptable Values:</b> greater than or equal to 0" + "</html>");
+		clusterCutoffTextField.setToolTipText(buf.toString());
 		
 		//Clustering Cutoff Panel
-//		JPanel clusterCutoffPanel = new JPanel();
-//		clusterCutoffPanel.setLayout(new BorderLayout());
-//		clusterCutoffPanel.add(clusterCutoffLabel, BorderLayout.WEST);
-//		clusterCutoffPanel.add(clusterCutoffTextField, BorderLayout.EAST);
+		JPanel clusterCutoffPanel = new JPanel();
+		clusterCutoffPanel.setLayout(new BorderLayout());
+		clusterCutoffPanel.add(clusterCutoffLabel, BorderLayout.WEST);
+		clusterCutoffPanel.add(clusterCutoffTextField, BorderLayout.EAST);
 		
+		//Create Checkbox
+		stemmer = new JCheckBox("Enable Stemming");
 		
-		//New Network Normalization Panel
-		JPanel netNormalizationPanel = new JPanel();
-		netNormalizationPanel.setLayout(new BorderLayout());
-//		netNormalizationPanel.setLayout(new GridBagLayout());
+		buf = new StringBuffer();
+		buf.append("<html>" + "Causes all words to be stemmed using the Porter Stemmer algorithm." + "<br>");
+		buf.append("<b>Notice:</b> This will allow words with a similar stem to map to the same word." + "<br>");
+		buf.append("However, words stems may not be what you expect." + "</html>");
+		stemmer.setToolTipText(buf.toString());
+//		stemmer.addActionListener(this);
+		stemmer.setSelected(false);
+//		stemmer.setEnabled(false);
 		
-		//Checkbox
-//		useNetworkCounts = new JCheckBox("Normalize word size using selection/network ratios");
-//		useNetworkCounts.setToolTipText("Enables word size to be calculated using using counts over the entire network, rather than just selected nodes");
-//		useNetworkCounts.addActionListener(this);
-//		useNetworkCounts.setSelected(false);
-//		useNetworkCounts.setEnabled(false);
-//		
-//		sliderPanel = new SliderBarPanel(0,1,"Network Normalization", 10, cloudManager, updateCloudAction);
-////		sliderPanel.setEnabled(false);
-////		sliderPanel.setVisible(false);
-//		
-//		String tooltip =
-//			"<html>" + "Determines how much weight to give the whole network when normalizing the selected nodes" + "<br>" +
-//			"<b>Acceptable Values:</b> greater than or equal to 0 and less than or equal to 1" + "</html>";
-//		sliderPanel.setToolTipText(tooltip);
-//		
-//		GridBagConstraints gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 0;
-//		gridBagConstraints.gridy = 0;
-//		gridBagConstraints.weightx = 1.0;
-//		gridBagConstraints.anchor = GridBagConstraints.WEST;
-//		gridBagConstraints.insets = new Insets(5,0,0,0);
-//		netNormalizationPanel.add(useNetworkCounts, gridBagConstraints);
+		JPanel stemmingPanel = new JPanel();
+		stemmingPanel.setLayout(new BorderLayout());
+		stemmingPanel.add(stemmer, BorderLayout.WEST);
 		
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 0;
-//		gridBagConstraints.gridy = 1;
-//		gridBagConstraints.weightx = 1.0;
-//		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-//		gridBagConstraints.insets = new Insets(0,0,0,0);
-//		netNormalizationPanel.add(sliderPanel, BorderLayout.CENTER);
 		
 		//Add components to main panel
-//		panel.add(maxWordsPanel);
-//		panel.add(clusterCutoffPanel);
-		panel.add(netNormalizationPanel);
+		panel.add(maxWordsPanel);
+		panel.add(clusterCutoffPanel);
+		panel.add(stemmingPanel);
 		
-		
-		//Add to collapsible panel
-//		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-//		
-//		return collapsiblePanel;
-		
-		return panel;
+		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
+		return collapsiblePanel;
 	}
 	
-//	/**
-//	 * Creates a CollapsiblePanel that holds the word exclusion list information.
-//	 * @return CollapsiblePanel - word exclusion list panel interface.
-//	 */
-//	private CollapsiblePanel createExclusionListPanel()
-//	{
-//		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Word Exclusion List");
-//		
-//		JPanel panel = new JPanel();
-//		panel.setLayout(new GridLayout(0,1));
-//		
-//		//Add Word
-//		JLabel addWordLabel = new JLabel("Add Word");
-//		addWordTextField = new JFormattedTextField();
-//		addWordTextField.setColumns(15);
-//		
-//		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-//		if (networkParams.equals(cloudManager.getNullSemanticSummary()))
-//			addWordTextField.setEditable(false);
-//		else
-//			addWordTextField.setEditable(true);
-//		
-//		addWordTextField.setText("");
-//		addWordTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
-//		
-//		StringBuffer buf = new StringBuffer();
-//		buf.append("<html>" + "Allows for specification of an additional word to be excluded when doing semantic analysis" + "<br>");
-//		buf.append("<b>Acceptable Values:</b> Only alpha numeric values - no spaces allowed" + "</html>");
-//		addWordTextField.setToolTipText(buf.toString());
-//		
-//		addWordButton = new JButton();
-//		addWordButton.setText("Add");
-//		addWordButton.setEnabled(false);
-//		addWordButton.addActionListener(this);
-//		
-//		//Word panel
-//		JPanel wordPanel = new JPanel();
-//		wordPanel.setLayout(new GridBagLayout());
-//		
-//		GridBagConstraints gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 0;
-//		gridBagConstraints.gridy = 0;
-//		gridBagConstraints.anchor = GridBagConstraints.WEST;
-//		gridBagConstraints.insets = new Insets(5,0,0,0);
-//		wordPanel.add(addWordLabel, gridBagConstraints);
-//		
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 1;
-//		gridBagConstraints.gridy = 0;
-//		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-//		gridBagConstraints.weightx = 1.0;
-//		gridBagConstraints.insets = new Insets(5,10,0,10);
-//		wordPanel.add(addWordTextField, gridBagConstraints);
-//		
-//		//Button stuff
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 2;
-//		gridBagConstraints.gridy = 0;
-//		gridBagConstraints.anchor = GridBagConstraints.EAST;
-//		gridBagConstraints.insets = new Insets(5,0,0,0);
-//		wordPanel.add(addWordButton, gridBagConstraints);
-//		
-//		
-//		// Word Removal Label
-//		JLabel removeWordLabel = new JLabel("Remove Word");
-//		
-//		//Word Removal Combo Box
-//		WidestStringComboBoxModel wscbm = new WidestStringComboBoxModel();
-//		cmbRemoval = new JComboBox(wscbm);
-//		cmbRemoval.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
-//		cmbRemoval.setEditable(false);
-//	    Dimension d = cmbRemoval.getPreferredSize();
-//	    cmbRemoval.setPreferredSize(new Dimension(15, d.height));
-//	    cmbRemoval.addItemListener(this);
-//	    cmbRemoval.setToolTipText("Allows for selection a word to remove from the semantic analysis exclusion list");
-//
-//	    //Word Removal Button
-//	    removeWordButton = new JButton();
-//	    removeWordButton.setText("Remove");
-//	    removeWordButton.setEnabled(false);
-//	    removeWordButton.addActionListener(this);
-//		
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 0;
-//		gridBagConstraints.gridy = 1;
-//		gridBagConstraints.anchor = GridBagConstraints.WEST;
-//		gridBagConstraints.insets = new Insets(5,0,0,0);
-//		wordPanel.add(removeWordLabel, gridBagConstraints);
-//		
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 1;
-//		gridBagConstraints.gridy = 1;
-//		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-//		gridBagConstraints.weightx = 1.0;
-//		gridBagConstraints.insets = new Insets(5, 10, 0, 10);
-//		wordPanel.add(cmbRemoval, gridBagConstraints);
-//		
-//		//Button stuff
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 2;
-//		gridBagConstraints.gridy = 1;
-//		gridBagConstraints.anchor = GridBagConstraints.EAST;
-//		gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-//		wordPanel.add(removeWordButton, gridBagConstraints);
-//
-//		refreshRemovalCMB();
-//		
-//		//Number Exclusion Stuff
-//		
-//		//Checkbox
-//		numExclusion = new JCheckBox("Add the numbers 0 - 999 to the word exclusion list");
-//		
-//		buf = new StringBuffer();
-//		buf.append("<html>" + "Causes numbers in the range 0 - 999 that appear as <b>separate words</b> to be excluded" + "<br>");
-//		buf.append("<b>Hint:</b> To exclude numbers that appear within a word, either add the entire word to the exclusion list" + "<br>");
-//		buf.append("or add the specific number to the list of delimiters used for word tokenization" + "</html>");
-//		numExclusion.setToolTipText(buf.toString());
-//		numExclusion.addActionListener(this);
-//		numExclusion.setSelected(false);
-//		numExclusion.setEnabled(false);
-//		
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 0;
-//		gridBagConstraints.gridy = 2;
-//		gridBagConstraints.gridwidth = 3;
-//		gridBagConstraints.anchor = GridBagConstraints.WEST;
-//		gridBagConstraints.insets = new Insets(5,0,0,0);
-//		wordPanel.add(numExclusion, gridBagConstraints);
-//		
-//		//Add components to main panel
-//		panel.add(wordPanel);
-//		
-//		//Add to collapsible panel
-//		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-//		
-//		return collapsiblePanel;
-//	}
-//	
-//	/**
-//	 * Creates a CollapsiblePanel that holds the word tokenization information.
-//	 * @return CollapsiblePanel - word tokenization panel interface.
-//	 */
-//	private CollapsiblePanel createTokenizationPanel()
-//	{
-//		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Word Tokenization");
-//		
-//		JPanel panel = new JPanel();
-//		panel.setLayout(new GridLayout(0,1));
-//		
-//		//Add Delimiter
-//		JLabel addDelimiterLabel = new JLabel("Add Delimiter");
-//
-//		//Delimiter Addition Combo Box
-//		WidestStringComboBoxModel wscbm = new WidestStringComboBoxModel();
-//		cmbDelimiterAddition = new JComboBox(wscbm);
-//		cmbDelimiterAddition.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
-//		cmbDelimiterAddition.setEditable(false);
-//	    Dimension d = cmbDelimiterAddition.getPreferredSize();
-//	    cmbDelimiterAddition.setPreferredSize(new Dimension(15, d.height));
-//	    cmbDelimiterAddition.addItemListener(this);
-//	    
-//	    StringBuffer buf = new StringBuffer();
-//		buf.append("<html>" + "Allows for specification of an additional delimiter to be used when tokenizing nodes" + "<br>");
-//		buf.append("<b>Acceptable Values:</b> Values entered must have proper escape character if necessary" + "</html>");
-//		cmbDelimiterAddition.setToolTipText(buf.toString());
-//		
-//		addDelimiterButton = new JButton();
-//		addDelimiterButton.setText("Add");
-//		addDelimiterButton.setEnabled(false);
-//		addDelimiterButton.addActionListener(this);
-//		
-//		//Word panel
-//		JPanel wordPanel = new JPanel();
-//		wordPanel.setLayout(new GridBagLayout());
-//		
-//		GridBagConstraints gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 0;
-//		gridBagConstraints.gridy = 0;
-//		gridBagConstraints.anchor = GridBagConstraints.WEST;
-//		gridBagConstraints.insets = new Insets(5,0,0,0);
-//		wordPanel.add(addDelimiterLabel, gridBagConstraints);
-//		
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 1;
-//		gridBagConstraints.gridy = 0;
-//		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-//		gridBagConstraints.weightx = 1.0;
-//		gridBagConstraints.insets = new Insets(5,10,0,10);
-//		wordPanel.add(cmbDelimiterAddition, gridBagConstraints);
-//		
-//		//Button stuff
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 2;
-//		gridBagConstraints.gridy = 0;
-//		gridBagConstraints.anchor = GridBagConstraints.EAST;
-//		gridBagConstraints.insets = new Insets(5,0,0,0);
-//		wordPanel.add(addDelimiterButton, gridBagConstraints);
-//		
-//		
-//		// Word Removal Label
-//		JLabel removeDelimiterLabel = new JLabel("Remove Delimiter");
-//		
-//		//Word Removal Combo Box
-//		wscbm = new WidestStringComboBoxModel();
-//		cmbDelimiterRemoval = new JComboBox(wscbm);
-//		cmbDelimiterRemoval.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
-//		cmbDelimiterRemoval.setEditable(false);
-//	    d = cmbDelimiterRemoval.getPreferredSize();
-//	    cmbDelimiterRemoval.setPreferredSize(new Dimension(15, d.height));
-//	    cmbDelimiterRemoval.addItemListener(this);
-//	    cmbDelimiterRemoval.setToolTipText("Allows for selection of a delimiter to remove from the list used when tokenizing");
-//
-//	    //Word Removal Button
-//	    removeDelimiterButton = new JButton();
-//	    removeDelimiterButton.setText("Remove");
-//	    removeDelimiterButton.setEnabled(false);
-//	    removeDelimiterButton.addActionListener(this);
-//		
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 0;
-//		gridBagConstraints.gridy = 1;
-//		gridBagConstraints.anchor = GridBagConstraints.WEST;
-//		gridBagConstraints.insets = new Insets(5,0,0,0);
-//		wordPanel.add(removeDelimiterLabel, gridBagConstraints);
-//		
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 1;
-//		gridBagConstraints.gridy = 1;
-//		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-//		gridBagConstraints.weightx = 1.0;
-//		gridBagConstraints.insets = new Insets(5, 10, 0, 10);
-//		wordPanel.add(cmbDelimiterRemoval, gridBagConstraints);
-//		
-//		//Button stuff
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 2;
-//		gridBagConstraints.gridy = 1;
-//		gridBagConstraints.anchor = GridBagConstraints.EAST;
-//		gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-//		wordPanel.add(removeDelimiterButton, gridBagConstraints);
-//
-//		updateDelimiterCMBs();
-//		
-//		//Add components to main panel
-//		panel.add(wordPanel);
-//		
-//		//Add to collapsible panel
-//		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-//		
-//		return collapsiblePanel;
-//	}
-//	
-//	/**
-//	 * Creates a CollapsiblePanel that holds the word stemming information.
-//	 * @return CollapsiblePanel - word stemming panel interface.
-//	 */
-//	private CollapsiblePanel createStemmingPanel()
-//	{
-//		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Word Stemming");
-//		
-//		JPanel panel = new JPanel();
-//		panel.setLayout(new GridLayout(0,1));
-//		
-//		StringBuffer buf = new StringBuffer();
-//		
-//		
-//		//Word panel
-//		JPanel wordPanel = new JPanel();
-//		//wordPanel.setLayout(new GridBagLayout());
-//		wordPanel.setLayout(new BorderLayout());
-//		
-//		//Create Checkbox
-//		stemmer = new JCheckBox("Enable Stemming");
-//		
-//		buf = new StringBuffer();
-//		buf.append("<html>" + "Causes all words to be stemmed using the Porter Stemmer algorithm." + "<br>");
-//		buf.append("<b>Notice:</b> This will allow words with a similar stem to map to the same word." + "<br>");
-//		buf.append("However, words stems may not be what you expect." + "</html>");
-//		stemmer.setToolTipText(buf.toString());
-//		stemmer.addActionListener(this);
-//		stemmer.setSelected(false);
-//		stemmer.setEnabled(false);
-//		
-//		//GridBagConstraints gridBagConstraints = new GridBagConstraints();
-//		//gridBagConstraints.gridx = 0;
-//		//gridBagConstraints.gridy = 0;
-//		//gridBagConstraints.gridwidth = 1;
-//		//gridBagConstraints.anchor = GridBagConstraints.WEST;
-//		//gridBagConstraints.insets = new Insets(5,0,0,0);
-//		wordPanel.add(stemmer, BorderLayout.WEST);
-//		
-//		//Add components to main panel
-//		panel.add(wordPanel);
-//		
-//		//Add to collapsible panel
-//		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-//		
-//		return collapsiblePanel;
-//	}
 	
 	
 	/**
 	 * Creates a CollapsiblePanel that holds the Cloud Layout information.
-	 * @return CollapsiblePanel - cloud Layout panel interface.
 	 */
-	private JPanel createCloudLayoutPanel()
-	{
-//		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Layout");
-		
+	private JPanel createCloudLayoutPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(0,1));
-		
 		
 		JPanel cloudLayoutPanel = new JPanel();
 		cloudLayoutPanel.setLayout(new GridBagLayout());
@@ -943,108 +559,18 @@ public class SemanticSummaryInputPanel extends JPanel {
 		gridBagConstraints.insets = new Insets(5, 10, 0, 0);
 		cloudLayoutPanel.add(cmbStyle, gridBagConstraints);
 	    
-	    buildStyleCMB();
+	    DefaultComboBoxModel cmb = ((DefaultComboBoxModel)cmbStyle.getModel());
+		cmb.removeAllElements();
+		cmb.addElement(CloudDisplayStyles.CLUSTERED_STANDARD);
+		cmb.addElement(CloudDisplayStyles.CLUSTERED_BOXES);
+		cmb.addElement(CloudDisplayStyles.NO_CLUSTERING);
+		cmbStyle.setSelectedItem(CloudDisplayStyles.DEFAULT_STYLE);
+		cmbStyle.repaint();
 		
 		panel.add(cloudLayoutPanel);
-		
-//		//Create network button stuff
-//		JLabel createNetworkLabel = new JLabel("Network View:");
-//		
-//		createNetworkButton = new JButton("Export Cloud to Network");
-//		createNetworkButton.setEnabled(false);
-//		createNetworkButton.setToolTipText("Creates a new network based on the current cloud");
-//		createNetworkButton.addActionListener(new CreateCloudNetworkAction(modelManager, cloudManager));
-//		
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 0;
-//		gridBagConstraints.gridy = 1;
-//		gridBagConstraints.anchor = GridBagConstraints.WEST;
-//		gridBagConstraints.insets = new Insets(5, 0, 0, 0);
-//		cloudLayoutPanel.add(createNetworkLabel, gridBagConstraints);
-//		
-//		gridBagConstraints = new GridBagConstraints();
-//		gridBagConstraints.gridx = 1;
-//		gridBagConstraints.gridy = 1;
-//		gridBagConstraints.gridwidth = 2;
-//		gridBagConstraints.anchor = GridBagConstraints.EAST;
-//		gridBagConstraints.weightx = 1.0;
-//		gridBagConstraints.insets = new Insets(5, 10, 0, 0);
-//		cloudLayoutPanel.add(createNetworkButton, gridBagConstraints);
-		
-		//Save file to .jpg stuff
-		/*
-		JLabel saveCloudLabel = new JLabel("Save Cloud Image:");
-		
-		saveCloudButton = new JButton("Export Cloud to File");
-		saveCloudButton.setEnabled(false);
-		saveCloudButton.setToolTipText("Saves the current cloud as an image file");
-		saveCloudButton.addActionListener(new SaveCloudAction());
-		
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagConstraints.insets = new Insets(5, 0, 0, 0);
-		cloudLayoutPanel.add(saveCloudLabel, gridBagConstraints);
-		
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.gridwidth = 2;
-		gridBagConstraints.anchor = GridBagConstraints.EAST;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(5, 10, 0, 0);
-		cloudLayoutPanel.add(saveCloudButton, gridBagConstraints);
-		*/
-		
-//		collapsiblePanel.getContentPane().add(panel,BorderLayout.NORTH);
-//		return collapsiblePanel;
-		
 		return panel;
 	}
 	
-	
-	/**
-	 * Utility to create a panel for the buttons at the bottom of the Semantic 
-	 * Summary Input Panel.
-	 */
-	private JPanel createBottomPanel()
-	{
-		
-		JPanel panel = new JPanel();
-		panel.setLayout(new ModifiedFlowLayout());
-		
-		//Create buttons
-		JButton deleteButton = new JButton("Delete");
-		JButton updateButton = new JButton("Update");
-		JButton createButton = new JButton("Create");
-	
-//		saveCloudButton = new JButton("Save Image");
-//		saveCloudButton.setEnabled(false);
-//		saveCloudButton.setToolTipText("Saves the current cloud as an image file");
-		
-		//Add actions to buttons
-//		createButton.addActionListener(createCloudAction);
-//		deleteButton.addActionListener(deleteCloudAction);
-//		updateButton.addActionListener(updateCloudAction);
-//		saveCloudButton.addActionListener(saveCloudAction);
-		
-		//Add buttons to panel
-		panel.add(deleteButton);
-		panel.add(updateButton);
-		panel.add(createButton);
-//		panel.add(saveCloudButton);
-		
-		return panel;
-	}
-
-	
-	private void setAttributeNames(List<String> names) {
-		attributeList.setSelectedItems(names);
-		updateAttNames();
-	}
-	
-
 
 	
 	
@@ -1066,17 +592,23 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		// MKTODO: update all the other controls to show this cloud
 		List<String> attributeNames = params.getAttributeNames();
-//		if (attributeNames == null) {
-//			attributeNames = Collections.emptyList();
-//		}
-//		setAttributeNames(attributeNames);
-////		maxWordsTextField.setValue(params.getMaxWords());
-////		clusterCutoffTextField.setValue(params.getClusterCutoff());
-//		cmbStyle.setSelectedItem(params.getDisplayStyle());
-////		addWordTextField.setText("");
-//		this.setupNetworkNormalization(params);
+		if (attributeNames == null) {
+			attributeNames = Collections.emptyList();
+		}
+		setAttributeNames(attributeNames);
+		maxWordsTextField.setValue(params.getMaxWords());
+		clusterCutoffTextField.setValue(params.getClusterCutoff());
+		cmbStyle.setSelectedItem(params.getDisplayStyle());
+		setupNetworkNormalization(params);
+		updateStemmingBox();
 		
 		cloudList.addListSelectionListener(handler);
+	}
+	
+	
+	private void setAttributeNames(List<String> names) {
+		attributeList.setSelectedItems(names);
+		updateAttNames();
 	}
 	
 	
@@ -1106,97 +638,40 @@ public class SemanticSummaryInputPanel extends JPanel {
 //	
 
 	
-//	/**
-//	 * Sets the numExclusion checkbox based on the current network.
-//	 */
-//	private void updateNumExclusionBox()
-//	{
-//		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-//		WordFilter curFilter = networkParams.getFilter();
-//		Boolean val = curFilter.getFilterNums();
-////		numExclusion.setSelected(val);
-//	}
-//	
-//	/**
-//	 * Sets the stemming checkbox based on the current network.
-//	 */
-//	private void updateStemmingBox()
-//	{
-//		SemanticSummaryParameters networkParams = cloudManager.getCurNetwork();
-//		boolean val = networkParams.getIsStemming();
-////		stemmer.setSelected(val);
-//	}
-//	
-//	/**
-//	 * Refreshes everything in the input panel that is on the network level.
-//	 */
-//	public void refreshNetworkSettings()
-//	{
-////		this.refreshRemovalCMB();
-//		this.updateNumExclusionBox();
-////		this.updateDelimiterCMBs();
-//		this.updateStemmingBox();
-//	}
-//	
-
-	
-	/**
-	 * Builds the combo box of cloud style choices
-	 */
-	private void buildStyleCMB()
-	{
-		DefaultComboBoxModel cmb;
-		
-		cmb = ((DefaultComboBoxModel)cmbStyle.getModel());
-		cmb.removeAllElements();
-		cmb.addElement(CloudDisplayStyles.CLUSTERED_STANDARD);
-		cmb.addElement(CloudDisplayStyles.CLUSTERED_BOXES);
-		cmb.addElement(CloudDisplayStyles.NO_CLUSTERING);
-		cmbStyle.setSelectedItem(CloudDisplayStyles.DEFAULT_STYLE);
-		cmbStyle.repaint();
+	private void updateStemmingBox() {
+		NetworkParameters networkParams = uiManager.getCurrentNetwork();
+		boolean val = networkParams.getIsStemming();
+		stemmer.setSelected(val);
 	}
 	
-//	
 	
 	/**
 	 * Sets up the network normalization panel for the given cloud.
-	 * @param CloudParameter to use
 	 */
-	private void setupNetworkNormalization(CloudParameters params)
-	{
+	private void setupNetworkNormalization(CloudParameters params) {
 		//Turn off slider listener
-//		ChangeListener[] listeners = sliderPanel.getSlider().getChangeListeners();
-//		for (int i = 0; i < listeners.length; i++)
-//		{
-//			sliderPanel.getSlider().removeChangeListener(listeners[i]);
-//		}
+		ChangeListener[] listeners = sliderPanel.getSlider().getChangeListeners();
+		for (int i = 0; i < listeners.length; i++) {
+			sliderPanel.getSlider().removeChangeListener(listeners[i]);
+		}
 		
-//		Boolean useNetNorm = params.getUseNetNormal();
-////		useNetworkCounts.setSelected(useNetNorm);
-//		sliderPanel.setVisible(useNetNorm);
-//		sliderPanel.setEnabled(useNetNorm);
-//		sliderPanel.setNetNormValue(params.getNetWeightFactor());
-//		sliderPanel.setLabel(sliderPanel.getSlider().getValue());
+		sliderPanel.setNetNormValue(params.getNetWeightFactor());
+		sliderPanel.setLabel(sliderPanel.getSlider().getValue());
 		
 		//Turn back on slider listener
-//		for (int i = 0; i < listeners.length; i++)
-//		{
-//			sliderPanel.getSlider().addChangeListener(listeners[i]);
-//		}
+		for (int i = 0; i < listeners.length; i++) {
+			sliderPanel.getSlider().addChangeListener(listeners[i]);
+		}
 	}
 	
-	private void updateAttNames()
-	{
+	
+	private void updateAttNames() {
 		StringBuilder buffer = new StringBuilder();
-		if (!attributeList.isSelectionEmpty())
-		{
+		if (!attributeList.isSelectionEmpty()) {
 			Object[] names = attributeList.getSelectedValues();
-			for (int i = 0; i < names.length; i++)
-			{
-				if (names[i] instanceof String)
-				{
+			for (int i = 0; i < names.length; i++) {
+				if (names[i] instanceof String) {
 					String curName = (String)names[i];
-				
 					if (i > 0) {
 						buffer.append("\n");
 					}
@@ -1208,130 +683,56 @@ public class SemanticSummaryInputPanel extends JPanel {
 	}
 	
 	
-	//Getters and Setters
+	/**
+	 * Update the attribute list in the attribute combobox.
+	 */
+	private void updateCMBAttributes() {
+		//Turn off listeners
+		ListSelectionListener[] listeners = attributeList.getListSelectionListeners();
+		for (int i = 0; i < listeners.length; i++) {
+			ListSelectionListener curListener = listeners[i];
+			attributeList.removeListSelectionListener(curListener);
+		}
+		
+		//Updated GUI
+		DefaultListModel listModel;
+		listModel = ((DefaultListModel)attributeList.getModel());
+		listModel.removeAllElements();
+		
+		
+		CyNetwork network = uiManager.getCurrentNetwork().getNetwork();
+		if (network != null) {
+			for (String name : CloudModelManager.getColumnNames(network, CyNode.class)) {
+				listModel.addElement(name);
+			}
+		}
+		
+		//Turn listeners back on
+		for (int i = 0; i < listeners.length; i++) {
+			ListSelectionListener curListener = listeners[i];
+			attributeList.addListSelectionListener(curListener);
+		}
+	}
 	
-//	public JFormattedTextField getMaxWordsTextField()
-//	{
-//		return maxWordsTextField;
-//	}
-//	
-//	public JFormattedTextField getClusterCutoffTextField()
-//	{
-//		return clusterCutoffTextField;
-//	}
-
-//	public JTextField getAddWordTextField()
-//	{
-//		return addWordTextField;
-//	}
-//
-//	public JButton getAddWordButton()
-//	{
-//		return addWordButton;
-//	}
-//	
-//	public JLabel getNetworkLabel()
-//	{
-//		return networkLabel;
-//	}
-//	
-//	public DefaultListModel getListValues()
-//	{
-//		return listValues;
-//	}
-//	
-//	public JList getCloudList()
-//	{
-//		return cloudList;
-//	}
-//	
-//	
-//	public JComboBox getCMBRemoval()
-//	{
-//		return cmbRemoval;
-//	}
-//	
-//	public JComboBox getCMBStyle()
-//	{
-//		return cmbStyle;
-//	}
-//	
-//	
-//	public CloudListSelectionHandler getCloudListSelectionHandler()
-//	{
-//		return handler;
-//	}
-//	
-//	public JCheckBox getNumExclusion()
-//	{
-//		return numExclusion;
-//	}
-//	
-//	public void setNumExclusion(JCheckBox box)
-//	{
-//		numExclusion = box;
-//	}
-//	
-//	public JComboBox getCMBDelimiterRemoval()
-//	{
-//		return cmbDelimiterRemoval;
-//	}
-//	
-//	public JComboBox getCMBDelimiterAddition()
-//	{
-//		return cmbDelimiterAddition;
-//	}
-//	
-//	public JButton getAddDelimiterButton()
-//	{
-//		return addDelimiterButton;
-//	}
-//	
-//	public JButton getRemoveDelimiterButton()
-//	{
-//		return removeDelimiterButton;
-//	}
-//	
-//	public JCheckBox getUseNetworkCounts()
-//	{
-//		return useNetworkCounts;
-//	}
 	
-//	public SliderBarPanel getSliderBarPanel()
-//	{
-//		return sliderPanel;
-//	}
-//	
-//	public CheckBoxJList getAttributeList()
-//	{
-//		return attributeList;
-//	}
-//	
-//	public JPopupMenu getAttributePopupMenu()
-//	{
-//		return attributeSelectionPopupMenu;
-//	}
-//	
-//	public JTextArea getAttNames()
-//	{
-//		return attNames;
-//	}
-
-//	public JButton getCreateNetworkButton()
-//	{
-//		return createNetworkButton;
-//	}
-//
-//	public JButton getSaveCloudButton()
-//	{
-//		return saveCloudButton;
-//	}
-//	
-//	public JCheckBox getStemmerCheckBox()
-//	{
-//		return stemmer;
-//	}
-//	
+	/**
+	 * Refreshes the list of attributes
+	 */
+	public void refreshAttributeCMB() {
+		updateCMBAttributes();
+		CloudParameters curCloud = uiManager.getCurrentCloud();
+		
+		//Updated GUI
+		List<String> curAttList = curCloud.getAttributeNames();
+		
+		if (curAttList == null) {
+			curAttList = CloudModelManager.getColumnNames(curCloud.getNetworkParams().getNetwork(), CyNode.class);
+		}
+		
+		attributeList.setSelectedItems(curAttList);
+		attributeList.repaint();
+	}
+	
 	
 	/**
 	 * Private Class to ensure that text fields are being set properly

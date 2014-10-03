@@ -39,14 +39,14 @@ import org.cytoscape.application.swing.CySwingApplication;
  * This class handles all mouse actions associated with the list of
  * clouds displayed in the Input Panel for the Semantic Summary.
  */
-public class CloudListMouseListener extends MouseAdapter {
+public class CloudListPopupMenuListener extends MouseAdapter {
 	
 	private JList list;
 	private CySwingApplication swingApplication;
 	private UIManager uiManager;
 
 	
-	public CloudListMouseListener(UIManager uiManager, CySwingApplication swingApplication, JList list) {
+	public CloudListPopupMenuListener(UIManager uiManager, CySwingApplication swingApplication, JList list) {
 		this.uiManager = uiManager;
 		this.swingApplication = swingApplication;
 		this.list = list;

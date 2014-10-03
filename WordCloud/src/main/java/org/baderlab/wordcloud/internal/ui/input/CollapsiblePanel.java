@@ -60,7 +60,6 @@ import org.baderlab.wordcloud.internal.CyActivator;
 /**
  * The user-triggered collapsable panel containing the component (trigger) in the titled border
  */
-@Deprecated
 public class CollapsiblePanel extends JPanel {
     //Border
     CollapsableTitledBorder border; // includes upper left component and line type

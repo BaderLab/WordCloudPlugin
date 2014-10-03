@@ -145,7 +145,7 @@ public class WordSelectPanel extends JPanel {
 		add(title, c);
 		
 		
-		final JList<String> wordList = new JList<String>(createListModel());
+		final JList wordList = new JList(createListModel());
 		JScrollPane wordScroll = new JScrollPane();
 		wordScroll.setPreferredSize(wordList.getPreferredSize());
 		wordScroll.setViewportView(wordList);
@@ -172,7 +172,7 @@ public class WordSelectPanel extends JPanel {
 		
 		// create either a text field or a combo box for the add field
 		JComponent text;
-		final JComboBox<String> addWordCombo;
+		final JComboBox addWordCombo;
 		final JTextField addWordTextField;
 		List<String> available = model.getAvailable();
 		if(available == null) {
@@ -180,7 +180,7 @@ public class WordSelectPanel extends JPanel {
 			addWordCombo = null;
 		}
 		else {
-			text = addWordCombo = new JComboBox<String>(createComboModel());
+			text = addWordCombo = new JComboBox(createComboModel());
 			addWordCombo.setEditable(true);
 			addWordTextField = null;
 		}
@@ -230,7 +230,8 @@ public class WordSelectPanel extends JPanel {
 		
 		removeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				for(String word : wordList.getSelectedValuesList()) {
+				for(Object selected : wordList.getSelectedValues()) {
+					String word = (String) selected;
 					model.remove(word);
 				}
 				wordList.setModel(createListModel());
@@ -261,16 +262,16 @@ public class WordSelectPanel extends JPanel {
 	}
 	
 	
-	private ListModel<String> createListModel() {
-		DefaultListModel<String> listModel = new DefaultListModel<String>();
+	private ListModel createListModel() {
+		DefaultListModel listModel = new DefaultListModel();
 		for(String word : model.getCurrent()) {
 			listModel.addElement(word);
 		}
 		return listModel;
 	}
 	
-	private ComboBoxModel<String> createComboModel() {
-		DefaultComboBoxModel<String> comboModel = new DefaultComboBoxModel<String>();
+	private ComboBoxModel createComboModel() {
+		DefaultComboBoxModel comboModel = new DefaultComboBoxModel();
 		comboModel.addElement("");
 		for(String s : model.getAvailable()) {
 			comboModel.addElement(s);

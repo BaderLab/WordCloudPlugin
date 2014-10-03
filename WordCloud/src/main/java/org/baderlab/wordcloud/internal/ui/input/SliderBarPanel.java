@@ -30,10 +30,10 @@ import java.util.Hashtable;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
-import org.baderlab.wordcloud.internal.ui.UpdateCloudAction;
-
+@SuppressWarnings("serial")
 public class SliderBarPanel extends JPanel {
 
     private final int DIM_HEIGHT = 72;
@@ -62,9 +62,8 @@ public class SliderBarPanel extends JPanel {
      * @param params - cloud parameters for current cloud
      * @param attrib - attribute that the slider bar is specific to (i.e. network normalization)
      * @param desired_width
-     * @param cloudManager 
      */
-    public SliderBarPanel(double min, double max, String sliderLabel, int desired_width, SemanticSummaryManager cloudManager, UpdateCloudAction updateCloudAction) {
+    public SliderBarPanel(double min, double max, String sliderLabel, int desired_width) {
         this.setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
         this.setLayout(new BorderLayout(0,0));
         this.setOpaque(false);
@@ -84,7 +83,8 @@ public class SliderBarPanel extends JPanel {
         Dimension currentsize = label.getPreferredSize();
         currentsize.height = DIM_HEIGHT/12;
         label.setPreferredSize(currentsize);
-        initPanel(desired_width, cloudManager, updateCloudAction);
+        initPanel(desired_width);
+        
     }
 
     /**
@@ -94,13 +94,13 @@ public class SliderBarPanel extends JPanel {
      * @param desired_width
      * @param updateCloudAction 
      */
-    private void initPanel(int desired_width, SemanticSummaryManager cloudManager, UpdateCloudAction updateCloudAction){
+    private void initPanel(int desired_width) {
 
         slider = new JSlider(JSlider.HORIZONTAL, min, max, min);
 
-        slider.addChangeListener(new SliderBarActionListener(this, cloudManager, updateCloudAction));
+//        slider.addChangeListener(new SliderBarActionListener(this, cloudManager, updateCloudAction));
 
-        slider.setMajorTickSpacing((max-min)/5);
+        slider.setMajorTickSpacing((max-min)/10);
         slider.setPaintTicks(true);
 
         //Create the label table
@@ -121,6 +121,12 @@ public class SliderBarPanel extends JPanel {
         add(label, BorderLayout.NORTH);
         add(slider, BorderLayout.SOUTH);
 
+        slider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+		        setLabel(slider.getValue());
+			}
+		});  
+        
         revalidate();
     }
     
@@ -186,9 +192,9 @@ public class SliderBarPanel extends JPanel {
 //    public void setRangeModel(NumberRangeModel rangeModel) {
 //        this.rangeModel = rangeModel;
 //    }
-//    
-//    public JSlider getSlider()
-//    {
-//    	return slider;
-//    }
+
+    
+    public JSlider getSlider() {
+    	return slider;
+    }
 }
