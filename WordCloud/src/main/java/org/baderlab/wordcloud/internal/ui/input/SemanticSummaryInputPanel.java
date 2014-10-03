@@ -38,6 +38,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -54,6 +55,7 @@ import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -61,7 +63,10 @@ import javax.swing.JTextArea;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionListener;
 
 import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
@@ -91,42 +96,45 @@ public class SemanticSummaryInputPanel extends JPanel {
 	private static final int DEF_ROW_HEIGHT = 20;
 	
 	private final UIManager uiManager;
-	
-	
-	//Text Fields
-	private JFormattedTextField maxWordsTextField;
-	private JFormattedTextField clusterCutoffTextField;
-	
-//	//JComboBox
-	private JComboBox cmbStyle;
-	
-	//JLabels
-	private JLabel networkLabel;
-	
-	//JListData
-	private JList cloudList;
-	private CloudListSelectionHandler handler;
-	
-	//Checkbox
-//	private JCheckBox numExclusion;
-//	private JCheckBox useNetworkCounts;
-	private JCheckBox stemmer;
-	
-	//SliderBar
-	private SliderBarPanel sliderPanel;
-	
-	//Checkbox list
-	private CheckBoxJList attributeList;
-	
-	//Popup menu
-	private JPopupMenu attributeSelectionPopupMenu;
-	
-	//Text Area
-	private JTextArea attNames;
-
 	private final CySwingApplication application;
 	private final CyServiceRegistrar registrar;
+	
+	private JFormattedTextField maxWordsTextField;
+	private JFormattedTextField clusterCutoffTextField;
+	private JComboBox cmbStyle;
+	private JLabel networkLabel;
+	private JList cloudList;
+	private CloudListSelectionHandler handler;
+	private JCheckBox stemmer;
+	private SliderBarPanel sliderPanel;
+	private CheckBoxJList attributeList;
+	private JPopupMenu attributeSelectionPopupMenu;
+	private JTextArea attNames;
 
+	private final UpdateCloudListener updateCloudListener = new UpdateCloudListener();
+	
+	private class UpdateCloudListener implements ActionListener, ChangeListener, PropertyChangeListener, DocumentListener {
+		boolean enabled;
+		
+		@Override public void actionPerformed(ActionEvent e) { update(); }
+		@Override public void stateChanged(ChangeEvent e) { update(); }
+		@Override public void propertyChange(PropertyChangeEvent e) { update(); }
+		@Override public void changedUpdate(DocumentEvent e) { update(); }
+		@Override public void insertUpdate(DocumentEvent e) { update(); }
+		@Override public void removeUpdate(DocumentEvent e) { update(); }
+		
+		void update() {
+			if(enabled) {
+				CloudParameters cloud = uiManager.getCurrentCloud();
+				if(cloud != null) {
+					updateCloudParameters(cloud); // save values into model object
+					cloud.calculateFontSizes();
+					uiManager.getCloudDisplayPanel().updateCloudDisplay(cloud);
+				}
+			}
+		}
+	};
+	
 	
 	
 	public SemanticSummaryInputPanel(
@@ -177,6 +185,14 @@ public class SemanticSummaryInputPanel extends JPanel {
 		add(optionsScroll,BorderLayout.CENTER);
 //		add(bottomPanel,BorderLayout.SOUTH);
 	
+		
+		// Live update
+		sliderPanel.getSlider().addChangeListener(updateCloudListener);
+		maxWordsTextField.getDocument().addDocumentListener(updateCloudListener);
+		clusterCutoffTextField.getDocument().addDocumentListener(updateCloudListener);
+		stemmer.addChangeListener(updateCloudListener);
+		cmbStyle.addActionListener(updateCloudListener);
+		
 		
 		RowsSetListener nodeSelectionListener = new RowsSetListener() {
 			public void handleEvent(RowsSetEvent e) {
@@ -293,8 +309,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 				WordSelectPanel wordSelectPanel = new WordSelectPanel(network.getFilter());
 				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), network.getNetworkName());
 				dialog.setVisible(true);
-//				network.networkChanged();
-//				updateCloudAction.doRealAction();
+				updateCloudListener.update();
 			}
 		});
 		excludedWordsPanel.add(excludedWordsButton);
@@ -306,25 +321,21 @@ public class SemanticSummaryInputPanel extends JPanel {
 				WordSelectPanel wordSelectPanel = new WordSelectPanel(network.getDelimeters());
 				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), network.getNetworkName());
 				dialog.setVisible(true);
-//				network.networkChanged();
-//				updateCloudAction.doRealAction();
+				updateCloudListener.update();
 			}
 		});
 		excludedWordsPanel.add(delimetersButton);
 		
 		return excludedWordsPanel;
 	}
+	
+	
 	/**
-	 * Creates a CollapsiblePanel that holds the Semantic Analysis information.
-	 * @return CollapsiblePanel - semantic analysis panel interface.
+	 * Creates a Panel that holds the Semantic Analysis information.
 	 */
-	private JPanel createSemAnalysisPanel()
-	{
-		//CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Attribute Choice");
-		
+	private JPanel createSemAnalysisPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(0,1));
-		
 		
 		JPanel attributePanel = new JPanel();
 		attributePanel.setLayout(new GridBagLayout());
@@ -337,7 +348,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				updateAttNames();
-//				updateCloudAction.doRealAction();
+				updateCloudListener.update();
 			}
 		});
 	    
@@ -350,14 +361,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 	    
 	    JButton attributeButton = new JButton("Edit");
 	    attributeButton.setToolTipText("Edit nodes values to use for semantic analysis");
-	    attributeButton.addMouseListener(new MouseAdapter()
-	    {
-	    	public void mouseClicked(MouseEvent e)
-	    	{
+	    attributeButton.addMouseListener(new MouseAdapter() {
+	    	public void mouseClicked(MouseEvent e) {
 	    		attributeSelectionPopupMenu.show(e.getComponent(), 0,e.getComponent().getPreferredSize().height);
 	    	}
-	    }
-	    );
+	    });
 
 	    attNames = new JTextArea();
 	    attNames.setColumns(15);
@@ -374,15 +382,12 @@ public class SemanticSummaryInputPanel extends JPanel {
 		attributePanel.add(attributeLabel, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 		attributePanel.add(attributeButton, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 		attributePanel.add(attListPane, new GridBagConstraints(0, 1, 2, 1, 1.0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));	
-		    
-	    refreshAttributeCMB();
 		
 		panel.add(attributePanel);
 		
 		return panel;
-//		collapsiblePanel.getContentPane().add(panel,BorderLayout.NORTH);
-//		return collapsiblePanel;
 	}
+	
 	
 	private Component createAttributePanel(final CheckBoxJList attributeList) {
 		JPanel panel = new JPanel();
@@ -393,11 +398,13 @@ public class SemanticSummaryInputPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				ListModel model = attributeList.getModel();
-				int size = model.getSize();
-				if (size == 0) {
-					return;
+				List<String> items = new ArrayList<String>(model.getSize());
+				for(int i = 0; i < model.getSize(); i++) {
+					items.add((String) model.getElementAt(i));
 				}
-				attributeList.getSelectionModel().setSelectionInterval(0, size - 1);
+				attributeList.setSelectedItems(items);
+				updateAttNames();
+				updateCloudListener.update();
 			}
 		});
 
@@ -405,8 +412,9 @@ public class SemanticSummaryInputPanel extends JPanel {
 		deselectAllButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				List<String> selected = Collections.emptyList();
-				attributeList.setSelectedItems(selected);
+				attributeList.setSelectedItems(Collections.<String>emptyList());
+				updateAttNames();
+				updateCloudListener.update();
 			}
 		});
 		
@@ -441,9 +449,6 @@ public class SemanticSummaryInputPanel extends JPanel {
 	{
 		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Advanced");
 		
-		//Used to retrieve defaults
-//		CloudParameters params = cloudManager.getCurCloud();
-		
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		
@@ -454,7 +459,6 @@ public class SemanticSummaryInputPanel extends JPanel {
 		maxWordsTextField = new JFormattedTextField(intFormat);
 		maxWordsTextField.setColumns(7);
 		maxWordsTextField.setValue(40);  
-//		(params.getDefaultMaxWords()); //Set to default initially
 		maxWordsTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
 		
 		StringBuffer buf = new StringBuffer();
@@ -475,7 +479,6 @@ public class SemanticSummaryInputPanel extends JPanel {
 		clusterCutoffTextField = new JFormattedTextField(decFormat);
 		clusterCutoffTextField.setColumns(7);
 		clusterCutoffTextField.setValue(20);
-//				params.getDefaultClusterCutoff()); //Set to default initially
 		clusterCutoffTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
 		
 		buf = new StringBuffer();
@@ -497,14 +500,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 		buf.append("<b>Notice:</b> This will allow words with a similar stem to map to the same word." + "<br>");
 		buf.append("However, words stems may not be what you expect." + "</html>");
 		stemmer.setToolTipText(buf.toString());
-//		stemmer.addActionListener(this);
 		stemmer.setSelected(false);
-//		stemmer.setEnabled(false);
 		
 		JPanel stemmingPanel = new JPanel();
 		stemmingPanel.setLayout(new BorderLayout());
 		stemmingPanel.add(stemmer, BorderLayout.WEST);
-		
 		
 		//Add components to main panel
 		panel.add(maxWordsPanel);
@@ -543,7 +543,6 @@ public class SemanticSummaryInputPanel extends JPanel {
 	    toolTip.append("<b> No Clustering:</b> When a non-clustering option is selected, words appear in decreasing order of of size.");
 	    cmbStyle.setToolTipText(toolTip.toString());
 
-		
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 0;
@@ -576,6 +575,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	
 	public void setCurrentCloud(CloudParameters params) {
 		cloudList.removeListSelectionListener(handler);
+		updateCloudListener.enabled = false;
 		
 		List<CloudParameters> networkClouds = params.getNetworkParams().getClouds();
 		DefaultListModel listModel = new DefaultListModel();
@@ -596,13 +596,65 @@ public class SemanticSummaryInputPanel extends JPanel {
 			attributeNames = Collections.emptyList();
 		}
 		setAttributeNames(attributeNames);
+		refreshAttributeCMB();
 		maxWordsTextField.setValue(params.getMaxWords());
 		clusterCutoffTextField.setValue(params.getClusterCutoff());
 		cmbStyle.setSelectedItem(params.getDisplayStyle());
 		setupNetworkNormalization(params);
 		updateStemmingBox();
 		
+		updateCloudListener.enabled = true;
 		cloudList.addListSelectionListener(handler);
+	}
+	
+	
+	private void updateCloudParameters(CloudParameters cloud) {
+		// Normalization
+		cloud.setNetWeightFactor(sliderPanel.getNetNormValue());
+		
+		// Attributes
+		Object[] attributes = attributeList.getSelectedValues();
+		List<String> attributeNames = new ArrayList<String>(attributes.length);
+		for(Object attribute : attributes) {
+			attributeNames.add((String) attribute);
+		}
+		cloud.setAttributeNames(attributeNames);
+		
+		// Max words
+		Number value = (Number) maxWordsTextField.getValue();
+		if (value != null && value.intValue() >= 0) {
+			cloud.setMaxWords(value.intValue()); 
+		} else {
+			maxWordsTextField.setValue(CloudParameters.DEFAULT_MAX_WORDS);
+			cloud.setMaxWords(CloudParameters.DEFAULT_MAX_WORDS);
+			String message = "The maximum number of words to display must be greater than or equal to 0.";
+			JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+		}
+		
+		// Culster Cutoff
+		value = (Number) clusterCutoffTextField.getValue();
+		if ((value != null) && (value.doubleValue() >= 0.0)) {
+			cloud.setClusterCutoff(value.doubleValue()); //sets all necessary flags
+		} else {
+			clusterCutoffTextField.setValue(CloudParameters.DEFAULT_CLUSTER_CUTOFF);
+			cloud.setClusterCutoff(CloudParameters.DEFAULT_CLUSTER_CUTOFF);
+			String message = "The cluster cutoff must be greater than or equal to 0";
+			JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+		}
+		
+		//Style
+		Object style = cmbStyle.getSelectedItem();
+		if (style instanceof String) {
+			cloud.setDisplayStyle((String) style);
+		} else {
+			cloud.setDisplayStyle(CloudParameters.DEFAULT_STYLE);
+			cmbStyle.setSelectedItem(CloudParameters.DEFAULT_STYLE);
+			String message = "You must select one of the available styles.";
+			JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+		}
+		
+		// Stemming
+		cloud.getNetworkParams().setIsStemming(stemmer.isSelected());
 	}
 	
 	
@@ -655,7 +707,8 @@ public class SemanticSummaryInputPanel extends JPanel {
 			sliderPanel.getSlider().removeChangeListener(listeners[i]);
 		}
 		
-		sliderPanel.setNetNormValue(params.getNetWeightFactor());
+		double netWeightFactor = params.getNetWeightFactor();
+		sliderPanel.setNetNormValue(netWeightFactor);
 		sliderPanel.setLabel(sliderPanel.getSlider().getValue());
 		
 		//Turn back on slider listener

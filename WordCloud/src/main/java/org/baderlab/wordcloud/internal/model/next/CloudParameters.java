@@ -57,6 +57,14 @@ import org.cytoscape.model.CyTableManager;
 
 public class CloudParameters implements Comparable<CloudParameters>
 {
+	
+	//Default Values for User Input
+	public static final double DEFAULT_NET_WEIGHT = 0.0;
+	public static final String DEFAULT_ATT_NAME = CyNetwork.NAME;
+	public static final int    DEFAULT_MAX_WORDS = 250;
+	public static final double DEFAULT_CLUSTER_CUTOFF = 1.0;
+	public static final String DEFAULT_STYLE = CloudDisplayStyles.DEFAULT_STYLE;
+	
 
 	//VARIABLES
 	private String cloudName;
@@ -105,12 +113,6 @@ public class CloudParameters implements Comparable<CloudParameters>
 	private static final String SEPARATER = "_";
 	private static final double EPSILON = 0.00001;
 	
-	//Default Values for User Input
-	private double defaultNetWeight = 0.0;
-	private String defaultAttName = CyNetwork.NAME;
-	private int defaultMaxWords = 250;
-	private double defaultClusterCutoff = 1.0;
-	private String defaultStyle = CloudDisplayStyles.DEFAULT_STYLE;
 	private String clusterColumnName;
 	private CyTable clusterTable;
 	
@@ -131,10 +133,10 @@ public class CloudParameters implements Comparable<CloudParameters>
 		this.pairRatios = new HashMap<WordPair, Double>();
 		this.cloudWords = new ArrayList<CloudWordInfo>();
 		
-		this.netWeightFactor = this.getDefaultNetWeight();
-		this.clusterCutoff = this.getDefaultClusterCutoff();
-		this.maxWords = this.getDefaultMaxWords();
-		this.displayStyle = this.getDefaultDisplayStyle();
+		this.netWeightFactor = DEFAULT_NET_WEIGHT;
+		this.clusterCutoff = DEFAULT_CLUSTER_CUTOFF;
+		this.maxWords = DEFAULT_MAX_WORDS;
+		this.displayStyle = DEFAULT_STYLE;
 	}
 	
 	/**
@@ -1364,31 +1366,6 @@ public class CloudParameters implements Comparable<CloudParameters>
 	public void setMaxWords(int val)
 	{
 		maxWords = val;
-	}
-	
-	public double getDefaultNetWeight()
-	{
-		return defaultNetWeight;
-	}
-	
-	public String getDefaultAttName()
-	{
-		return defaultAttName;
-	}
-	
-	public int getDefaultMaxWords()
-	{
-		return defaultMaxWords;
-	}
-	
-	public double getDefaultClusterCutoff()
-	{
-		return defaultClusterCutoff;
-	}
-	
-	public String getDefaultDisplayStyle()
-	{
-		return defaultStyle;
 	}
 	
 	public int getCloudNum()
