@@ -36,8 +36,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 
 
+@SuppressWarnings("serial")
 public class CreateCloudAction extends AbstractCyAction {
-	private static final long serialVersionUID = 1103296239269358444L;
 	
 	private final CyApplicationManager applicationManager;
 	private final CySwingApplication application;

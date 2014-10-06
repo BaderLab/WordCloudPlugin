@@ -102,12 +102,24 @@ public class NetworkParameters {
 	 * @param nodes It is assumed that all the nodes in the list are part of this network.
 	 */
 	public CloudParameters createCloud(Set<CyNode> nodes) {
-		CloudParameters cloudParams = createCloudParameters(nodes, getCloudCount(), getNextCloudName());
+		return createCloud(nodes, getNextCloudName());
+	}
+	
+	/**
+	 * Creates a new CloudParameters object for this network.
+	 * @param nodes It is assumed that all the nodes in the list are part of this network.
+	 */
+	public CloudParameters createCloud(Set<CyNode> nodes, String cloudName) {
+		CloudParameters cloudParams = createCloudParameters(nodes, getCloudCount(), cloudName);
 		clouds.put(cloudParams.getCloudName(), cloudParams);
 		parent.fireCloudAdded(cloudParams);
 		return cloudParams;
 	}
 	
+	/**
+	 * Creates a new CloudParameters object for this network by reading the given
+	 * properties file (which is entirely contained in the string parameter).
+	 */
 	public CloudParameters createCloud(String propFile) {
 		CloudParameters cloudParams = new CloudParameters(this, propFile);
 		clouds.put(cloudParams.getCloudName(), cloudParams);

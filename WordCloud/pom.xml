@@ -146,13 +146,6 @@
 					
 					<excludes>
 						<exclude>org/baderlab/wordcloud/internal/ModelManager.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/command/CreateCloudCommandAction.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/command/CreateWordCloudCommandHandlerTask.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/command/CreateWordCloudCommandHandlerTaskFactory.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/command/DeleteWordCloudCommandHandlerTask.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/command/DeleteWordCloudCommandHandlerTaskFactory.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/command/SelectWordCloudCommandHandlerTask.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/command/SelectWordCloudCommandHandlerTaskFactory.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/model/SemanticSummaryManager.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/model/SemanticSummaryParameters.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/model/SemanticSummaryParametersFactory.java</exclude>

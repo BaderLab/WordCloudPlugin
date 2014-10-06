@@ -1,31 +1,24 @@
 package org.baderlab.wordcloud.internal.command;
 
-import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
-import org.cytoscape.application.CyApplicationManager;
+import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class SelectWordCloudCommandHandlerTaskFactory implements TaskFactory{
 
-	private CyApplicationManager applicationManager;
-	private SemanticSummaryManager cloudManager;
-
-	public SelectWordCloudCommandHandlerTaskFactory(
-			CyApplicationManager applicationManager,
-			SemanticSummaryManager cloudManager) {
-		
-		this.applicationManager = applicationManager;
-		this.cloudManager = cloudManager;
+private UIManager uiManager;
+	
+	public SelectWordCloudCommandHandlerTaskFactory(UIManager uiManager) {
+		this.uiManager = uiManager;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new SelectWordCloudCommandHandlerTask(applicationManager, cloudManager));
+		return new TaskIterator(new SelectWordCloudCommandHandlerTask(uiManager));
 	}
 
 	@Override
 	public boolean isReady() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 	

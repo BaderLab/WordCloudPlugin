@@ -1,18 +1,14 @@
 package org.baderlab.wordcloud.internal.command;
 
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import org.baderlab.wordcloud.internal.SelectionUtils;
-import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
-import org.baderlab.wordcloud.internal.model.SemanticSummaryParametersFactory;
+import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
+import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.ui.cloud.CloudWordInfo;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -24,14 +20,14 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.ListSingleSelection;
 
 public class CreateWordCloudCommandHandlerTask implements Task {
 
 	private CyApplicationManager applicationManager;
-	private CreateCloudCommandAction createCloudCommandAction;
 	private CyTableManager tableManager;
 	private CyTableFactory tableFactory;
+	private CloudModelManager cloudModelManager;
+	
 	private CyNetwork network;
 	
 	@Tunable(description="Column with words")
@@ -53,26 +49,33 @@ public class CreateWordCloudCommandHandlerTask implements Task {
 	@Tunable(description="Cloud group table name")
 	public String cloudGroupTableName = "WordCloud Results Table";
 	
-	public CreateWordCloudCommandHandlerTask(CyApplicationManager applicationManager,
-			CySwingApplication application, SemanticSummaryManager cloudManager,
-			CreateCloudCommandAction createCloudCommandAction, SemanticSummaryParametersFactory parametersFactory, CyTableManager tableManager, CyTableFactory tableFactory) {
+	
+	public CreateWordCloudCommandHandlerTask(
+			CyApplicationManager applicationManager,
+			CloudModelManager cloudManager,
+			CyTableManager tableManager, 
+			CyTableFactory tableFactory) {
 		this.applicationManager = applicationManager;
-		this.createCloudCommandAction = createCloudCommandAction;
 		this.tableManager = tableManager;
 		this.tableFactory = tableFactory;
+		this.cloudModelManager = cloudManager;
 	}
 	
 	@Override
 	public void cancel() {
-		return;
 	}
 
 	@Override
-	public void run(TaskMonitor arg0) throws Exception {
+	public void run(TaskMonitor monitor) throws Exception {
 		network = applicationManager.getCurrentNetwork();
 		
 		// Get the nodes to use for cloud
 		List<CyNode> nodes = nodeList.getValue();
+		CloudParameters cloudParams = cloudModelManager.addNetwork(network).createCloud(new HashSet<CyNode>(nodes));		
+		cloudParams.setAttributeNames(Arrays.asList(wordColumnName));
+		
+		// Add wordInfo to table
+		List<CloudWordInfo> wordInfo = cloudParams.getCloudWordInfoList();
 				
 		// Get the table to return the results to
 		CyTable cloudGroupTable = null;
@@ -89,13 +92,26 @@ public class CreateWordCloudCommandHandlerTask implements Task {
 			network.getDefaultNetworkTable().createColumn(cloudGroupTableName, Long.class, false);
 			network.getRow(network).set(cloudGroupTableName, cloudGroupTable.getSUID());
 		}
+		
+		ArrayList<String> WC_Word = new ArrayList<String>();
+		ArrayList<String> WC_FontSize = new ArrayList<String>();
+		ArrayList<String> WC_Cluster = new ArrayList<String>();
+		ArrayList<String> WC_Number = new ArrayList<String>();
+		for (CloudWordInfo cloudWord : wordInfo) {
+			String[] split = cloudWord.toSplitString();
+			WC_Word.add(split[0]);
+			WC_FontSize.add(split[1]);
+			WC_Cluster.add(split[2]);
+			WC_Number.add(split[3]);
+		}
 
-		createCloudCommandAction.setAttributeColumns(Arrays.asList(wordColumnName));
-		createCloudCommandAction.setCloudName(cloudName);
-		createCloudCommandAction.setClusterTable(cloudGroupTable);
-		createCloudCommandAction.setNodes(new HashSet<CyNode>(nodes));
-		createCloudCommandAction.actionPerformed(new ActionEvent("", 0, ""));
+		CyRow clusterRow = cloudGroupTable.getRow(cloudName);
+		clusterRow.set("WC_Word", WC_Word);
+		clusterRow.set("WC_FontSize", WC_FontSize);
+		clusterRow.set("WC_Cluster", WC_Cluster);
+		clusterRow.set("WC_Number", WC_Number);
 	}
+	
 	
 	private void createColumn(CyTable nodeTable, String columnName) {
 		CyColumn column = nodeTable.getColumn(columnName);

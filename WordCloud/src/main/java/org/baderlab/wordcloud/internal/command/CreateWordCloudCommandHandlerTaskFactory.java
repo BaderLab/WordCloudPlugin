@@ -1,7 +1,6 @@
 package org.baderlab.wordcloud.internal.command;
 
-import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
-import org.baderlab.wordcloud.internal.model.SemanticSummaryParametersFactory;
+import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyTableFactory;
@@ -11,31 +10,25 @@ import org.cytoscape.work.TaskIterator;
 
 public class CreateWordCloudCommandHandlerTaskFactory implements TaskFactory{
 	
-	private CyApplicationManager applicationManager;
-	private CySwingApplication application;
-	private SemanticSummaryManager cloudManager;
-	private SemanticSummaryParametersFactory parametersFactory;
-	private CreateCloudCommandAction createCloudNoDisplayAction;
-	private CyTableManager tableManager;
-	private CyTableFactory tableFactory;
+	private final CyApplicationManager applicationManager;
+	private final CyTableManager tableManager;
+	private final CyTableFactory tableFactory;
+	private final CloudModelManager cloudManager;
 
 	// I'll probably have to specify more (like Network)
 
 	public CreateWordCloudCommandHandlerTaskFactory(CyApplicationManager applicationManager,
-			CySwingApplication application, SemanticSummaryManager cloudManager,
-			CreateCloudCommandAction createCloudNoDisplayAction, SemanticSummaryParametersFactory parametersFactory, CyTableManager tableManager, CyTableFactory tableFactory) {
+			CySwingApplication application, CloudModelManager cloudManager,
+			CyTableManager tableManager, CyTableFactory tableFactory) {
 		this.applicationManager = applicationManager;
-		this.application = application;
-		this.cloudManager = cloudManager;
-		this.createCloudNoDisplayAction = createCloudNoDisplayAction;
-		this.parametersFactory = parametersFactory;
 		this.tableManager = tableManager;
 		this.tableFactory = tableFactory;
+		this.cloudManager = cloudManager;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new CreateWordCloudCommandHandlerTask(applicationManager, application, cloudManager, createCloudNoDisplayAction, parametersFactory, tableManager, tableFactory));
+		return new TaskIterator(new CreateWordCloudCommandHandlerTask(applicationManager, cloudManager, tableManager, tableFactory));
 	}
 
 	@Override
