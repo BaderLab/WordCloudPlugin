@@ -75,6 +75,25 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(context, sessionListener, new Properties());
 		
 		
+		// Command line
+
+//		Properties properties = new Properties();
+//    	properties.put(ServiceProperties.COMMAND, "create");
+//    	properties.put(ServiceProperties.COMMAND_NAMESPACE, "wordcloud");
+//    	registerService(context, new CreateWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudManager, createCloudNoDisplayAction, parametersFactory, tableManager, tableFactory), TaskFactory.class, properties);
+//   		
+//		properties = new Properties();
+//    	properties.put(ServiceProperties.COMMAND, "delete");
+//    	properties.put(ServiceProperties.COMMAND_NAMESPACE, "wordcloud");
+//   		registerService(context, new DeleteWordCloudCommandHandlerTaskFactory(applicationManager, cloudManager, deleteCloudAction), TaskFactory.class, properties);
+//   		
+//		properties = new Properties();
+//    	properties.put(ServiceProperties.COMMAND, "select");
+//    	properties.put(ServiceProperties.COMMAND_NAMESPACE, "wordcloud");
+//   		registerService(context, new SelectWordCloudCommandHandlerTaskFactory(applicationManager, cloudManager), TaskFactory.class, properties);
+		
+		
+		
 		
 //		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
 //		CySwingApplication application = getService(context, CySwingApplication.class);

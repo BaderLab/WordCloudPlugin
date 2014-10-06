@@ -24,7 +24,6 @@ package org.baderlab.wordcloud.internal.ui;
 
 import java.awt.Color;
 
-import org.baderlab.wordcloud.internal.command.CreateCloudNetworkAction;
 import org.baderlab.wordcloud.internal.model.next.CloudParameters;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -44,6 +43,13 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
 public class WordCloudVisualStyleFactory 
 {
+	
+	public static String WORD_VAL = "Word_Prob";
+	public static String CO_VAL = "CO_Prob";
+	public static String INTERACTION_TYPE = "CO";
+	private static final char controlChar = '\u001F';
+	
+	
 	VisualStyleFactory styleFactory;
 	VisualMappingFunctionFactory continuousMappingFactory;
 	VisualMappingFunctionFactory passthroughMappingFactory;
@@ -89,7 +95,7 @@ public class WordCloudVisualStyleFactory
 		style.setDefaultValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, new Color(100, 200, 0));
 		
 		//Continuous Mapping - set edge line thickness based on the probability ratio
-		ContinuousMapping<Double, Double> edgeWidth = (ContinuousMapping<Double, Double>) continuousMappingFactory.createVisualMappingFunction(CreateCloudNetworkAction.CO_VAL, Double.class, BasicVisualLexicon.EDGE_WIDTH);
+		ContinuousMapping<Double, Double> edgeWidth = (ContinuousMapping<Double, Double>) continuousMappingFactory.createVisualMappingFunction(CO_VAL, Double.class, BasicVisualLexicon.EDGE_WIDTH);
 		
 		Double under_width = 0.5;
 		Double min_width = 1.0;
@@ -119,7 +125,7 @@ public class WordCloudVisualStyleFactory
 		style.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 4.0);
 		
         //Continuous Mapping - set node size based on the probability value
-		ContinuousMapping<Double, Double> nodeSize = (ContinuousMapping<Double, Double>) continuousMappingFactory.createVisualMappingFunction(CreateCloudNetworkAction.WORD_VAL, Double.class, BasicVisualLexicon.NODE_SIZE);
+		ContinuousMapping<Double, Double> nodeSize = (ContinuousMapping<Double, Double>) continuousMappingFactory.createVisualMappingFunction(WORD_VAL, Double.class, BasicVisualLexicon.NODE_SIZE);
 		{
 	        double min = 20.0;
 	        double max = 65.0;
@@ -129,7 +135,7 @@ public class WordCloudVisualStyleFactory
 		}
 		
         //Label size
-		ContinuousMapping<Double, Integer> labelSize = (ContinuousMapping<Double, Integer>) continuousMappingFactory.createVisualMappingFunction(CreateCloudNetworkAction.WORD_VAL, Double.class, BasicVisualLexicon.NODE_LABEL_FONT_SIZE);
+		ContinuousMapping<Double, Integer> labelSize = (ContinuousMapping<Double, Integer>) continuousMappingFactory.createVisualMappingFunction(WORD_VAL, Double.class, BasicVisualLexicon.NODE_LABEL_FONT_SIZE);
 		{
 	        int min = 12;
 	        int max = 56;

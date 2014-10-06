@@ -254,7 +254,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloudList.setSelectedIndex(0);
 		cloudList.setVisibleRowCount(10);
 		cloudList.setFixedCellHeight(DEF_ROW_HEIGHT);
-		cloudList.addMouseListener(new CloudListPopupMenuListener(uiManager, application, cloudList));
+		cloudList.addMouseListener(new CloudListPopupMenuListener(uiManager, application, registrar, cloudList));
 		
 		handler = new CloudListSelectionHandler(uiManager);
 		cloudList.addListSelectionListener(handler);

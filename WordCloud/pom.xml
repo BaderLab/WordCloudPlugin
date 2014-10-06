@@ -147,7 +147,6 @@
 					<excludes>
 						<exclude>org/baderlab/wordcloud/internal/ModelManager.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/command/CreateCloudCommandAction.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/command/CreateCloudNetworkAction.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/command/CreateWordCloudCommandHandlerTask.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/command/CreateWordCloudCommandHandlerTaskFactory.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/command/DeleteWordCloudCommandHandlerTask.java</exclude>
@@ -160,7 +159,6 @@
 						<exclude>org/baderlab/wordcloud/internal/ui/AbstractSemanticSummaryAction.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/ui/PanelActivateAction.java</exclude>
 						<exclude>org/baderlab/wordcloud/internal/ui/UpdateCloudAction.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/ui/WordCloudVisualStyleFactory.java</exclude>
 					</excludes>
 					
 				</configuration>

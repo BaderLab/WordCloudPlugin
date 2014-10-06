@@ -30,9 +30,11 @@ import javax.swing.JPopupMenu;
 
 import org.baderlab.wordcloud.internal.model.next.CloudParameters;
 import org.baderlab.wordcloud.internal.ui.UIManager;
+import org.baderlab.wordcloud.internal.ui.action.CreateNetworkAction;
 import org.baderlab.wordcloud.internal.ui.action.DeleteCloudAction;
 import org.baderlab.wordcloud.internal.ui.action.RenameCloudAction;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 
 /**
@@ -44,12 +46,14 @@ public class CloudListPopupMenuListener extends MouseAdapter {
 	private JList list;
 	private CySwingApplication swingApplication;
 	private UIManager uiManager;
+	private CyServiceRegistrar registrar;
 
 	
-	public CloudListPopupMenuListener(UIManager uiManager, CySwingApplication swingApplication, JList list) {
+	public CloudListPopupMenuListener(UIManager uiManager, CySwingApplication swingApplication, CyServiceRegistrar registrar, JList list) {
 		this.uiManager = uiManager;
 		this.swingApplication = swingApplication;
 		this.list = list;
+		this.registrar = registrar;
 	}
 	
 	
@@ -77,6 +81,7 @@ public class CloudListPopupMenuListener extends MouseAdapter {
 				JPopupMenu menu = new JPopupMenu();
 				menu.add(new DeleteCloudAction(cloud, swingApplication));
 				menu.add(new RenameCloudAction(cloud, swingApplication, uiManager));
+				menu.add(new CreateNetworkAction(cloud, registrar));
 				menu.show(list, e.getX(), e.getY());
 			}
 		}

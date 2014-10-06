@@ -30,12 +30,10 @@ import org.baderlab.wordcloud.internal.model.SemanticSummaryManager;
 import org.baderlab.wordcloud.internal.model.SemanticSummaryParameters;
 import org.baderlab.wordcloud.internal.model.SemanticSummaryParametersFactory;
 import org.baderlab.wordcloud.internal.model.next.CloudParameters;
-import org.baderlab.wordcloud.internal.ui.AbstractSemanticSummaryAction;
 import org.baderlab.wordcloud.internal.ui.cloud.CloudDisplayPanel;
 import org.baderlab.wordcloud.internal.ui.cloud.CloudWordInfo;
 import org.baderlab.wordcloud.internal.ui.input.SemanticSummaryInputPanel;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -186,4 +184,7 @@ public class CreateCloudCommandAction extends AbstractSemanticSummaryAction
 		clusterRow.set("WC_Cluster", WC_Cluster);
 		clusterRow.set("WC_Number", WC_Number);
 	}
+	
+	
+	
 }
