@@ -43,6 +43,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -59,6 +61,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
@@ -67,12 +70,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.next.CloudParameters;
 import org.baderlab.wordcloud.internal.model.next.NetworkParameters;
 import org.baderlab.wordcloud.internal.ui.UIManager;
+import org.baderlab.wordcloud.internal.ui.action.CreateCloudAction;
+import org.baderlab.wordcloud.internal.ui.action.UpdateCloudAction;
 import org.baderlab.wordcloud.internal.ui.cloud.CloudDisplayStyles;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -96,6 +102,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	private static final int DEF_ROW_HEIGHT = 20;
 	
 	private final UIManager uiManager;
+	private final CyApplicationManager applicationManager;
 	private final CySwingApplication application;
 	private final CyServiceRegistrar registrar;
 	
@@ -104,16 +111,23 @@ public class SemanticSummaryInputPanel extends JPanel {
 	private JComboBox cmbStyle;
 	private JLabel networkLabel;
 	private JList cloudList;
-	private CloudListSelectionHandler handler;
 	private JCheckBox stemmer;
 	private SliderBarPanel sliderPanel;
 	private CheckBoxJList attributeList;
 	private JPopupMenu attributeSelectionPopupMenu;
 	private JTextArea attNames;
+	private JButton createUpdateButton;
+	private JCheckBox syncCheckBox;
+	
+	private ListSelectionListener cloudListSelectionListener;
+	private ActionListener syncCheckboxActionListener;
+	
+	private Action createCloudAction;
+	
 
 	private final UpdateCloudListener updateCloudListener = new UpdateCloudListener();
 	
-	private class UpdateCloudListener implements ActionListener, ChangeListener, PropertyChangeListener, DocumentListener {
+	private class UpdateCloudListener extends AbstractAction implements ChangeListener, PropertyChangeListener, DocumentListener {
 		boolean enabled;
 		
 		@Override public void actionPerformed(ActionEvent e) { update(); }
@@ -137,54 +151,44 @@ public class SemanticSummaryInputPanel extends JPanel {
 	
 	
 	
-	public SemanticSummaryInputPanel(
-//			ModelManager modelManager, 
-			CyApplicationManager applicationManager, 
-			CySwingApplication application, 
-			UIManager uiManager,
-			CyServiceRegistrar registrar
-//			FileUtil fileUtil 
-//			SemanticSummaryManager cloudManager, 
-//			PanelActivateAction pluginAction, 
-//			CreateCloudAction createCloudAction, 
-//			DeleteCloudAction deleteCloudAction, 
-//			UpdateCloudAction updateCloudAction, 
-//			SaveCloudAction saveCloudAction, 
-//			CloudListSelectionHandlerFactory handlerFactory
-			)
-	{
+	public SemanticSummaryInputPanel(CyApplicationManager applicationManager, CySwingApplication application, final UIManager uiManager, CyServiceRegistrar registrar) {
 		this.uiManager = uiManager;
-//		this.modelManager = modelManager;
 		this.application = application;
 		this.registrar = registrar;
-//		this.cloudManager = cloudManager;
-//		this.createCloudAction = createCloudAction;
-//		this.deleteCloudAction = deleteCloudAction;
-//		this.updateCloudAction = updateCloudAction;
-//		this.saveCloudAction = saveCloudAction;
-//		this.handlerFactory = handlerFactory;
+		this.applicationManager = applicationManager;
 		
+		this.createCloudAction = new CreateCloudAction(applicationManager, application, uiManager.getCloudModelManager());
 		
+		createPanel();
+		
+		// register for selection events
+		RowsSetListener nodeSelectionListener = new RowsSetListener() {
+			public synchronized void handleEvent(RowsSetEvent e) {
+				if(syncCheckBox.isSelected() && e.containsColumn(CyNetwork.SELECTED)) {
+					CloudParameters nullCloud = uiManager.getCurrentNetwork().getNullCloud();
+					new UpdateCloudAction(nullCloud, uiManager).actionPerformed(null);
+				}
+			}
+		};
+		registrar.registerService(nodeSelectionListener, RowsSetListener.class, new Properties());
+	}
+
+	
+	private void createPanel() {
 		setLayout(new BorderLayout());
 		
-		// Put the CloudList in a scroll pane
-		JPanel cloudList = createCloudListPanel(applicationManager);
-		JScrollPane cloudListScroll = new JScrollPane(cloudList);
+		JPanel cloudList = createCloudListPanel();
 		
 		//Put the Options in a scroll pane
 		JPanel optionsPanel = createOptionsPanel();
 		JScrollPane optionsScroll = new JScrollPane(optionsPanel);
 		optionsScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-//		optionsScroll.setBorder(BorderFactory.createEmptyBorder());
+		cloudList.setBorder(optionsScroll.getBorder());
 		
-		//Add button to bottom
-//		JPanel bottomPanel = createBottomPanel();
-		
-		//Add all the vertically aligned components to the main panel
-		add(cloudListScroll,BorderLayout.NORTH);
-		add(optionsScroll,BorderLayout.CENTER);
-//		add(bottomPanel,BorderLayout.SOUTH);
-	
+		cloudList.setMinimumSize(cloudList.getPreferredSize());
+		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, cloudList, optionsScroll);
+		splitPane.setBorder(BorderFactory.createEmptyBorder());
+		add(splitPane, BorderLayout.CENTER);
 		
 		// Live update
 		sliderPanel.getSlider().addChangeListener(updateCloudListener);
@@ -192,60 +196,23 @@ public class SemanticSummaryInputPanel extends JPanel {
 		clusterCutoffTextField.getDocument().addDocumentListener(updateCloudListener);
 		stemmer.addChangeListener(updateCloudListener);
 		cmbStyle.addActionListener(updateCloudListener);
-		
-		
-		RowsSetListener nodeSelectionListener = new RowsSetListener() {
-			public void handleEvent(RowsSetEvent e) {
-//				updateSyncCloud();
-			}
-		};
-		registrar.registerService(nodeSelectionListener, RowsSetListener.class, new Properties());
 	}
-
 	
-//	public void updateSyncCloud() {
-//		CloudParameters cloudParams = cloudManager.getCurCloud();
-//		if(cloudParams.getCloudNum() == -99) {
-//			SemanticSummaryParameters networkParams = cloudParams.getNetworkParams();
-//			CyNetwork network = networkParams.getNetwork();
-//			
-//			Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
-//			cloudParams.setSelectedNodes(nodes);
-//			
-//			//Retrieve values from input panel
-//			cloudParams.retrieveInputVals(this);
-//			
-//			cloudParams.updateRatios();
-//			cloudParams.calculateFontSizes();
-//			
-//			CloudDisplayPanel cloudPanel = cloudManager.getCloudWindow();
-//			cloudPanel.updateCloudDisplay(cloudParams);
-//			
-//			
-//			//Update the list of filter words and checkbox
-//			refreshNetworkSettings();
-//			
-//		}
-//	}
-	
-	
-	//METHODS
 	
 	/**
 	 * Creates the cloud list panel for the currently selected network.
 	 * @return JPanel - the cloud list panel.
 	 */
-	private JPanel createCloudListPanel(CyApplicationManager applicationManager)
-	{
+	private JPanel createCloudListPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
-		panel.setBorder(BorderFactory.createEmptyBorder());
 		
 		//Name of the network
 		JPanel networkPanel = new JPanel();
 		networkPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 2, 2));
 		networkLabel = new JLabel();
 		networkPanel.add(networkLabel);
+		
 		networkPanel.setBorder(BorderFactory.createEmptyBorder());
 		
 		// list of clouds
@@ -256,18 +223,41 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloudList.setFixedCellHeight(DEF_ROW_HEIGHT);
 		cloudList.addMouseListener(new CloudListPopupMenuListener(uiManager, application, registrar, cloudList));
 		
-		handler = new CloudListSelectionHandler(uiManager);
-		cloudList.addListSelectionListener(handler);
+		cloudListSelectionListener = new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) {
+				String cloudName = (String) cloudList.getSelectedValue();
+				uiManager.setCurrentCloud(uiManager.getCurrentNetwork(), cloudName);				
+			}
+		};
+		cloudList.addListSelectionListener(cloudListSelectionListener);
 		
 		JScrollPane listScrollPane = new JScrollPane(cloudList);
 		listScrollPane.setBorder(BorderFactory.createEmptyBorder());
 		
-		//Add to panel
+		JPanel syncPanel = new JPanel(new BorderLayout());
+		syncCheckBox = new JCheckBox("Sync with selection");
+		syncCheckboxActionListener = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(syncCheckBox.isSelected())
+					uiManager.setCurrentCloud(uiManager.getCurrentNetwork().getNullCloud());
+				else
+					uiManager.setCurrentCloud(uiManager.getCurrentNetwork());
+			}
+		};
+		syncCheckBox.addActionListener(syncCheckboxActionListener);
+		
+		createUpdateButton = new JButton();
+		createUpdateButton.setAction(createCloudAction);
+		
+		syncPanel.add(syncCheckBox, BorderLayout.WEST);
+		syncPanel.add(createUpdateButton, BorderLayout.EAST);
+		
 		panel.add(networkPanel, BorderLayout.NORTH);
 		panel.add(listScrollPane, BorderLayout.CENTER);
-		
+		panel.add(syncPanel, BorderLayout.SOUTH);
 		return panel;
 	}
+	
 	
 	
 	/**
@@ -278,7 +268,6 @@ public class SemanticSummaryInputPanel extends JPanel {
 		JPanel cloudLayout = createCloudLayoutPanel();
 		JPanel normalizationPanel = createNormalizationPanel();
 		JPanel advancedSettings = createAdvancedSettingsPanel();
-		JPanel excludedWordsPanel = createExcludedWordsPanel();
 		
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -293,14 +282,13 @@ public class SemanticSummaryInputPanel extends JPanel {
 		JPanel newPanel = new JPanel();
 		newPanel.setLayout(new BorderLayout());
 		newPanel.add(panel, BorderLayout.NORTH);
-		newPanel.add(excludedWordsPanel, BorderLayout.SOUTH);
 		return newPanel;
 	}
 	
 	
 	private JPanel createExcludedWordsPanel() {
 		JPanel excludedWordsPanel = new JPanel();
-		excludedWordsPanel.setLayout(new FlowLayout());
+		excludedWordsPanel.setLayout(new BoxLayout(excludedWordsPanel, BoxLayout.Y_AXIS));
 		
 		JButton excludedWordsButton = new JButton("Excluded Words...");
 		excludedWordsButton.addActionListener(new ActionListener() {
@@ -378,6 +366,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	    attListPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 	    JLabel attributeLabel = new JLabel("Current Values:");
+	    attributeLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
 		
 		attributePanel.add(attributeLabel, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 		attributePanel.add(attributeButton, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
@@ -487,8 +476,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		clusterCutoffTextField.setToolTipText(buf.toString());
 		
 		//Clustering Cutoff Panel
-		JPanel clusterCutoffPanel = new JPanel();
-		clusterCutoffPanel.setLayout(new BorderLayout());
+		JPanel clusterCutoffPanel = new JPanel(new BorderLayout());
 		clusterCutoffPanel.add(clusterCutoffLabel, BorderLayout.WEST);
 		clusterCutoffPanel.add(clusterCutoffTextField, BorderLayout.EAST);
 		
@@ -502,14 +490,18 @@ public class SemanticSummaryInputPanel extends JPanel {
 		stemmer.setToolTipText(buf.toString());
 		stemmer.setSelected(false);
 		
-		JPanel stemmingPanel = new JPanel();
-		stemmingPanel.setLayout(new BorderLayout());
+		JPanel stemmingPanel = new JPanel(new BorderLayout());
 		stemmingPanel.add(stemmer, BorderLayout.WEST);
+		
+		JPanel wordsPanel = new JPanel(new BorderLayout());
+		wordsPanel.add(createExcludedWordsPanel(), BorderLayout.WEST);
 		
 		//Add components to main panel
 		panel.add(maxWordsPanel);
 		panel.add(clusterCutoffPanel);
 		panel.add(stemmingPanel);
+		panel.add(Box.createVerticalStrut(3));
+		panel.add(wordsPanel);
 		
 		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
 		return collapsiblePanel;
@@ -528,6 +520,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloudLayoutPanel.setLayout(new GridBagLayout());
 
 		JLabel cloudStyleLabel = new JLabel("Cloud Style: ");
+		cloudStyleLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
 		
 		WidestStringComboBoxModel wscbm = new WidestStringComboBoxModel();
 		cmbStyle = new JComboBox(wscbm);
@@ -572,11 +565,15 @@ public class SemanticSummaryInputPanel extends JPanel {
 	
 
 	
-	
+	/**
+	 * Sets all the controls to display the given cloud.
+	 */
 	public void setCurrentCloud(CloudParameters params) {
-		cloudList.removeListSelectionListener(handler);
+		cloudList.removeListSelectionListener(cloudListSelectionListener);
+		syncCheckBox.removeActionListener(syncCheckboxActionListener);
 		updateCloudListener.enabled = false;
 		
+		// Set the network and cloud in the top panel (null cloud will result in empty list)
 		List<CloudParameters> networkClouds = params.getNetworkParams().getClouds();
 		DefaultListModel listModel = new DefaultListModel();
 		for(CloudParameters cloud : networkClouds) {
@@ -587,15 +584,13 @@ public class SemanticSummaryInputPanel extends JPanel {
 		String cloudName = params.getCloudName();
 		int index = listModel.lastIndexOf(cloudName);
 		cloudList.setSelectedIndex(index);
-		
 		networkLabel.setText(params.getNetworkParams().getNetworkName());
+		syncCheckBox.setSelected(params.isNullCloud());
+		createUpdateButton.setAction(params.isNullCloud() ? createCloudAction : new UpdateCloudAction(params, uiManager));
 		
-		// MKTODO: update all the other controls to show this cloud
+		// Update all controls to show values from the cloud
 		List<String> attributeNames = params.getAttributeNames();
-		if (attributeNames == null) {
-			attributeNames = Collections.emptyList();
-		}
-		setAttributeNames(attributeNames);
+		setAttributeNames(attributeNames == null ? Collections.<String>emptyList() : attributeNames);
 		refreshAttributeCMB();
 		maxWordsTextField.setValue(params.getMaxWords());
 		clusterCutoffTextField.setValue(params.getClusterCutoff());
@@ -603,11 +598,16 @@ public class SemanticSummaryInputPanel extends JPanel {
 		setupNetworkNormalization(params);
 		updateStemmingBox();
 		
+		
 		updateCloudListener.enabled = true;
-		cloudList.addListSelectionListener(handler);
+		cloudList.addListSelectionListener(cloudListSelectionListener);
+		syncCheckBox.addActionListener(syncCheckboxActionListener);
 	}
 	
 	
+	/**
+	 * Updates the fields of the cloud object from the controls.
+	 */
 	private void updateCloudParameters(CloudParameters cloud) {
 		// Normalization
 		cloud.setNetWeightFactor(sliderPanel.getNetNormValue());

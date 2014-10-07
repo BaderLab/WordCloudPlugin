@@ -138,8 +138,9 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		if(cloud == null)
 			throw new NullPointerException();
 		
-		selectedClouds.put(cloud.getNetworkParams(), cloud);
 		currentNetwork = cloud.getNetworkParams();
+		if(!cloud.isNullCloud())
+			selectedClouds.put(cloud.getNetworkParams(), cloud); 
 		
 		loadPanels();
 		

@@ -19,13 +19,14 @@ public class NetworkParameters {
 	private final CyNetwork network;
 	
 	private Map<String, CloudParameters> clouds = new HashMap<String, CloudParameters>();
+	private CloudParameters nullCloud;
 	
 	//Name creation variables
 	protected static final String CLOUDNAME = "Cloud";
 	protected static final String SEPARATER = "_";
 	
 	protected static final int NULL_COUNT = -99;
-	protected static final String NULL_NAME = "null";
+	protected static final String NULL_NAME = "sync_cloud";
 	
 	//Font Size Values
 	protected static final Integer MINFONTSIZE = 12; 
@@ -75,8 +76,15 @@ public class NetworkParameters {
 	 * when a network has an empty list of clouds. Also it makes it easier to implement
 	 * features like "sync with selection" which don't require that a cloud be created first.
 	 */
-	public CloudParameters getNullCloud() {
-		return createCloudParameters(Collections.<CyNode>emptySet(), NULL_COUNT, NULL_NAME);
+	public synchronized CloudParameters getNullCloud() {
+		if(nullCloud == null) {
+			nullCloud = createCloudParameters(Collections.<CyNode>emptySet(), NULL_COUNT, NULL_NAME);
+		}
+		return nullCloud;
+	}
+	
+	public boolean isNullNetwork() {
+		return this == parent.getNullNetwork();
 	}
 	
 	private CloudParameters createCloudParameters(Set<CyNode> nodes, int count, String name) {

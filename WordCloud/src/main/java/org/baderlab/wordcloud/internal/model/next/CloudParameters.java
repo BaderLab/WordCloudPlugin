@@ -248,6 +248,10 @@ public class CloudParameters implements Comparable<CloudParameters>
 	}
 		
 	
+	public boolean isNullCloud() {
+		return this == networkParams.getNullCloud();
+	}
+	
 	//METHODS
 	
 	public void delete() {
@@ -1033,10 +1037,6 @@ public class CloudParameters implements Comparable<CloudParameters>
 		networkCount++;
 		
 		return name;
-	}
-	
-	public boolean isNullCloud() {
-		return getCloudNum() == NetworkParameters.NULL_COUNT;
 	}
 	
 	

@@ -27,6 +27,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.util.Hashtable;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -79,6 +80,7 @@ public class SliderBarPanel extends JPanel {
         this.sliderLabel = sliderLabel;
 
         label = new JLabel(sliderLabel);
+        label.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
 
         Dimension currentsize = label.getPreferredSize();
         currentsize.height = DIM_HEIGHT/12;

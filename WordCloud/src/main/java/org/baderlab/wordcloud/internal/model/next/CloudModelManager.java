@@ -33,6 +33,7 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 	
 	private final Map<CyNetwork, NetworkParameters> networks;
 	private final Set<CloudModelListener> listeners;
+	private NetworkParameters nullNetwork;
 
 	private final CyNetworkManager networkManager;
 	private final CyTableManager tableManager;
@@ -63,8 +64,11 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 		return networkParameters;
 	}
 	
-	public NetworkParameters getNullNetwork() {
-		return new NetworkParameters(this, null);
+	public synchronized NetworkParameters getNullNetwork() {
+		if(nullNetwork == null) {
+			nullNetwork = new NetworkParameters(this, null);
+		}
+		return nullNetwork;
 	}
 	
 	public void removeNetwork(CyNetwork network) {
