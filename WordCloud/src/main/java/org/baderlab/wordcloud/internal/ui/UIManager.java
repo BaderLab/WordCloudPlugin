@@ -1,6 +1,7 @@
 package org.baderlab.wordcloud.internal.ui;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +18,7 @@ import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -46,6 +48,9 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	private CloudDisplayPanel cloudWindow;
 	private DualPanelDocker docker;
 	
+	// The Show/Hide action, stored here because it needs to be managed
+	private AbstractCyAction showHideAction;
+	
 	// Remembers which cloud was selected so the selection can be restored when switching clouds.
 	private Map<NetworkParameters, CloudParameters> selectedClouds = new HashMap<NetworkParameters, CloudParameters>();
 	private NetworkParameters currentNetwork;
@@ -62,8 +67,25 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		this.application = application;
 		this.registrar = registrar;
 		this.viewManager = viewManager;
+		
 	}
 	
+	@SuppressWarnings("serial")
+	public AbstractCyAction createShowHideAction() {
+		if(showHideAction == null) {
+			showHideAction = new AbstractCyAction("Show WordCloud") {
+				public void actionPerformed(ActionEvent e) {
+					if(docker == null) {
+						setCurrentCloud(applicationManager.getCurrentNetwork());
+					} else {
+						hide();
+					}
+				}
+			};
+		}
+		return showHideAction;
+		
+	}
 	
 	/**
 	 * Activates the panels and brings them to the front.
@@ -73,10 +95,12 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	private boolean loadPanels() {
 		if(docker == null) {
 			inputWindow = new SemanticSummaryInputPanel(applicationManager, application, this, registrar);
-			inputWindow.setPreferredSize(new Dimension(450, 300));
+			inputWindow.setPreferredSize(new Dimension(350, 400));
 			cloudWindow = new CloudDisplayPanel();
 			docker = new DualPanelDocker(inputWindow, cloudWindow, application, registrar);
 			cloudWindow.setDocker(docker);
+			if(showHideAction != null)
+				showHideAction.setName("Hide WordCloud");
 			return true;
 		}
 		else {
@@ -85,6 +109,17 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		}
 	}
 	
+	public void hide() {
+		// selected clouds are still remembered
+		docker.dispose();
+		docker = null;
+		inputWindow = null;
+		cloudWindow = null;
+		currentNetwork = null;
+		if(showHideAction != null) {
+			showHideAction.setName("Show WordCloud");
+		}
+	}
 	
 	public SemanticSummaryInputPanel getInputPanel() {
 		return inputWindow;

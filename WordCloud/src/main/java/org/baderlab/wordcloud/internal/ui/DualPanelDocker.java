@@ -8,7 +8,7 @@ import java.awt.event.WindowEvent;
 import java.util.Properties;
 
 import javax.swing.Icon;
-import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.baderlab.wordcloud.internal.ui.cloud.CloudDisplayPanel;
@@ -40,10 +40,12 @@ public class DualPanelDocker {
 	
 	private final SemanticSummaryInputPanel inputPanel;
 	private final CloudDisplayPanel cloudPanel;
+	private CytoPanelComponent inputComponent;
+	private CytoPanelComponent cloudComponent;
 	
 	private DockCallback callback;
 	
-	private JDialog dialog;
+	private JFrame dialog;
 	private State state;
 	
 	
@@ -54,6 +56,9 @@ public class DualPanelDocker {
 		this.cloudPanel = cloudPanel;
 		this.swingApplication = swingApplication;
 		this.registrar = registrar;
+		
+		this.inputComponent = wrapInCytoPanel(inputPanel, CytoPanelName.WEST, "WordCloud");
+		this.cloudComponent = wrapInCytoPanel(cloudPanel, CytoPanelName.SOUTH, "WordCloud Display");
 		
 		state = State.UNDOCKED;
 		flip(); // this will initially dock it
@@ -82,16 +87,24 @@ public class DualPanelDocker {
 		}
 	}
 	
-	
-	private void dock() {
+	public void dispose() {
+		registrar.unregisterService(inputComponent, CytoPanelComponent.class);
+		registrar.unregisterService(cloudComponent, CytoPanelComponent.class);
 		if(dialog != null) {
 			dialog.removeWindowListener(dialog.getWindowListeners()[0]);
 			dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
 			dialog = null;
 		}
-		
-		CytoPanelComponent inputComponent = wrapInCytoPanel(inputPanel, CytoPanelName.WEST, "WordCloud");
-		CytoPanelComponent cloudComponent = wrapInCytoPanel(cloudPanel, CytoPanelName.SOUTH, "WordCloud Display");
+	}
+	
+	
+	private void dock() {
+		if(dialog != null) {
+			dialog.removeWindowListener(dialog.getWindowListeners()[0]);
+			dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
+			dialog.dispose();
+			dialog = null;
+		}
 		
 		registrar.registerService(inputComponent, CytoPanelComponent.class, new Properties());
 		registrar.registerService(cloudComponent, CytoPanelComponent.class, new Properties());
@@ -106,23 +119,22 @@ public class DualPanelDocker {
 	
 	
 	private void undock() {
-		registrar.unregisterService(inputPanel, CytoPanelComponent.class);
-		registrar.unregisterService(cloudPanel, CytoPanelComponent.class);
+		registrar.unregisterService(inputComponent, CytoPanelComponent.class);
+		registrar.unregisterService(cloudComponent, CytoPanelComponent.class);
 		
-		dialog = new JDialog(swingApplication.getJFrame(), "WordCloud", false);
-		dialog.setLayout(new BorderLayout());
-		dialog.add(inputPanel, BorderLayout.WEST);
-		dialog.add(cloudPanel, BorderLayout.CENTER);
+		dialog = new JFrame("WordCloud");
+		
+		dialog.getContentPane().add(inputPanel, BorderLayout.WEST);
+		dialog.getContentPane().add(cloudPanel, BorderLayout.CENTER);
 		cloudPanel.setBackground(cloudPanel.getParent().getBackground());
-		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		Dimension inputSize = inputPanel.getPreferredSize();
-		Dimension cloudSize = cloudPanel.getPreferredSize();
-		dialog.setSize(new Dimension(inputSize.width + Math.max(cloudSize.width, 400), inputSize.height));
-		dialog.setVisible(true);
+		dialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		
+		dialog.setPreferredSize(new Dimension(inputPanel.getPreferredSize().width * 3, 700));
 		dialog.pack();
+		dialog.setVisible(true);
 		
 		dialog.addWindowListener(new WindowAdapter() {
-			public void windowClosed(WindowEvent e) {
+			public void windowClosing(WindowEvent e) {
 				flip();
 			}
 		});

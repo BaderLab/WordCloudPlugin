@@ -11,6 +11,7 @@ import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.baderlab.wordcloud.internal.ui.action.CreateCloudAction;
 import org.baderlab.wordcloud.internal.ui.action.ExportImageAction;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
@@ -54,6 +55,10 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		// Actions
+		AbstractCyAction showAction = uiManager.createShowHideAction();
+		showAction.setPreferredMenu(APPS_MENU);
+		application.addAction(showAction);
+		
 		CreateCloudAction createAction = new CreateCloudAction(applicationManager, application, cloudModelManager);
 		createAction.setPreferredMenu(APPS_MENU);
 		application.addAction(createAction);

@@ -1,5 +1,4 @@
 /*
- File: SemanticSummaryInputPanel.java
 
  Copyright 2010 - The Cytoscape Consortium (www.cytoscape.org)
  
@@ -236,6 +235,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		JPanel syncPanel = new JPanel(new BorderLayout());
 		syncCheckBox = new JCheckBox("Sync with selection");
+		syncCheckBox.setToolTipText("Synchronize the cloud display with the currently selected nodes.");
 		syncCheckboxActionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(syncCheckBox.isSelected())
@@ -248,6 +248,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		createUpdateButton = new JButton();
 		createUpdateButton.setAction(createCloudAction);
+		createUpdateButton.setToolTipText("Create a new cloud from the currently selected nodes.");
 		
 		syncPanel.add(syncCheckBox, BorderLayout.WEST);
 		syncPanel.add(createUpdateButton, BorderLayout.EAST);
@@ -586,7 +587,14 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloudList.setSelectedIndex(index);
 		networkLabel.setText(params.getNetworkParams().getNetworkName());
 		syncCheckBox.setSelected(params.isNullCloud());
-		createUpdateButton.setAction(params.isNullCloud() ? createCloudAction : new UpdateCloudAction(params, uiManager));
+		if(params.isNullCloud()) {
+			createUpdateButton.setAction(createCloudAction);
+			createUpdateButton.setToolTipText("Create a new cloud from the currently selected nodes.");
+		}
+		else  {
+			createUpdateButton.setAction(new UpdateCloudAction(params, uiManager));
+			createUpdateButton.setToolTipText("Update the current cloud to use the selected nodes.");
+		}
 		
 		// Update all controls to show values from the cloud
 		List<String> attributeNames = params.getAttributeNames();
