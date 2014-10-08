@@ -177,16 +177,12 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 			throw new NullPointerException();
 		
 		currentNetwork = cloud.getNetworkParams();
-		if(!cloud.isNullCloud())
-			selectedClouds.put(cloud.getNetworkParams(), cloud); 
+		selectedClouds.put(cloud.getNetworkParams(), cloud); 
 		
 		show();
 		
 		inputWindow.setCurrentCloud(cloud);
-		if(cloud.isNullCloud())
-			cloudWindow.clearCloud();
-		else
-			cloudWindow.updateCloudDisplay(cloud);
+		cloudWindow.updateCloudDisplay(cloud);
 		
 		// Update the selection to show the cloud
 		Set<CyNode> selNodes = cloud.getSelectedNodes();

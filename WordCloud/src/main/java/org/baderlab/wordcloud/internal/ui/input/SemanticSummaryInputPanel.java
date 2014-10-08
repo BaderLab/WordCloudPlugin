@@ -259,8 +259,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 		syncCheckBox.setToolTipText("Synchronize the cloud display with the currently selected nodes.");
 		syncCheckboxActionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(syncCheckBox.isSelected())
-					uiManager.setCurrentCloud(uiManager.getCurrentNetwork().getNullCloud());
+				if(syncCheckBox.isSelected()) {
+					CloudParameters nullCloud = uiManager.getCurrentNetwork().getNullCloud();
+					new UpdateCloudAction(nullCloud, uiManager).actionPerformed(null);
+					uiManager.setCurrentCloud(nullCloud);
+				}
 				else
 					uiManager.setCurrentCloud(uiManager.getCurrentNetwork());
 			}
