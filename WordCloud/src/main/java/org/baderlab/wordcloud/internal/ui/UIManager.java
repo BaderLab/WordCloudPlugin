@@ -143,22 +143,20 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	}
 	
 	public void setCurrentCloud(NetworkParameters networkParams) {
-		if(networkParams == null) {
-			clear();
+		if(networkParams == null)
+			networkParams = cloudManager.getNullNetwork();
+		
+		CloudParameters selectedCloud = selectedClouds.get(networkParams);
+		if(selectedCloud != null) {
+			setCurrentCloud(selectedCloud);
 		}
 		else {
-			CloudParameters selectedCloud = selectedClouds.get(networkParams);
-			if(selectedCloud != null) {
-				setCurrentCloud(selectedCloud);
+			CloudParameters defaultCloud = networkParams.getFirstCloud();
+			if(defaultCloud != null) {
+				setCurrentCloud(defaultCloud);
 			}
 			else {
-				CloudParameters defaultCloud = networkParams.getFirstCloud();
-				if(defaultCloud != null) {
-					setCurrentCloud(defaultCloud);
-				}
-				else {
-					setCurrentCloud(networkParams.getNullCloud());
-				}
+				setCurrentCloud(networkParams.getNullCloud());
 			}
 		}
 	}
@@ -180,7 +178,10 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		loadPanels();
 		
 		inputWindow.setCurrentCloud(cloud);
-		cloudWindow.updateCloudDisplay(cloud);
+		if(cloud.isNullCloud())
+			cloudWindow.clearCloud();
+		else
+			cloudWindow.updateCloudDisplay(cloud);
 		
 		// Update the selection to show the cloud
 		Set<CyNode> selNodes = cloud.getSelectedNodes();
@@ -196,11 +197,8 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	}
 
 	
-	public void clear() {
-		if(docker != null) {
-			cloudWindow.clearCloud();
-			inputWindow.setCurrentCloud(cloudManager.getNullNetwork().getNullCloud());
-		}
+	private void clear() {
+		setCurrentCloud(cloudManager.getNullNetwork());
 	}
 	
 	
