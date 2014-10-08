@@ -32,7 +32,7 @@ import java.util.Set;
 import javax.swing.JLabel;
 
 import org.baderlab.wordcloud.internal.SelectionUtils;
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 

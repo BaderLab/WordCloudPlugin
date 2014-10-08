@@ -1,6 +1,6 @@
 package org.baderlab.wordcloud.internal.command;
 
-import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
+import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyTableFactory;

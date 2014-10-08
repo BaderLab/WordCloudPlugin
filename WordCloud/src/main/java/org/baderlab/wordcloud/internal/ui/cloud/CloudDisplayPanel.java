@@ -54,7 +54,7 @@ import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.ui.DualPanelDocker;
 import org.baderlab.wordcloud.internal.ui.DualPanelDocker.DockCallback;
 import org.cytoscape.application.swing.CytoPanelComponent;

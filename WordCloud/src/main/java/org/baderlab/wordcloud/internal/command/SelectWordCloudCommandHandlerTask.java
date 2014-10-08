@@ -1,7 +1,7 @@
 package org.baderlab.wordcloud.internal.command;
 
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
-import org.baderlab.wordcloud.internal.model.next.NetworkParameters;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
+import org.baderlab.wordcloud.internal.model.NetworkParameters;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;

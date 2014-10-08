@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
 
 /**
  * The WordClusters class contains information about the current clustering

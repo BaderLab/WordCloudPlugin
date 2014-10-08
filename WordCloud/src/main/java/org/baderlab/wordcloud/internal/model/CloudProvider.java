@@ -1,4 +1,4 @@
-package org.baderlab.wordcloud.internal.model.next;
+package org.baderlab.wordcloud.internal.model;
 
 /**
  * Proxy interface to get a cloud from whatever source implements this interface.

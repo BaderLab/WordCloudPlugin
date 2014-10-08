@@ -143,17 +143,6 @@
 						<Xmaxwarns>10000</Xmaxwarns>
 						<Xmaxerrs>10000</Xmaxerrs>
 					</compilerArguments>
-					
-					<excludes>
-						<exclude>org/baderlab/wordcloud/internal/ModelManager.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/model/SemanticSummaryManager.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/model/SemanticSummaryParameters.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/model/SemanticSummaryParametersFactory.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/ui/AbstractSemanticSummaryAction.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/ui/PanelActivateAction.java</exclude>
-						<exclude>org/baderlab/wordcloud/internal/ui/UpdateCloudAction.java</exclude>
-					</excludes>
-					
 				</configuration>
 			</plugin>
 			<plugin>

@@ -24,7 +24,7 @@ package org.baderlab.wordcloud.internal.cluster;
 
 import java.util.Map;
 
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
 
 /**
  * A WordPair object contains information about adjacent pairs of words that

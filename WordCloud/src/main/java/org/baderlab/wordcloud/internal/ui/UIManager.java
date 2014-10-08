@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.wordcloud.internal.SelectionUtils;
-import org.baderlab.wordcloud.internal.model.next.CloudModelListener;
-import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
-import org.baderlab.wordcloud.internal.model.next.NetworkParameters;
+import org.baderlab.wordcloud.internal.model.CloudModelListener;
+import org.baderlab.wordcloud.internal.model.CloudModelManager;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
+import org.baderlab.wordcloud.internal.model.NetworkParameters;
 import org.baderlab.wordcloud.internal.ui.cloud.CloudDisplayPanel;
 import org.baderlab.wordcloud.internal.ui.input.SemanticSummaryInputPanel;
 import org.cytoscape.application.CyApplicationManager;

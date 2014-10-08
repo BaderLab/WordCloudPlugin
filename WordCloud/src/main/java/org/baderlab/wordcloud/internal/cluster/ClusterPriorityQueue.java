@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
 
 /**
  * The ClusterPriorityQueue builds a priority queue of WordPairs from

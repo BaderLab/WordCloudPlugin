@@ -5,8 +5,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudModelManager;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.ui.cloud.CloudWordInfo;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.util.NodeList;

@@ -6,7 +6,7 @@ import javax.swing.Action;
 import org.baderlab.wordcloud.internal.command.CreateWordCloudCommandHandlerTaskFactory;
 import org.baderlab.wordcloud.internal.command.DeleteWordCloudCommandHandlerTaskFactory;
 import org.baderlab.wordcloud.internal.command.SelectWordCloudCommandHandlerTaskFactory;
-import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
+import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.baderlab.wordcloud.internal.ui.action.CreateCloudAction;
 import org.baderlab.wordcloud.internal.ui.action.ExportImageAction;

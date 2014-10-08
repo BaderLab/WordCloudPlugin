@@ -28,7 +28,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.baderlab.wordcloud.internal.ui.action.CreateNetworkAction;
 import org.baderlab.wordcloud.internal.ui.action.DeleteCloudAction;

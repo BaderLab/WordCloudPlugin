@@ -29,8 +29,8 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
 
-import org.baderlab.wordcloud.internal.model.next.WordDelimiters;
-import org.baderlab.wordcloud.internal.model.next.WordFilter;
+import org.baderlab.wordcloud.internal.model.WordDelimiters;
+import org.baderlab.wordcloud.internal.model.WordFilter;
 
 @SuppressWarnings("serial")
 public class WordSelectPanel extends JPanel {

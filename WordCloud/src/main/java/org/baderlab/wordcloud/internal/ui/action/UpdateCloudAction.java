@@ -27,8 +27,8 @@ import java.awt.event.ActionEvent;
 import java.util.Set;
 
 import org.baderlab.wordcloud.internal.SelectionUtils;
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
-import org.baderlab.wordcloud.internal.model.next.CloudProvider;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudProvider;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyNetwork;

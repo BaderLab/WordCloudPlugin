@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.ui.cloud.CloudWordInfo;
 
 /**

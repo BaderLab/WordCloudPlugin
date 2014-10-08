@@ -20,7 +20,7 @@
  along with this project.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.baderlab.wordcloud.internal.model.next;
+package org.baderlab.wordcloud.internal.model;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -73,10 +73,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
-import org.baderlab.wordcloud.internal.model.next.CloudProvider;
-import org.baderlab.wordcloud.internal.model.next.NetworkParameters;
+import org.baderlab.wordcloud.internal.model.CloudModelManager;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudProvider;
+import org.baderlab.wordcloud.internal.model.NetworkParameters;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.baderlab.wordcloud.internal.ui.action.CreateCloudAction;
 import org.baderlab.wordcloud.internal.ui.action.DeleteCloudAction;

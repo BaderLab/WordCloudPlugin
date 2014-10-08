@@ -1,4 +1,4 @@
-package org.baderlab.wordcloud.internal.model.next;
+package org.baderlab.wordcloud.internal.model;
 
 import java.util.ArrayList;
 import java.util.Collection;

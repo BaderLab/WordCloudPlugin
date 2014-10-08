@@ -29,8 +29,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.baderlab.wordcloud.internal.cluster.WordPair;
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
-import org.baderlab.wordcloud.internal.model.next.CloudProvider;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudProvider;
 import org.baderlab.wordcloud.internal.ui.WordCloudVisualStyleFactory;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyEdge;

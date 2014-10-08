@@ -24,7 +24,7 @@ package org.baderlab.wordcloud.internal.ui;
 
 import java.awt.Color;
 
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;

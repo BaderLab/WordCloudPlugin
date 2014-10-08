@@ -35,11 +35,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
-import org.baderlab.wordcloud.internal.model.next.NetworkParameters;
-import org.baderlab.wordcloud.internal.model.next.WordDelimiters;
-import org.baderlab.wordcloud.internal.model.next.WordFilter;
+import org.baderlab.wordcloud.internal.model.CloudModelManager;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
+import org.baderlab.wordcloud.internal.model.NetworkParameters;
+import org.baderlab.wordcloud.internal.model.WordDelimiters;
+import org.baderlab.wordcloud.internal.model.WordFilter;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;

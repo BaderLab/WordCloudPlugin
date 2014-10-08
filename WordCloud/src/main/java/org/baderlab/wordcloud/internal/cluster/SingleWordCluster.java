@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
 
 /**
  * The SingleWordCluster class contains information about a single set of 

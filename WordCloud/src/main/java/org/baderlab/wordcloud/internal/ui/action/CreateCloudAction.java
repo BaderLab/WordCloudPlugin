@@ -28,7 +28,7 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 
 import org.baderlab.wordcloud.internal.SelectionUtils;
-import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
+import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
