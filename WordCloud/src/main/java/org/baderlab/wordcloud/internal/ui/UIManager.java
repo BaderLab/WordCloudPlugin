@@ -55,13 +55,15 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	private Map<NetworkParameters, CloudParameters> selectedClouds = new HashMap<NetworkParameters, CloudParameters>();
 	private NetworkParameters currentNetwork;
 	
+	private boolean hidden = true;
+	
 	
 	public UIManager(
 			CloudModelManager cloudManager, 
 			CyApplicationManager applicationManager, 
 			CySwingApplication application, 
 			CyServiceRegistrar registrar,
-			CyNetworkViewManager viewManager ) {
+			CyNetworkViewManager viewManager) {
 		this.cloudManager = cloudManager;
 		this.applicationManager = applicationManager;
 		this.application = application;
@@ -87,37 +89,40 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		
 	}
 	
+	
 	/**
 	 * Activates the panels and brings them to the front.
-	 * 
-	 * @return true if this is the first time the panels have been activiated, false otherwise
+	 * To show the panels use one of the setCurrentCloud() methods.
 	 */
-	private boolean loadPanels() {
+	private void show() {
+		hidden = false;
 		if(docker == null) {
 			inputWindow = new SemanticSummaryInputPanel(applicationManager, application, this, registrar);
 			inputWindow.setPreferredSize(new Dimension(350, 400));
 			cloudWindow = new CloudDisplayPanel();
 			docker = new DualPanelDocker(inputWindow, cloudWindow, application, registrar);
 			cloudWindow.setDocker(docker);
-			if(showHideAction != null)
+			if(showHideAction != null) {
 				showHideAction.setName("Hide WordCloud");
-			return true;
-		}
-		else {
-			//docker.bringToFront();
-			return false;
+			}
 		}
 	}
 	
+	/**
+	 * Disposes of the panels.
+	 */
 	public void hide() {
-		// selected clouds are still remembered
-		docker.dispose();
-		docker = null;
-		inputWindow = null;
-		cloudWindow = null;
-		currentNetwork = null;
-		if(showHideAction != null) {
-			showHideAction.setName("Show WordCloud");
+		hidden = true;
+		if(docker != null) {
+			// selected clouds are still remembered
+			docker.dispose();
+			docker = null;
+			inputWindow = null;
+			cloudWindow = null;
+			currentNetwork = null;
+			if(showHideAction != null) {
+				showHideAction.setName("Show WordCloud");
+			}
 		}
 	}
 	
@@ -139,7 +144,7 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	
 	
 	public void setCurrentCloud(CyNetwork network) {
-		setCurrentCloud(cloudManager.getNetworkParameters(network));
+		setCurrentCloud(cloudManager.addNetwork(network)); // always create a NetworkParameters object to store a sync cloud
 	}
 	
 	public void setCurrentCloud(NetworkParameters networkParams) {
@@ -175,7 +180,7 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		if(!cloud.isNullCloud())
 			selectedClouds.put(cloud.getNetworkParams(), cloud); 
 		
-		loadPanels();
+		show();
 		
 		inputWindow.setCurrentCloud(cloud);
 		if(cloud.isNullCloud())
@@ -192,7 +197,9 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		SelectionUtils.setColumns(network, selNodes, CyNetwork.SELECTED, Boolean.TRUE);
 		
 		for (CyNetworkView networkView : viewManager.getNetworkViews(network)) {
-			networkView.updateView();
+			try {
+				networkView.updateView();
+			} catch(Exception e) {}
 		}
 	}
 
@@ -203,7 +210,10 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	
 	
 	public CloudParameters getCurrentCloud() {
-		return selectedClouds.get(currentNetwork);
+		if(currentNetwork == null)
+			return cloudManager.getNullNetwork().getNullCloud();
+		CloudParameters cloud = selectedClouds.get(currentNetwork);
+		return cloud == null ? currentNetwork.getNullCloud() : cloud;
 	}
 	
 	public boolean isCurrentCloud(CloudParameters cloud) {
@@ -217,6 +227,8 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	
 	@Override
 	public void cloudAdded(CloudParameters cloudParams) {
+		if(hidden)
+			return;
 		setCurrentCloud(cloudParams);
 		docker.bringToFront();
 	}
@@ -225,15 +237,21 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	public void cloudDeleted(CloudParameters cloud) {
 		if(isCurrentCloud(cloud)) {
 			selectedClouds.remove(cloud.getNetworkParams());
-			setCurrentCloud(cloud.getNetworkParams());
 		}
-		else if(cloud.getNetworkParams() == currentNetwork) {
+		
+		if(hidden)
+			return;
+		
+		if(cloud.getNetworkParams() == currentNetwork) {
 			setCurrentCloud(cloud.getNetworkParams());
 		}
 	}
 	
 	@Override
 	public void networkModified(NetworkParameters networkParams) {
+		if(hidden)
+			return;
+		
 		if(networkParams == currentNetwork) {
 			// refresh current cloud
 			CloudParameters currentCloud = selectedClouds.get(currentNetwork);
@@ -244,6 +262,9 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	
 	@Override
 	public void cloudRenamed(CloudParameters cloudParams) {
+		if(hidden)
+			return;
+		
 		if(cloudParams.getNetworkParams() == currentNetwork) {
 			inputWindow.setCurrentCloud(selectedClouds.get(currentNetwork)); // this basically does a refresh
 		}
@@ -259,6 +280,9 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		if(hidden)
+			return;
+		
 		CyNetworkView networkView = e.getNetworkView();
 		if(networkView == null) {
 			clear();
@@ -269,6 +293,9 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 
 	@Override
 	public void handleEvent(SetCurrentNetworkEvent e) {
+		if(hidden)
+			return;
+		
 		setCurrentCloud(e.getNetwork());
 	}
 	
@@ -279,6 +306,9 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	 */
 	@Override
 	public void handleEvent(RowsSetEvent e) {
+		if(hidden)
+			return;
+		
 		// Just doing an approximate calculation here, detect if ANY network has changed name.
 		boolean isNetworkRename = false;
 		for (RowSetRecord record : e.getPayloadCollection()) {

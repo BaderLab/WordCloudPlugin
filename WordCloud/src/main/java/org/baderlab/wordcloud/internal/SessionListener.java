@@ -40,11 +40,11 @@ import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.NetworkParameters;
 import org.baderlab.wordcloud.internal.model.WordDelimiters;
 import org.baderlab.wordcloud.internal.model.WordFilter;
+import org.baderlab.wordcloud.internal.ui.UIManager;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
-import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  */
 
-public class SessionListener implements SessionAboutToBeSavedListener, SessionLoadedListener, SessionAboutToBeLoadedListener 
+public class SessionListener implements SessionAboutToBeSavedListener, SessionLoadedListener 
 {
 	
 	//Variables
@@ -70,17 +70,26 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 	
 	private final Logger logger = LoggerFactory.getLogger(SessionListener.class);
 	
-	private CloudModelManager cloudManager;
-	private IoUtil ioUtil;
-	private CyNetworkManager networkManager;
+	private final CloudModelManager cloudManager;
+	private final IoUtil ioUtil;
+	private final CyNetworkManager networkManager;
 	
+	private final CyApplicationManager applicationManager;
+	private final UIManager uiManager;
 
 	
-	public SessionListener(CloudModelManager cloudManager, IoUtil ioUtil, CyNetworkManager networkManager)
+	public SessionListener(
+			CloudModelManager cloudManager, 
+			IoUtil ioUtil, 
+			CyNetworkManager networkManager,
+			CyApplicationManager applicationManager,
+			UIManager uiManager)
 	{
 		this.cloudManager = cloudManager;
 		this.ioUtil = ioUtil;
 		this.networkManager = networkManager;
+		this.applicationManager = applicationManager;
+		this.uiManager = uiManager;
 	}
 	
 
@@ -101,11 +110,6 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 		return sb.toString();
 	}
 	
-	@Override
-	public void handleEvent(SessionAboutToBeLoadedEvent event) {
-//		cloudManager.reset();
-//		cloudManager.setupCurrentNetwork(null);
-	}
 	
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent event) {
@@ -125,7 +129,6 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 			return;
 		}
 		restoreSessionState(files);
-//		cloudManager.setupCurrentNetwork(applicationManager.getCurrentNetwork());
 	}
 	
 	/**
@@ -148,8 +151,6 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 		{
 			//Update the network if it has changed
 			CyNetwork network = params.getNetwork();
-//			if (params.networkHasChanged(network));
-//				params.updateParameters(network);
 			
 			//write out files.
 			try 
@@ -230,15 +231,11 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 			return; //no previous state to restore
 		}
 		
-//		//Initialize and load panels
-//		pluginAction.loadPanels();
 		
 		try
 		{
 			for (CyNetwork network : getSemanticSummaryNetworks()) {
 				cloudManager.addNetwork(network);
-//				SemanticSummaryParameters params = parametersFactory.createSemanticSummaryParameters(network);
-//				cloudManager.registerNetwork(network, params);
 			}
 			
 			//Go through the prop files to create the clouds and set filters
@@ -264,10 +261,6 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 					NetworkParameters networkParams = cloudManager.getNetworkParameters(network);
 					
 					networkParams.createCloud(fullText);
-					
-//					//Given the file with all the parameters, create a new parameters
-//					CloudParameters params = new CloudParameters(networkParams, fullText);
-//					networkParams.addCloud(cloud_name, params);
 					
 				}//end if .CLOUDS.txt file
 				
@@ -310,8 +303,6 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 			}//end loop through all props files
 			
 //			//Set current network and Initialize the panel appropriately
-//			cloudManager.setupCurrentNetwork(applicationManager.getCurrentNetwork());
-
 			for (NetworkParameters parameters: cloudManager.getNetworks()) {
 				for (CloudParameters cloud : parameters.getClouds()) {
 					cloud.updateSelectedCounts();
@@ -323,6 +314,8 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 			e.printStackTrace();
 		}
 		
+		// show the panels once the session has finished loading
+		uiManager.setCurrentCloud(applicationManager.getCurrentNetwork());
 	}//end restore session method
 	
     /**

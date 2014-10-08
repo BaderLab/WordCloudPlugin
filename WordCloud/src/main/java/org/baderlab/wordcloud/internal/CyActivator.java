@@ -75,7 +75,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		// Session persistence
-		SessionListener sessionListener = new SessionListener(cloudModelManager, new IoUtil(streamUtil), networkManager);
+		SessionListener sessionListener = new SessionListener(cloudModelManager, new IoUtil(streamUtil), networkManager, applicationManager, uiManager);
 		registerAllServices(context, sessionListener, new Properties());
 		
 		

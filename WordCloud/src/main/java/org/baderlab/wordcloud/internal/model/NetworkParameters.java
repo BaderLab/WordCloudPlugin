@@ -131,7 +131,7 @@ public class NetworkParameters {
 	public CloudParameters createCloud(String propFile) {
 		CloudParameters cloudParams = new CloudParameters(this, propFile);
 		clouds.put(cloudParams.getCloudName(), cloudParams);
-		parent.fireCloudAdded(cloudParams);
+//		parent.fireCloudAdded(cloudParams);
 		return cloudParams;
 	}
 	

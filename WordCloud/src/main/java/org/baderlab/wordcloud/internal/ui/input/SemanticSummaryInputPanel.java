@@ -128,9 +128,9 @@ public class SemanticSummaryInputPanel extends JPanel {
 	private Action createCloudAction;
 	
 
-	private final UpdateCloudListener updateCloudListener = new UpdateCloudListener();
+	private final LiveUpdateListener liveUpdateListener = new LiveUpdateListener();
 	
-	private class UpdateCloudListener extends AbstractAction implements ChangeListener, PropertyChangeListener, DocumentListener {
+	private class LiveUpdateListener extends AbstractAction implements ChangeListener, PropertyChangeListener, DocumentListener {
 		boolean enabled;
 		
 		@Override public void actionPerformed(ActionEvent e) { update(); }
@@ -145,6 +145,9 @@ public class SemanticSummaryInputPanel extends JPanel {
 				CloudParameters cloud = uiManager.getCurrentCloud();
 				if(cloud != null) {
 					updateCloudParameters(cloud); // save values into model object
+					cloud.setRatiosInitialized(false);
+					cloud.setCountInitialized(false);
+					cloud.setSelInitialized(false);
 					cloud.calculateFontSizes();
 					uiManager.getCloudDisplayPanel().updateCloudDisplay(cloud);
 				}
@@ -194,11 +197,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 		add(splitPane, BorderLayout.CENTER);
 		
 		// Live update
-		sliderPanel.getSlider().addChangeListener(updateCloudListener);
-		maxWordsTextField.getDocument().addDocumentListener(updateCloudListener);
-		clusterCutoffTextField.getDocument().addDocumentListener(updateCloudListener);
-		stemmer.addChangeListener(updateCloudListener);
-		cmbStyle.addActionListener(updateCloudListener);
+		sliderPanel.getSlider().addChangeListener(liveUpdateListener);
+		maxWordsTextField.getDocument().addDocumentListener(liveUpdateListener);
+		clusterCutoffTextField.getDocument().addDocumentListener(liveUpdateListener);
+		stemmer.addChangeListener(liveUpdateListener);
+		cmbStyle.addActionListener(liveUpdateListener);
 	}
 	
 	
@@ -316,7 +319,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 				WordSelectPanel wordSelectPanel = new WordSelectPanel(network.getFilter());
 				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), network.getNetworkName());
 				dialog.setVisible(true);
-				updateCloudListener.update();
+				liveUpdateListener.update();
 			}
 		});
 		excludedWordsPanel.add(excludedWordsButton);
@@ -328,7 +331,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 				WordSelectPanel wordSelectPanel = new WordSelectPanel(network.getDelimeters());
 				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), network.getNetworkName());
 				dialog.setVisible(true);
-				updateCloudListener.update();
+				liveUpdateListener.update();
 			}
 		});
 		excludedWordsPanel.add(delimetersButton);
@@ -355,7 +358,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				updateAttNames();
-				updateCloudListener.update();
+				liveUpdateListener.update();
 			}
 		});
 	    
@@ -412,7 +415,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 				}
 				attributeList.setSelectedItems(items);
 				updateAttNames();
-				updateCloudListener.update();
+				liveUpdateListener.update();
 			}
 		});
 
@@ -422,7 +425,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				attributeList.setSelectedItems(Collections.<String>emptyList());
 				updateAttNames();
-				updateCloudListener.update();
+				liveUpdateListener.update();
 			}
 		});
 		
@@ -590,7 +593,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	public void setCurrentCloud(CloudParameters params) {
 		cloudList.removeListSelectionListener(cloudListSelectionListener);
 		syncCheckBox.removeActionListener(syncCheckboxActionListener);
-		updateCloudListener.enabled = false;
+		liveUpdateListener.enabled = false;
 		
 		// Set the network and cloud in the top panel (null cloud will result in empty list)
 		List<CloudParameters> networkClouds = params.getNetworkParams().getClouds();
@@ -615,9 +618,9 @@ public class SemanticSummaryInputPanel extends JPanel {
 		}
 		
 		// Update all controls to show values from the cloud
+		refreshAttributeCMB();
 		List<String> attributeNames = params.getAttributeNames();
 		setAttributeNames(attributeNames == null ? Collections.<String>emptyList() : attributeNames);
-		refreshAttributeCMB();
 		maxWordsTextField.setValue(params.getMaxWords());
 		clusterCutoffTextField.setValue(params.getClusterCutoff());
 		cmbStyle.setSelectedItem(params.getDisplayStyle());
@@ -625,7 +628,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		updateStemmingBox();
 		
 		
-		updateCloudListener.enabled = true;
+		liveUpdateListener.enabled = true;
 		cloudList.addListSelectionListener(cloudListSelectionListener);
 		syncCheckBox.addActionListener(syncCheckboxActionListener);
 	}
@@ -800,16 +803,16 @@ public class SemanticSummaryInputPanel extends JPanel {
 	public void refreshAttributeCMB() {
 		updateCMBAttributes();
 		CloudParameters curCloud = uiManager.getCurrentCloud();
-		
-		//Updated GUI
-		List<String> curAttList = curCloud.getAttributeNames();
-		
-		if (curAttList == null) {
-			curAttList = CloudModelManager.getColumnNames(curCloud.getNetworkParams().getNetwork(), CyNode.class);
+		if(curCloud != null) {
+			List<String> curAttList = curCloud.getAttributeNames();
+			
+			if (curAttList == null) {
+				curAttList = CloudModelManager.getColumnNames(curCloud.getNetworkParams().getNetwork(), CyNode.class);
+			}
+			
+			attributeList.setSelectedItems(curAttList);
+			attributeList.repaint();
 		}
-		
-		attributeList.setSelectedItems(curAttList);
-		attributeList.repaint();
 	}
 	
 	
