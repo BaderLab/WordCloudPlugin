@@ -60,6 +60,15 @@ public class NetworkParameters {
 		return result;
 	}
 	
+	public void updateAllClouds() {
+		for(CloudParameters cloud : clouds.values()) {
+			cloud.setRatiosInitialized(false);
+			cloud.setCountInitialized(false);
+			cloud.setSelInitialized(false);
+			cloud.calculateFontSizes();
+		}
+	}
+	
 	public CloudParameters getCloud(String cloudName) {
 		return clouds.get(cloudName);
 	}

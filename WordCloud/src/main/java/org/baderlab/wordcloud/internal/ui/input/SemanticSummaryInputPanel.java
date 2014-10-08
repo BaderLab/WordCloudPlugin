@@ -145,10 +145,6 @@ public class SemanticSummaryInputPanel extends JPanel {
 				CloudParameters cloud = uiManager.getCurrentCloud();
 				if(cloud != null) {
 					updateCloudParameters(cloud); // save values into model object
-					cloud.setRatiosInitialized(false);
-					cloud.setCountInitialized(false);
-					cloud.setSelInitialized(false);
-					cloud.calculateFontSizes();
 					uiManager.getCloudDisplayPanel().updateCloudDisplay(cloud);
 				}
 			}
@@ -322,6 +318,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 				WordSelectPanel wordSelectPanel = new WordSelectPanel(network.getFilter());
 				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), network.getNetworkName());
 				dialog.setVisible(true);
+				network.updateAllClouds();
 				liveUpdateListener.update();
 			}
 		});
@@ -334,6 +331,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 				WordSelectPanel wordSelectPanel = new WordSelectPanel(network.getDelimeters());
 				JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), network.getNetworkName());
 				dialog.setVisible(true);
+				network.updateAllClouds();
 				liveUpdateListener.update();
 			}
 		});
@@ -687,6 +685,12 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		// Stemming
 		cloud.getNetworkParams().setIsStemming(stemmer.isSelected());
+		
+		// WHY?
+		cloud.setRatiosInitialized(false);
+		cloud.setCountInitialized(false);
+		cloud.setSelInitialized(false);
+		cloud.calculateFontSizes();
 	}
 	
 	
@@ -822,68 +826,40 @@ public class SemanticSummaryInputPanel extends JPanel {
 	/**
 	 * Private Class to ensure that text fields are being set properly
 	 */
-	private class FormattedTextFieldAction implements PropertyChangeListener
-	{
-		public void propertyChange(PropertyChangeEvent e)
-		{
+	private class FormattedTextFieldAction implements PropertyChangeListener {
+		public void propertyChange(PropertyChangeEvent e) {
 			JFormattedTextField source = (JFormattedTextField) e.getSource();
-			
-//			CloudParameters params = cloudManager.getCurCloud();
 			
 			String message = "The value you have entered is invalid. \n";
 			boolean invalid = false;
-
 			
-//			//Max Words
-//			if (source == maxWordsTextField)
-//			{
-//				Number value = (Number) maxWordsTextField.getValue();
-//				if ((value != null) && (value.intValue() >= 0))
-//				{
-//					//All is well - do nothing
-//				}
-//				else
-//				{
-//					Integer defaultMaxWords = params.getDefaultMaxWords();
-//					maxWordsTextField.setValue(defaultMaxWords);
-//					message += "The maximum number of words to display must be greater than or equal to 0.";
-//					invalid = true;
-//				}
-//			}// end max Words
-//			
-//			else if (source == clusterCutoffTextField)
-//			{
-//				Number value = (Number) clusterCutoffTextField.getValue();
-//				if ((value != null) && (value.doubleValue() >= 0.0))
-//				{
-//					//All is well - leave it be
-//				}
-//				else
-//				{
-//					Double defaultClusterCutoff = params.getDefaultClusterCutoff();
-//					clusterCutoffTextField.setValue(defaultClusterCutoff);
-//					message += "The cluster cutoff must be greater than or equal to 0";
-//					invalid = true;
-//				}
-//			}
-//			
-//			if (source == addWordTextField)
-//			{
-//				String value = (String)addWordTextField.getText();
-//				if (value.equals("") || value.matches("[\\w]*"))
-//				{ 
-//					//All is well, leave it be
-//				}
-//				else
-//				{
-//					//addWordTextField.setValue("");
-//					//message += "You can only add a word that contains letters or numbers and no spaces";
-//					//invalid = true;
-//				}
-//			}
-//			
-//			if (invalid)
-//				JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+			//Max Words
+			if (source == maxWordsTextField) {
+				Number value = (Number) maxWordsTextField.getValue();
+				if ((value != null) && (value.intValue() >= 0)) {
+					//All is well - do nothing
+				}
+				else {
+					maxWordsTextField.setValue(CloudParameters.DEFAULT_MAX_WORDS);
+					message += "The maximum number of words to display must be greater than or equal to 0.";
+					invalid = true;
+				}
+			}// end max Words
+			
+			else if (source == clusterCutoffTextField) {
+				Number value = (Number) clusterCutoffTextField.getValue();
+				if ((value != null) && (value.doubleValue() >= 0.0)) {
+					//All is well - leave it be
+				}
+				else {
+					clusterCutoffTextField.setValue(CloudParameters.DEFAULT_CLUSTER_CUTOFF);
+					message += "The cluster cutoff must be greater than or equal to 0";
+					invalid = true;
+				}
+			}
+			
+			if (invalid)
+				JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
 		}
 	}	
 }
