@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 
 import org.baderlab.wordcloud.internal.cluster.WordPair;
 import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.next.CloudProvider;
 import org.baderlab.wordcloud.internal.ui.WordCloudVisualStyleFactory;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyEdge;
@@ -60,7 +61,7 @@ import org.cytoscape.work.TaskManager;
 @SuppressWarnings("serial")
 public class CreateNetworkAction extends AbstractCyAction {
 	
-	private final CloudParameters cloud;
+	private final CloudProvider cloudProvider;
 	private final WordCloudVisualStyleFactory cloudStyleFactory;
 	
 	// Cytoscape services
@@ -73,10 +74,10 @@ public class CreateNetworkAction extends AbstractCyAction {
 	private final TaskManager<?, ?> taskManager;
 	
 	
-	public CreateNetworkAction(CloudParameters cloud, CyServiceRegistrar registrar) {
+	public CreateNetworkAction(CloudProvider cloudProvider, CyServiceRegistrar registrar) {
 		super("Create Network From Cloud");
 		
-		this.cloud = cloud;
+		this.cloudProvider = cloudProvider;
 		
 		this.networkFactory = registrar.getService(CyNetworkFactory.class);
 		this.networkViewFactory  = registrar.getService(CyNetworkViewFactory.class);
@@ -98,6 +99,9 @@ public class CreateNetworkAction extends AbstractCyAction {
 	 */
 	public void actionPerformed(ActionEvent ae)  {
 		//Retrieve the current cloud and relevent information
+		CloudParameters cloud = cloudProvider.getCloud();
+		if(cloud == null)
+			return;
 		
 		Map<String, Double> ratios = cloud.getRatios();
 		Map<WordPair, Double> pairRatios = cloud.getPairRatios();

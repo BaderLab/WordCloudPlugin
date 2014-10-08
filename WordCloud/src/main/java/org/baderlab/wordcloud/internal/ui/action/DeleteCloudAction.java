@@ -28,6 +28,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
 
 import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.next.CloudProvider;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 
@@ -40,13 +41,13 @@ import org.cytoscape.application.swing.CySwingApplication;
 public class DeleteCloudAction extends AbstractCyAction {
 	
 	
-	private CloudParameters cloud;
+	private CloudProvider cloudProvider;
 	private CySwingApplication swingApplication;
 
 	
-	public DeleteCloudAction(CloudParameters cloud, CySwingApplication swingApplication) {
+	public DeleteCloudAction(CloudProvider cloudProvider, CySwingApplication swingApplication) {
 		super("Delete Cloud");
-		this.cloud = cloud;
+		this.cloudProvider = cloudProvider;
 		this.swingApplication = swingApplication;
 	}
 	
@@ -57,12 +58,16 @@ public class DeleteCloudAction extends AbstractCyAction {
 	 * @param ActionEvent - event created when choosing Delete Cloud.
 	 */
 	public void actionPerformed(ActionEvent e) {
-		if(confirmDelete()) {
+		CloudParameters cloud = cloudProvider.getCloud();
+		if(cloud == null)
+			return;
+		
+		if(confirmDelete(cloud)) {
 			cloud.delete();
 		}		
 	}
 	
-	private boolean confirmDelete() {
+	private boolean confirmDelete(CloudParameters cloud) {
 		Component parent = swingApplication.getJFrame();
 		
 		String cloudName = cloud.getCloudName();

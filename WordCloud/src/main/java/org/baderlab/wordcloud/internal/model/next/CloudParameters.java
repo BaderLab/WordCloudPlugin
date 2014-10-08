@@ -55,7 +55,7 @@ import org.cytoscape.model.CyTableManager;
  *
  */
 
-public class CloudParameters implements Comparable<CloudParameters>
+public class CloudParameters implements Comparable<CloudParameters>, CloudProvider
 {
 	
 	//Default Values for User Input
@@ -1423,5 +1423,10 @@ public class CloudParameters implements Comparable<CloudParameters>
 				return null;
 			}
 		}
+	}
+	
+	@Override
+	public CloudParameters getCloud() {
+		return this;
 	}
 }

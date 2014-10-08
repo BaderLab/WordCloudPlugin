@@ -62,6 +62,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
@@ -74,9 +75,12 @@ import javax.swing.event.ListSelectionListener;
 
 import org.baderlab.wordcloud.internal.model.next.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.next.CloudProvider;
 import org.baderlab.wordcloud.internal.model.next.NetworkParameters;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.baderlab.wordcloud.internal.ui.action.CreateCloudAction;
+import org.baderlab.wordcloud.internal.ui.action.DeleteCloudAction;
+import org.baderlab.wordcloud.internal.ui.action.RenameCloudAction;
 import org.baderlab.wordcloud.internal.ui.action.UpdateCloudAction;
 import org.baderlab.wordcloud.internal.ui.cloud.CloudDisplayStyles;
 import org.cytoscape.application.CyApplicationManager;
@@ -222,6 +226,20 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloudList.setFixedCellHeight(DEF_ROW_HEIGHT);
 		cloudList.addMouseListener(new CloudListPopupMenuListener(uiManager, application, registrar, cloudList));
 		
+		CloudProvider cloudListProvider = new CloudProvider() {
+			public CloudParameters getCloud() {
+				String cloudName = (String) cloudList.getSelectedValue();
+				return uiManager.getCurrentNetwork().getCloud(cloudName);
+			}
+		};
+		
+		// Set up F2 (rename) and Del hotkeys
+		cloudList.getInputMap().put(KeyStroke.getKeyStroke("F2"), "rename_cloud");
+		cloudList.getInputMap().put(KeyStroke.getKeyStroke("DELETE"), "delete_cloud");
+		cloudList.getActionMap().put("rename_cloud", new RenameCloudAction(cloudListProvider, application, uiManager));
+		cloudList.getActionMap().put("delete_cloud", new DeleteCloudAction(cloudListProvider, application));
+		
+		// Set current cloud when selected in list
 		cloudListSelectionListener = new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				String cloudName = (String) cloudList.getSelectedValue();

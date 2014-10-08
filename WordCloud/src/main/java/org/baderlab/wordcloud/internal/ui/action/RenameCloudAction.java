@@ -6,6 +6,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.next.CloudProvider;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -13,14 +14,14 @@ import org.cytoscape.application.swing.CySwingApplication;
 @SuppressWarnings("serial")
 public class RenameCloudAction extends AbstractCyAction {
 
-	private CloudParameters cloud;
+	private CloudProvider cloudProvider;
 	private CySwingApplication swingApplication;
 	private UIManager uiManager;
 
 	
-	public RenameCloudAction(CloudParameters cloud, CySwingApplication swingApplication, UIManager uiManager) {
+	public RenameCloudAction(CloudProvider cloudProvider, CySwingApplication swingApplication, UIManager uiManager) {
 		super("Rename Cloud");
-		this.cloud = cloud;
+		this.cloudProvider = cloudProvider;
 		this.swingApplication = swingApplication;
 		this.uiManager = uiManager;
 	}
@@ -28,6 +29,10 @@ public class RenameCloudAction extends AbstractCyAction {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		CloudParameters cloud = cloudProvider.getCloud();
+		if(cloud == null)
+			return;
+		
 		String curName = cloud.getCloudName();
 		JFrame parent = swingApplication.getJFrame();
 		
@@ -75,11 +80,9 @@ public class RenameCloudAction extends AbstractCyAction {
 	
 	
 	/**
-	 * Returns true if the specified name is already taken in the
-	 * current network.
+	 * Returns true if the specified name is already taken in the current network.
 	 */
-	private boolean isCloudNameTaken(String name)
-	{
+	private boolean isCloudNameTaken(String name) {
 		return uiManager.getCurrentNetwork().containsCloud(name);
 	}
 	

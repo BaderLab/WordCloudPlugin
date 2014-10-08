@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.baderlab.wordcloud.internal.SelectionUtils;
 import org.baderlab.wordcloud.internal.model.next.CloudParameters;
+import org.baderlab.wordcloud.internal.model.next.CloudProvider;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyNetwork;
@@ -42,18 +43,22 @@ import org.cytoscape.model.CyNode;
 public class UpdateCloudAction extends AbstractCyAction
 {
 
-	private final CloudParameters cloud;
+	private final CloudProvider cloudProvider;
 	private final UIManager uiManager;
 	
 	
-	public UpdateCloudAction(CloudParameters cloud, UIManager uiManager) {
+	public UpdateCloudAction(CloudProvider cloudProvider, UIManager uiManager) {
 		super("Update Cloud");
-		this.cloud = cloud;
+		this.cloudProvider = cloudProvider;
 		this.uiManager = uiManager;
 	}
 
 	
 	public void actionPerformed(ActionEvent e) {
+		CloudParameters cloud = cloudProvider.getCloud();
+		if(cloud == null)
+			return;
+		
 		CyNetwork network = cloud.getNetworkParams().getNetwork();
 		if(network == null)
 			return;

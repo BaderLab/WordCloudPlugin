@@ -29,11 +29,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 
 /**
  * This class handles all the dialog box associated with renaming a cloud.
@@ -120,6 +122,13 @@ public class RenameCloudDialog extends JDialog implements ActionListener
 		gridBagConstraints.insets = new Insets(10, 0, 10, 0);
 		getContentPane().add(jPanel1, gridBagConstraints);
 
+		ActionListener escListener = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		};
+		getRootPane().registerKeyboardAction(escListener, KeyStroke.getKeyStroke("ESCAPE"), JComponent.WHEN_IN_FOCUSED_WINDOW);
+		
 		pack();
 	}
 	
