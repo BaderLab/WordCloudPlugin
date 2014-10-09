@@ -17,6 +17,8 @@ import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.property.AbstractConfigDirPropsReader;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NodeViewTaskFactory;
@@ -46,8 +48,15 @@ public class CyActivator extends AbstractCyActivator {
 		StreamUtil streamUtil = getService(context, StreamUtil.class);
 		
 		
+		// Configuration properties
+		PropsReader propsReader = new PropsReader("wordcloud", "wordcloud.props");
+        Properties propsReaderServiceProps = new Properties();
+        propsReaderServiceProps.setProperty("cyPropertyName", "wordcloud.props");
+        registerAllServices(context, propsReader, propsReaderServiceProps);
+        
+        
 		// Managers
-		CloudModelManager cloudModelManager = new CloudModelManager(networkManager, tableManager, streamUtil);
+		CloudModelManager cloudModelManager = new CloudModelManager(networkManager, tableManager, streamUtil, propsReader);
 		registerAllServices(context, cloudModelManager, new Properties());
 		UIManager uiManager = new UIManager(cloudModelManager, applicationManager, application, registrar, viewManager);
 		cloudModelManager.addListener(uiManager);
@@ -83,7 +92,6 @@ public class CyActivator extends AbstractCyActivator {
     	registerCommand(context, "create", new CreateWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudModelManager, tableManager, tableFactory));
 		registerCommand(context, "delete", new DeleteWordCloudCommandHandlerTaskFactory(uiManager));
 		registerCommand(context, "select", new SelectWordCloudCommandHandlerTaskFactory(uiManager));
-		
 	}
 	
 	
@@ -92,5 +100,12 @@ public class CyActivator extends AbstractCyActivator {
     	props.put(ServiceProperties.COMMAND, name);
     	props.put(ServiceProperties.COMMAND_NAMESPACE, "wordcloud");
 		registerService(context, factory, TaskFactory.class, props);
+	}
+	
+	
+	class PropsReader extends AbstractConfigDirPropsReader {
+		public PropsReader(String name, String fileName) {
+			super(name, fileName, CyProperty.SavePolicy.CONFIG_DIR);
+		}
 	}
 }

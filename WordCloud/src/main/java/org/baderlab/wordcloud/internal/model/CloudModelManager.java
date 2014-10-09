@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -26,6 +27,7 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.events.RemovedNodesListener;
+import org.cytoscape.property.CyProperty;
 
 public class CloudModelManager implements NetworkAboutToBeDestroyedListener, RemovedNodesListener {
 
@@ -38,13 +40,15 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 	private final CyNetworkManager networkManager;
 	private final CyTableManager tableManager;
 	private final StreamUtil streamUtil;
+	private final CyProperty<Properties> cyProperties;
 	
 	
 	
-	public CloudModelManager(CyNetworkManager networkManager, CyTableManager tableManager, StreamUtil streamUtil) {
+	public CloudModelManager(CyNetworkManager networkManager, CyTableManager tableManager, StreamUtil streamUtil, CyProperty<Properties> cyProperties) {
 		this.networkManager = networkManager;
 		this.tableManager = tableManager;
 		this.streamUtil = streamUtil;
+		this.cyProperties = cyProperties;
 		
 		this.listeners = new LinkedHashSet<CloudModelListener>(); // no duplicates, maintain insertion order
 		this.networks = new HashMap<CyNetwork, NetworkParameters>();
@@ -222,6 +226,33 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 	}
 	
 	
+	/*
+	 * This is kind of hackey. If any new configuration properties are added in the future
+	 * then it would be better to create a custom subclass of AbstractConfigDirPropsReader
+	 * that contains all the constants and property getters.
+	 * 
+	 * Doing some validation here, is there a way to do the validation in the dialog?
+	 */
+	double getDefaultNetWeight() {
+		final String propName = "wordcloud.defaultNetWeight";
+		try {
+			double value = Double.valueOf((String)cyProperties.getProperties().get(propName));
+			if(value < 0.0) {
+				cyProperties.getProperties().put(propName, "0.0");
+				return 0.0;
+			}
+			if(value > 1.0) {
+				cyProperties.getProperties().put(propName, "1.0");
+				return 1.0;
+			}
+			return value;
+		} catch(Exception e) {
+			cyProperties.getProperties().put(propName, String.valueOf(CloudParameters.DEFAULT_NET_WEIGHT));
+			return CloudParameters.DEFAULT_NET_WEIGHT;
+		}
+	}
+	
+	
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
 		// MKTODO is this called when the session is destroyed?
@@ -266,7 +297,10 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 //		}
 	}
 
-
+//
+//	double getNetWeightProperty() {
+//		
+//	}
 	
 
 

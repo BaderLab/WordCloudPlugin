@@ -59,7 +59,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 {
 	
 	//Default Values for User Input
-	public static final double DEFAULT_NET_WEIGHT = 0.0;
+	public static final double DEFAULT_NET_WEIGHT = 0.0; // this can be overridden in wordcloud.props
 	public static final String DEFAULT_ATT_NAME = CyNetwork.NAME;
 	public static final int    DEFAULT_MAX_WORDS = 250;
 	public static final double DEFAULT_CLUSTER_CUTOFF = 1.0;
@@ -133,7 +133,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		this.pairRatios = new HashMap<WordPair, Double>();
 		this.cloudWords = new ArrayList<CloudWordInfo>();
 		
-		this.netWeightFactor = DEFAULT_NET_WEIGHT;
+		this.netWeightFactor = networkParams.getManager().getDefaultNetWeight();
 		this.clusterCutoff = DEFAULT_CLUSTER_CUTOFF;
 		this.maxWords = DEFAULT_MAX_WORDS;
 		this.displayStyle = DEFAULT_STYLE;
