@@ -52,7 +52,6 @@ public class WordFilter
 	private HashSet<String> stopWords = new HashSet<String>(); //Stop words
 	private HashSet<String> flaggedWords = new HashSet<String>();//Flagged words
 	private HashSet<String> addedWords = new HashSet<String>(); //User added words
-	private HashSet<String> numberWords = new HashSet<String>();
 	private Boolean filterNums = false;
 	
 	final static public String stopWordFile = "StopWords.txt";
@@ -77,7 +76,7 @@ public class WordFilter
 		try {
 			initialize(ioUtil, stopPath, stopWords);
 			initialize(ioUtil, flaggedPath, flaggedWords);
-			initializeNums();
+//			initializeNums();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -142,7 +141,7 @@ public class WordFilter
 		}
 		
 		//Rebuild number list
-		this.initializeNums();
+//		this.initializeNums();
 		value = props.get("FilterNums");
 		if (value != null)
 		{
@@ -168,14 +167,20 @@ public class WordFilter
 		else if (addedWords.contains(aWord))
 			return true;
 		else if (filterNums)
-		{
-			if (numberWords.contains(aWord))
-				return true;
-			else
-				return false;
-		}
+			return isDigits(aWord);
 		else
 			return false;
+	}
+	
+	
+	private static boolean isDigits(String s) {
+		int n = s.length();
+		for(int i = 0; i < n; i++) {
+			if(!Character.isDigit(s.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	/**
@@ -308,21 +313,21 @@ public class WordFilter
 		return filterVariables.toString();
 	}
 	
-	/**
-	 * Builds the hashmap that contains the string values of the numbers 0
-	 * to 999 to check for exclusion if this option is set to true.
-	 */
-	private void initializeNums()
-	{
-		//Clears old values
-		numberWords = new HashSet<String>();
-		
-		for (int i = 0; i < 1000; i++)
-		{
-			String value = Integer.toString(i);
-			numberWords.add(value);
-		}
-	}
+//	/**
+//	 * Builds the hashmap that contains the string values of the numbers 0
+//	 * to 999 to check for exclusion if this option is set to true.
+//	 */
+//	private void initializeNums()
+//	{
+//		//Clears old values
+//		numberWords = new HashSet<String>();
+//		
+//		for (int i = 0; i < 1000; i++)
+//		{
+//			String value = Integer.toString(i);
+//			numberWords.add(value);
+//		}
+//	}
 	
 	
 	//Getters and Setters
@@ -341,10 +346,10 @@ public class WordFilter
 		return addedWords;
 	}
 	
-	public HashSet<String> getNumWords()
-	{
-		return numberWords;
-	}
+//	public HashSet<String> getNumWords()
+//	{
+//		return numberWords;
+//	}
 	
 	public Boolean getFilterNums()
 	{

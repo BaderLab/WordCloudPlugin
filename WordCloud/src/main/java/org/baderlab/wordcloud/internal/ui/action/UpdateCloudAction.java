@@ -24,21 +24,24 @@
 package org.baderlab.wordcloud.internal.ui.action;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.baderlab.wordcloud.internal.SelectionUtils;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.CloudProvider;
 import org.baderlab.wordcloud.internal.ui.UIManager;
+import org.baderlab.wordcloud.internal.ui.cloud.CloudWordInfo;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 
 /**
  * This is the action associated with updating a Semantic Summary Tag Cloud
  * anywhere in the Semantic Summary Plugin.
  */
-
 @SuppressWarnings("serial")
 public class UpdateCloudAction extends AbstractCyAction
 {
@@ -70,60 +73,26 @@ public class UpdateCloudAction extends AbstractCyAction
 			cloud.calculateFontSizes();
 			uiManager.getCloudDisplayPanel().updateCloudDisplay(cloud);	
 		}
+		
+		if (cloud.getClusterTable() != null) {
+			List<CloudWordInfo> wordInfos = cloud.getCloudWordInfoList();
+			ArrayList<String> WC_Word = new ArrayList<String>();
+			ArrayList<String> WC_FontSize = new ArrayList<String>();
+			ArrayList<String> WC_Cluster = new ArrayList<String>();
+			ArrayList<String> WC_Number = new ArrayList<String>();
+			for (CloudWordInfo cloudWord : wordInfos) {
+				String[] wordInfo = cloudWord.toSplitString();
+				WC_Word.add(wordInfo[0]);
+				WC_FontSize.add(wordInfo[1]);
+				WC_Cluster.add(wordInfo[2]);
+				WC_Number.add(wordInfo[3]);
+			}
+			CyRow clusterRow = cloud.getClusterTable().getRow(cloud.getCloudName());
+			clusterRow.set("WC_Word", WC_Word);
+			clusterRow.set("WC_FontSize", WC_FontSize);
+			clusterRow.set("WC_Cluster", WC_Cluster);
+			clusterRow.set("WC_Number", WC_Number);
+		}
 	}
 	
-	
-//	/**
-//	 * Method that actually contains what actually needs to happen on this action.
-//	 */
-//	public void doRealAction()
-//	{
-//		//Initialize the Semantic Summary Panels/Bring to front
-//		pluginAction.doRealAction();
-//		
-//		//Retrieve current cloud and Network from Manager
-//		CloudParameters cloudParams = cloudManager.getCurCloud();
-//		SemanticSummaryParameters networkParams = cloudParams.getNetworkParams();
-//		
-//		//Retrieve current network and view
-//		CyNetwork network = networkParams.getNetwork();
-//		if (network == null || !cloudManager.isSemanticSummary(network)) {
-//			return;
-//		}
-//		
-//		//Update network if necessary
-//		if (networkParams.networkHasChanged(network))
-//			networkParams.updateParameters(network);
-//		
-//		//Retrieve values from input panel
-//		cloudParams.retrieveInputVals(cloudManager.getInputWindow());
-//		
-//		//Update with new information
-//		cloudParams.calculateFontSizes();
-//		
-//		if (cloudParams.getClusterTable() != null) {
-//			List<CloudWordInfo> wordInfos = cloudParams.getCloudWordInfoList();
-//			ArrayList<String> WC_Word = new ArrayList<String>();
-//			ArrayList<String> WC_FontSize = new ArrayList<String>();
-//			ArrayList<String> WC_Cluster = new ArrayList<String>();
-//			ArrayList<String> WC_Number = new ArrayList<String>();
-//			for (CloudWordInfo cloudWord : wordInfos) {
-//				String[] wordInfo = cloudWord.toSplitString();
-//				WC_Word.add(wordInfo[0]);
-//				WC_FontSize.add(wordInfo[1]);
-//				WC_Cluster.add(wordInfo[2]);
-//				WC_Number.add(wordInfo[3]);
-//			}
-//			CyRow clusterRow = cloudParams.getClusterTable().getRow(cloudParams.getCloudName());
-//			clusterRow.set("WC_Word", WC_Word);
-//			clusterRow.set("WC_FontSize", WC_FontSize);
-//			clusterRow.set("WC_Cluster", WC_Cluster);
-//			clusterRow.set("WC_Number", WC_Number);
-//		}
-//		
-//		CloudDisplayPanel cloudPanel =
-//			cloudManager.getCloudWindow();
-//		
-//		cloudPanel.updateCloudDisplay(cloudParams);
-//	}
 }

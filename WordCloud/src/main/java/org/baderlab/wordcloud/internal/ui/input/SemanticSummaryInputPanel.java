@@ -121,6 +121,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	private JTextArea attNames;
 	private JButton createUpdateButton;
 	private JCheckBox syncCheckBox;
+	private JCheckBox filterNumsCheckBox;
 	
 	private ListSelectionListener cloudListSelectionListener;
 	private ActionListener syncCheckboxActionListener;
@@ -196,8 +197,17 @@ public class SemanticSummaryInputPanel extends JPanel {
 		sliderPanel.getSlider().addChangeListener(liveUpdateListener);
 		maxWordsTextField.getDocument().addDocumentListener(liveUpdateListener);
 		clusterCutoffTextField.getDocument().addDocumentListener(liveUpdateListener);
-		stemmer.addChangeListener(liveUpdateListener);
 		cmbStyle.addActionListener(liveUpdateListener);
+
+		// Stemming and filtering is on the network level
+		ChangeListener networkUpdateListener = new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				uiManager.getCurrentNetwork().updateAllClouds();
+				liveUpdateListener.update();
+			}
+		};
+		stemmer.addChangeListener(networkUpdateListener);
+		filterNumsCheckBox.addChangeListener(networkUpdateListener);
 	}
 	
 	
@@ -293,11 +303,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.add(semAnalysis);
-		panel.add(Box.createVerticalStrut(5));
+		panel.add(Box.createVerticalStrut(3));
 		panel.add(cloudLayout);
-		panel.add(Box.createVerticalStrut(5));
+		panel.add(Box.createVerticalStrut(3));
 		panel.add(normalizationPanel);
-		panel.add(Box.createVerticalStrut(15));
+		panel.add(Box.createVerticalStrut(5));
 		panel.add(advancedSettings);
 		
 		JPanel newPanel = new JPanel();
@@ -516,6 +526,13 @@ public class SemanticSummaryInputPanel extends JPanel {
 		JPanel stemmingPanel = new JPanel(new BorderLayout());
 		stemmingPanel.add(stemmer, BorderLayout.WEST);
 		
+		filterNumsCheckBox = new JCheckBox("Exclude Numbers");
+		filterNumsCheckBox.setSelected(false);
+		
+		JPanel filterNumsPanel = new JPanel(new BorderLayout());
+		filterNumsPanel.add(filterNumsCheckBox, BorderLayout.WEST);
+		
+		
 		JPanel wordsPanel = new JPanel(new BorderLayout());
 		wordsPanel.add(createExcludedWordsPanel(), BorderLayout.WEST);
 		
@@ -523,7 +540,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		panel.add(maxWordsPanel);
 		panel.add(clusterCutoffPanel);
 		panel.add(stemmingPanel);
-		panel.add(Box.createVerticalStrut(3));
+		panel.add(filterNumsPanel);
 		panel.add(wordsPanel);
 		
 		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
@@ -626,7 +643,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		clusterCutoffTextField.setValue(params.getClusterCutoff());
 		cmbStyle.setSelectedItem(params.getDisplayStyle());
 		setupNetworkNormalization(params);
-		updateStemmingBox();
+		updateNetworkControls();
 		
 		
 		liveUpdateListener.enabled = true;
@@ -685,6 +702,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		// Stemming
 		cloud.getNetworkParams().setIsStemming(stemmer.isSelected());
+		cloud.getNetworkParams().getFilter().setFilterNums(filterNumsCheckBox.isSelected());
 		
 		// WHY?
 		cloud.setRatiosInitialized(false);
@@ -726,10 +744,10 @@ public class SemanticSummaryInputPanel extends JPanel {
 //	
 
 	
-	private void updateStemmingBox() {
+	private void updateNetworkControls() {
 		NetworkParameters networkParams = uiManager.getCurrentNetwork();
-		boolean val = networkParams.getIsStemming();
-		stemmer.setSelected(val);
+		stemmer.setSelected(networkParams.getIsStemming());
+		filterNumsCheckBox.setSelected(networkParams.getFilter().getFilterNums());
 	}
 	
 	
