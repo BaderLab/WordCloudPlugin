@@ -264,11 +264,11 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 
 	@Override
 	public synchronized void handleEvent(RemovedNodesEvent e) {
-		// MKTODO why doesn't this work, deleting a node the row is still in the node table
 		CyNetwork network = e.getSource();
 		NetworkParameters networkParams = networks.get(network);
 		fireNetworkModified(networkParams);
 		
+		// Below code doesn't seem necessary because CloudParameters.getSelectedNodes() checks which of its nodes are actually selected.
 //		if(networkParams != null) {
 //			boolean networkModified = false;
 //			
@@ -297,10 +297,6 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 //		}
 	}
 
-//
-//	double getNetWeightProperty() {
-//		
-//	}
 	
 
 

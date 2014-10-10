@@ -2,6 +2,7 @@ package org.baderlab.wordcloud.internal;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyIdentifiable;
@@ -28,6 +29,14 @@ public class SelectionUtils {
 		}
 	}
 
+	public static void setSelected(CyNetwork network, Set<CyNode> selNodes) {
+		List<CyNode> nodes = network.getNodeList();
+		for(CyNode node : nodes) {
+			CyRow row = network.getRow(node);
+			row.set(CyNetwork.SELECTED, selNodes.contains(node));
+		}
+	}
+	
 	public static boolean hasSelectedNodes(CyNetwork network) {
 		for (CyRow row: network.getDefaultNodeTable().getAllRows()) {
 			Boolean selected = row.get(CyNetwork.SELECTED, Boolean.class);

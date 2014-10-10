@@ -187,10 +187,7 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		// Update the selection to show the cloud
 		Set<CyNode> selNodes = cloud.getSelectedNodes();
 		CyNetwork network = cloud.getNetworkParams().getNetwork();
-				
-		SelectionUtils.setColumns(network.getDefaultNodeTable(), CyNetwork.SELECTED, Boolean.FALSE);
-		SelectionUtils.setColumns(network.getDefaultEdgeTable(), CyNetwork.SELECTED, Boolean.FALSE);
-		SelectionUtils.setColumns(network, selNodes, CyNetwork.SELECTED, Boolean.TRUE);
+		SelectionUtils.setSelected(network, selNodes);
 		
 		for (CyNetworkView networkView : viewManager.getNetworkViews(network)) {
 			try {
