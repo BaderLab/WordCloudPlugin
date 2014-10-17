@@ -28,6 +28,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,6 +36,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -49,6 +51,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -73,6 +76,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.baderlab.wordcloud.internal.CyActivator;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.CloudProvider;
@@ -104,6 +108,10 @@ public class SemanticSummaryInputPanel extends JPanel {
 	
 	private static final int DEF_ROW_HEIGHT = 20;
 	
+	private static final String ICON_CREATE = "ic_action_new.png";
+	private static final String ICON_UPDATE = "ic_action_refresh.png";
+	
+	
 	private final UIManager uiManager;
 	private final CyApplicationManager applicationManager;
 	private final CySwingApplication application;
@@ -119,7 +127,8 @@ public class SemanticSummaryInputPanel extends JPanel {
 	private CheckBoxJList attributeList;
 	private JPopupMenu attributeSelectionPopupMenu;
 	private JTextArea attNames;
-	private JButton createUpdateButton;
+	private JButton createButton;
+	private JButton updateButton;
 	private JCheckBox syncCheckBox;
 	private JCheckBox filterNumsCheckBox;
 	
@@ -276,12 +285,24 @@ public class SemanticSummaryInputPanel extends JPanel {
 		};
 		syncCheckBox.addActionListener(syncCheckboxActionListener);
 		
-		createUpdateButton = new JButton();
-		createUpdateButton.setAction(createCloudAction);
-		createUpdateButton.setToolTipText("Create a new cloud from the currently selected nodes.");
+		createButton = new JButton();
+		createButton.setAction(createCloudAction);
+		createButton.setText("");
+		createButton.setIcon(getButtonIcon(ICON_CREATE));
+		createButton.setToolTipText("Create a new cloud from the selected nodes.");
+		
+		updateButton = new JButton();
+		updateButton.setAction(new UpdateCloudAction(cloudListProvider, uiManager));
+		updateButton.setText("");
+		updateButton.setIcon(getButtonIcon(ICON_UPDATE));
+		updateButton.setToolTipText("Update the current cloud to use the selected nodes.");
+		
+		JPanel createUpdatePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+		createUpdatePanel.add(updateButton);
+		createUpdatePanel.add(createButton);
 		
 		syncPanel.add(syncCheckBox, BorderLayout.WEST);
-		syncPanel.add(createUpdateButton, BorderLayout.EAST);
+		syncPanel.add(createUpdatePanel, BorderLayout.EAST);
 		
 		panel.add(networkPanel, BorderLayout.NORTH);
 		panel.add(listScrollPane, BorderLayout.CENTER);
@@ -289,6 +310,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 		return panel;
 	}
 	
+	
+	private static ImageIcon getButtonIcon(String resource) {
+		URL url = CyActivator.class.getResource(resource);
+		return new ImageIcon(new ImageIcon(url).getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+	}
 	
 	
 	/**
@@ -626,14 +652,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloudList.setSelectedIndex(index);
 		networkLabel.setText(params.getNetworkParams().getNetworkName());
 		syncCheckBox.setSelected(params.isNullCloud());
-		if(params.isNullCloud()) {
-			createUpdateButton.setAction(createCloudAction);
-			createUpdateButton.setToolTipText("Create a new cloud from the currently selected nodes.");
-		}
-		else  {
-			createUpdateButton.setAction(new UpdateCloudAction(params, uiManager));
-			createUpdateButton.setToolTipText("Update the current cloud to use the selected nodes.");
-		}
+		updateButton.setEnabled(!params.isNullCloud());
 		
 		// Update all controls to show values from the cloud
 		refreshAttributeCMB();
