@@ -254,13 +254,13 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 					
 					//Get the cloudID from the props file
 					String[] fullname2 = prop_file.getName().split(cloudNameSep);
-					String cloud_name = fullname2[1];
+//					String cloud_name = fullname2[1]; // cloud name is in properties file
 					
 					//Get the Network Parameters
 					CyNetwork network = getNetwork(uid);
 					NetworkParameters networkParams = cloudManager.getNetworkParameters(network);
 					
-					networkParams.createCloud(fullText);
+					networkParams.createCloudFromProperties(fullText);
 					
 				}//end if .CLOUDS.txt file
 				

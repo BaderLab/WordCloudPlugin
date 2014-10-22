@@ -1,12 +1,13 @@
 package org.baderlab.wordcloud.internal.command;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
+import org.baderlab.wordcloud.internal.model.NetworkParameters;
 import org.baderlab.wordcloud.internal.ui.cloud.CloudWordInfo;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.util.NodeList;
@@ -66,17 +67,19 @@ public class CreateWordCloudCommandHandlerTask implements Task {
 	}
 
 	@Override
-	public void run(TaskMonitor monitor) throws Exception {
+	public void run(TaskMonitor monitor) {
+		if(nodeList == null || nodeList.getValue() == null)
+			throw new IllegalArgumentException("nodeList is null");
+		if(cloudName == null || cloudName.trim().equals(""))
+			throw new IllegalArgumentException("cloudName is null");
+		if(cloudGroupTableName == null || cloudGroupTableName.trim().equals(""))
+			throw new IllegalArgumentException("cloudGroupTableName is null");
+		if(wordColumnName == null || wordColumnName.trim().equals(""))	
+			throw new IllegalArgumentException("wordColumnName is null");
+		
 		network = applicationManager.getCurrentNetwork();
+		Set<CyNode> nodes = new HashSet<CyNode>(nodeList.getValue());
 		
-		// Get the nodes to use for cloud
-		List<CyNode> nodes = nodeList.getValue();
-		CloudParameters cloudParams = cloudModelManager.addNetwork(network).createCloud(new HashSet<CyNode>(nodes));		
-		cloudParams.setAttributeNames(Arrays.asList(wordColumnName));
-		
-		// Add wordInfo to table
-		List<CloudWordInfo> wordInfo = cloudParams.getCloudWordInfoList();
-				
 		// Get the table to return the results to
 		CyTable cloudGroupTable = null;
 		if (network.getDefaultNetworkTable().getColumn(cloudGroupTableName) != null) {
@@ -93,6 +96,11 @@ public class CreateWordCloudCommandHandlerTask implements Task {
 			network.getRow(network).set(cloudGroupTableName, cloudGroupTable.getSUID());
 		}
 		
+		NetworkParameters networkParams = cloudModelManager.addNetwork(network);
+		CloudParameters cloudParams = networkParams.createCloud(nodes, cloudName, wordColumnName, cloudGroupTable);
+		
+		// Add wordInfo to table
+		List<CloudWordInfo> wordInfo = cloudParams.getCloudWordInfoList();
 		ArrayList<String> WC_Word = new ArrayList<String>();
 		ArrayList<String> WC_FontSize = new ArrayList<String>();
 		ArrayList<String> WC_Cluster = new ArrayList<String>();

@@ -24,6 +24,7 @@ package org.baderlab.wordcloud.internal.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -255,6 +256,9 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	//METHODS
 	
 	public void delete() {
+		if(!networkParams.getClouds().contains(this)) // already deleted
+			return;
+		
 		CyNetwork network = networkParams.getNetwork();
 		if (network.getDefaultNodeTable().getColumn(cloudName) != null) {
 			network.getDefaultNodeTable().deleteColumn(cloudName);
@@ -1147,7 +1151,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		return nodes;
 	}
 
-	public void setSelectedNodes(Set<CyNode> nodes)
+	public void setSelectedNodes(Collection<CyNode> nodes)
 	{
 		setSelectedNodes(networkParams.getNetwork(), nodes);
 		
@@ -1155,7 +1159,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		ratiosInitialized = false; //need to update ratios
 	}
 	
-	private void setSelectedNodes(CyNetwork network, Set<CyNode> nodes) {
+	private void setSelectedNodes(CyNetwork network, Collection<CyNode> nodes) {
 		if (network == null) {
 			return;
 		}

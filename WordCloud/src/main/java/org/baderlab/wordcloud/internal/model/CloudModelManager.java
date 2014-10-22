@@ -43,7 +43,12 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 	private final CyProperty<Properties> cyProperties;
 	
 	
-	
+	/**
+	 * It is assumed that only one instance of this class will be created.
+	 * 
+	 * The metadata that is initialized in initializeCloudMetadata() will not work
+	 * if more than one CloudModelManager is created.
+	 */
 	public CloudModelManager(CyNetworkManager networkManager, CyTableManager tableManager, StreamUtil streamUtil, CyProperty<Properties> cyProperties) {
 		this.networkManager = networkManager;
 		this.tableManager = tableManager;
