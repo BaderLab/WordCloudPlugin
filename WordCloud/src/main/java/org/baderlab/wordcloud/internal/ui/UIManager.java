@@ -221,7 +221,7 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	@Override
 	public void cloudAdded(CloudParameters cloudParams) {
 		if(hidden)
-			return;
+			show();
 		setCurrentCloud(cloudParams);
 		docker.bringToFront();
 	}
