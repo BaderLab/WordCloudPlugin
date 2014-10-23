@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.Properties;
 
 import org.baderlab.wordcloud.internal.command.CreateWordCloudCommandHandlerTask;
+import org.baderlab.wordcloud.internal.command.DeleteWordCloudCommandHandlerTask;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.NetworkParameters;
+import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.io.util.StreamUtil;
@@ -151,6 +153,44 @@ public class TestCommands {
 		assertEquals("attName", attributeNames.get(0));
 		
 		cloudParameters.delete();
+	}
+	
+	
+	@Test
+	public void testDeleteCommand() {
+		CloudModelManager manager = new CloudModelManager(networkManager, tableManager, streamUtil, cyProperties); 
+		CyNetwork network = applicationManager.getCurrentNetwork();
+		NetworkParameters networkParameters = manager.addNetwork(network);
+		networkParameters.createCloud(network.getNodeList(), "my_cloud_name");
+		
+		UIManager uiManager = mock(UIManager.class);
+		when(uiManager.getCurrentNetwork()).thenReturn(networkParameters);
+		
+		DeleteWordCloudCommandHandlerTask task = new DeleteWordCloudCommandHandlerTask(uiManager);
+		task.cloudName = "my_cloud_name";
+		
+		task.run(mock(TaskMonitor.class));
+		
+		assertFalse(networkParameters.containsCloud("my_cloud_name"));
+	}
+	
+	
+	@Test
+	public void testBadDeleteCommand() {
+		CloudModelManager manager = new CloudModelManager(networkManager, tableManager, streamUtil, cyProperties); 
+		CyNetwork network = applicationManager.getCurrentNetwork();
+		NetworkParameters networkParameters = manager.addNetwork(network);
+		
+		UIManager uiManager = mock(UIManager.class);
+		when(uiManager.getCurrentNetwork()).thenReturn(networkParameters);
+		
+		DeleteWordCloudCommandHandlerTask task = new DeleteWordCloudCommandHandlerTask(uiManager);
+		task.cloudName = "blah blah blah";
+		
+		try {
+			task.run(mock(TaskMonitor.class));
+			fail();
+		} catch(IllegalArgumentException e) {}
 	}
 	
 }

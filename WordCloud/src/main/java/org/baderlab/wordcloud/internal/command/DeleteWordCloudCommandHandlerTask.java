@@ -19,12 +19,15 @@ public class DeleteWordCloudCommandHandlerTask implements Task {
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor taskMonitor) {
 		NetworkParameters networkParams = uiManager.getCurrentNetwork();
 		if(networkParams != null) {
 			CloudParameters cloudParams = networkParams.getCloud(cloudName);
 			if(cloudParams != null) {
 				cloudParams.delete();
+			}
+			else {
+				throw new IllegalArgumentException("cloud not found: '" + cloudName + "'");
 			}
 		}
 	}

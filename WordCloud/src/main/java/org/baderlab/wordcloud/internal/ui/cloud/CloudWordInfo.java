@@ -63,7 +63,7 @@ public class CloudWordInfo implements Comparable<CloudWordInfo>
 	/**
 	 * Creates a blank CloudWordInfo Object.
 	 */
-	public CloudWordInfo()
+	private CloudWordInfo()
 	{
 		fontSize = 0;
 		textColor = Color.BLACK;
