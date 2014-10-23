@@ -731,7 +731,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	}
 	
 	private boolean isCloseEnough(double d1, double d2) {
-		return Math.abs(d1 - d2) < EPSILON * Math.max(Math.abs(d1), Math.abs(d2));
+		return Math.abs(d1 - d2) <= EPSILON * Math.max(Math.abs(d1), Math.abs(d2));
 	}
 
 //	/**
