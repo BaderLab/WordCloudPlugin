@@ -41,7 +41,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * This class handles all mouse actions associated with the list of
  * clouds displayed in the Input Panel for the Semantic Summary.
  */
-public class CloudListPopupMenuListener extends MouseAdapter {
+public class CloudListMouseListener extends MouseAdapter {
 	
 	private JList list;
 	private CySwingApplication swingApplication;
@@ -49,7 +49,7 @@ public class CloudListPopupMenuListener extends MouseAdapter {
 	private CyServiceRegistrar registrar;
 
 	
-	public CloudListPopupMenuListener(UIManager uiManager, CySwingApplication swingApplication, CyServiceRegistrar registrar, JList list) {
+	public CloudListMouseListener(UIManager uiManager, CySwingApplication swingApplication, CyServiceRegistrar registrar, JList list) {
 		this.uiManager = uiManager;
 		this.swingApplication = swingApplication;
 		this.list = list;
@@ -65,26 +65,29 @@ public class CloudListPopupMenuListener extends MouseAdapter {
 	
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		showPopup(e);
+//		showPopup(e);
 	}
 	
 	
 	private void showPopup(MouseEvent e) {
-		if(e.isPopupTrigger()) {
-			int clicked = list.locationToIndex(e.getPoint());
-			if(clicked != -1 && list.getCellBounds(clicked, clicked).contains(e.getPoint())) {
-				list.setSelectedIndex(clicked);
-				
-				final String cloudName = (String)list.getSelectedValue();
-				CloudParameters cloud = uiManager.getCurrentNetwork().getCloud(cloudName);
-				
+		int clicked = list.locationToIndex(e.getPoint());
+		if(clicked != -1 && list.getCellBounds(clicked, clicked).contains(e.getPoint())) {
+			list.setSelectedIndex(clicked);
+			final String cloudName = (String)list.getSelectedValue();
+			CloudParameters cloud = uiManager.getCurrentNetwork().getCloud(cloudName);
+			
+			if(e.isPopupTrigger()) {
 				JPopupMenu menu = new JPopupMenu();
 				menu.add(new DeleteCloudAction(cloud, swingApplication));
 				menu.add(new RenameCloudAction(cloud, swingApplication, uiManager));
 				menu.add(new CreateNetworkAction(cloud, registrar));
 				menu.show(list, e.getX(), e.getY());
 			}
+			else {
+				uiManager.updateSelection(cloud);
+			}
 		}
 	}
+
 	
 }

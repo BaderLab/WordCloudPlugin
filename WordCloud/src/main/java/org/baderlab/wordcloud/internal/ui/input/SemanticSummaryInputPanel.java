@@ -242,7 +242,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloudList.setSelectedIndex(0);
 		cloudList.setVisibleRowCount(10);
 		cloudList.setFixedCellHeight(DEF_ROW_HEIGHT);
-		cloudList.addMouseListener(new CloudListPopupMenuListener(uiManager, application, registrar, cloudList));
+		cloudList.addMouseListener(new CloudListMouseListener(uiManager, application, registrar, cloudList));
 		
 		CloudProvider cloudListProvider = new CloudProvider() {
 			public CloudParameters getCloud() {
@@ -260,8 +260,10 @@ public class SemanticSummaryInputPanel extends JPanel {
 		// Set current cloud when selected in list
 		cloudListSelectionListener = new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
-				String cloudName = (String) cloudList.getSelectedValue();
-				uiManager.setCurrentCloud(uiManager.getCurrentNetwork(), cloudName);				
+				if(!e.getValueIsAdjusting()) {
+					String cloudName = (String) cloudList.getSelectedValue();
+					uiManager.setCurrentCloud(uiManager.getCurrentNetwork(), cloudName);
+				}
 			}
 		};
 		cloudList.addListSelectionListener(cloudListSelectionListener);

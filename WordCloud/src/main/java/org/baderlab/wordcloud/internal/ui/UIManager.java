@@ -184,16 +184,17 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		inputWindow.setCurrentCloud(cloud);
 		cloudWindow.updateCloudDisplay(cloud);
 		
+		updateSelection(cloud);
+	}
+	
+	/**
+	 * Update the current network view to show the selected nodes from the cloud.
+	 */
+	public void updateSelection(CloudParameters cloud) {
 		// Update the selection to show the cloud
 		Set<CyNode> selNodes = cloud.getSelectedNodes();
 		CyNetwork network = cloud.getNetworkParams().getNetwork();
 		SelectionUtils.setSelected(network, selNodes);
-		
-		for (CyNetworkView networkView : viewManager.getNetworkViews(network)) {
-			try {
-				networkView.updateView();
-			} catch(Exception e) {}
-		}
 	}
 
 	
