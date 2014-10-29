@@ -10,6 +10,7 @@ import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.baderlab.wordcloud.internal.ui.action.CreateCloudAction;
 import org.baderlab.wordcloud.internal.ui.action.ExportImageAction;
+import org.baderlab.wordcloud.internal.ui.action.ShowAboutDialogAction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -23,6 +24,7 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
@@ -46,6 +48,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyServiceRegistrar registrar = getService(context, CyServiceRegistrar.class);
 		FileUtil fileUtil = getService(context, FileUtil.class);
 		StreamUtil streamUtil = getService(context, StreamUtil.class);
+		OpenBrowser openBrowser = getService(context, OpenBrowser.class);
 		
 		
 		// Configuration properties
@@ -81,6 +84,10 @@ public class CyActivator extends AbstractCyActivator {
 		props = new Properties();
 		props.setProperty(ServiceProperties.TITLE, (String) createAction.getValue(Action.NAME));
 		registerService(context, new ActionNodeViewTaskFactory(createAction), NodeViewTaskFactory.class, props);
+		
+		AbstractCyAction aboutAction = new ShowAboutDialogAction(application, openBrowser);
+		aboutAction.setPreferredMenu(APPS_MENU);
+		application.addAction(aboutAction);
 		
 		
 		// Session persistence
