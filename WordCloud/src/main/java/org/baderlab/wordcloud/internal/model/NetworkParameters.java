@@ -88,7 +88,10 @@ public class NetworkParameters {
 	 */
 	public synchronized CloudParameters getNullCloud() {
 		if(nullCloud == null) {
-			nullCloud = createCloudParameters(Collections.<CyNode>emptySet(), NULL_COUNT, NULL_NAME, null);
+			List<String> attributes = null;
+			if(!isNullNetwork())
+				attributes = CloudModelManager.getColumnNames(network, CyNode.class);
+			nullCloud = createCloudParameters(Collections.<CyNode>emptySet(), NULL_COUNT, NULL_NAME, attributes);
 		}
 		return nullCloud;
 	}
@@ -102,7 +105,7 @@ public class NetworkParameters {
 		cloudParams.setCloudNum(count);
 		cloudParams.setCloudName(name);
 		cloudParams.setSelectedNodes(nodes);
-		cloudParams.setAttributeNames(attributes);
+		cloudParams.setAttributeNames(attributes == null ? Collections.<String>emptyList() : attributes);
 		cloudParams.updateRatios();
 		cloudParams.calculateFontSizes();
 		return cloudParams;

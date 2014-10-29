@@ -645,6 +645,12 @@ public class SemanticSummaryInputPanel extends JPanel {
 		syncCheckBox.removeActionListener(syncCheckboxActionListener);
 		liveUpdateListener.enabled = false;
 		
+		// WHY?
+		params.setRatiosInitialized(false);
+		params.setCountInitialized(false);
+		params.setSelInitialized(false);
+		params.calculateFontSizes();
+				
 		// Set the network and cloud in the top panel (null cloud will result in empty list)
 		List<CloudParameters> networkClouds = params.getNetworkParams().getClouds();
 		DefaultListModel listModel = new DefaultListModel();
@@ -729,7 +735,6 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloud.getNetworkParams().setIsStemming(stemmer.isSelected());
 		cloud.getNetworkParams().getFilter().setFilterNums(filterNumsCheckBox.isSelected());
 		
-		// WHY?
 		cloud.setRatiosInitialized(false);
 		cloud.setCountInitialized(false);
 		cloud.setSelInitialized(false);
