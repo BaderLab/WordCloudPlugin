@@ -350,6 +350,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		excludedWordsPanel.setLayout(new BoxLayout(excludedWordsPanel, BoxLayout.Y_AXIS));
 		
 		JButton excludedWordsButton = new JButton("Excluded Words...");
+		excludedWordsButton.setToolTipText("Allows additional words to be excluded from the cloud");
 		excludedWordsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				NetworkParameters network = uiManager.getCurrentNetwork();
@@ -363,6 +364,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		excludedWordsPanel.add(excludedWordsButton);
 		
 		JButton delimetersButton = new JButton("Delimiters...");
+		delimetersButton.setToolTipText("Allows attributes containing delimeters to be split into individual words.");
 		delimetersButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				NetworkParameters network = uiManager.getCurrentNetwork();
@@ -511,10 +513,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 		maxWordsTextField.setValue(40);  
 		maxWordsTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
 		
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append("<html>" + "Sets a limit on the number of words to display in the cloud" + "<br>");
 		buf.append("<b>Acceptable Values:</b> greater than or equal to 0" + "</html>");
 		maxWordsTextField.setToolTipText(buf.toString());
+		maxWordsLabel.setToolTipText(buf.toString());
 		//Max words panel
 		JPanel maxWordsPanel = new JPanel();
 		maxWordsPanel.setLayout(new BorderLayout());
@@ -531,11 +534,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 		clusterCutoffTextField.setValue(20);
 		clusterCutoffTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
 		
-		buf = new StringBuffer();
+		buf = new StringBuilder();
 		buf.append("<html>" + "Cutoff for placing two words in the same cluster - ratio of the observed joint probability of the words to their joint probability if the words appeared independently of each other" + "<br>");
 		buf.append("<b>Acceptable Values:</b> greater than or equal to 0" + "</html>");
 		clusterCutoffTextField.setToolTipText(buf.toString());
-		
+		clusterCutoffLabel.setToolTipText(buf.toString());
 		//Clustering Cutoff Panel
 		JPanel clusterCutoffPanel = new JPanel(new BorderLayout());
 		clusterCutoffPanel.add(clusterCutoffLabel, BorderLayout.WEST);
@@ -544,7 +547,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		//Create Checkbox
 		stemmer = new JCheckBox("Enable Stemming");
 		
-		buf = new StringBuffer();
+		buf = new StringBuilder();
 		buf.append("<html>" + "Causes all words to be stemmed using the Porter Stemmer algorithm." + "<br>");
 		buf.append("<b>Notice:</b> This will allow words with a similar stem to map to the same word." + "<br>");
 		buf.append("However, words stems may not be what you expect." + "</html>");
@@ -556,6 +559,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		filterNumsCheckBox = new JCheckBox("Exclude Numbers");
 		filterNumsCheckBox.setSelected(false);
+		filterNumsCheckBox.setToolTipText("Causes numbers to be excluded from the cloud.");
 		
 		JPanel filterNumsPanel = new JPanel(new BorderLayout());
 		filterNumsPanel.add(filterNumsCheckBox, BorderLayout.WEST);
