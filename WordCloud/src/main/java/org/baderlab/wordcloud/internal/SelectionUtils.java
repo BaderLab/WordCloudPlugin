@@ -30,6 +30,8 @@ public class SelectionUtils {
 	}
 
 	public static void setSelected(CyNetwork network, Set<CyNode> selNodes) {
+		if(network == null)
+			return;
 		List<CyNode> nodes = network.getNodeList();
 		for(CyNode node : nodes) {
 			CyRow row = network.getRow(node);

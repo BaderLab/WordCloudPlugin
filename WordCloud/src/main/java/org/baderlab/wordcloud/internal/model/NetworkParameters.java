@@ -251,11 +251,14 @@ public class NetworkParameters {
 	}
 	
 	public boolean getIsStemming() {
+		if(network == null)
+			return false;
 		return network.getRow(network).get(Constants.USE_STEMMING, Boolean.class);
 	}
 	
 	public void setIsStemming(boolean val) {
-		network.getRow(network).set(Constants.USE_STEMMING, val);
+		if(network != null)
+			network.getRow(network).set(Constants.USE_STEMMING, val);
 	}
 	
 	public String getNetworkName() {

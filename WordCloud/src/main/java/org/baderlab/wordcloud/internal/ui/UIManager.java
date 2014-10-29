@@ -144,7 +144,10 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	
 	
 	public void setCurrentCloud(CyNetwork network) {
-		setCurrentCloud(cloudManager.addNetwork(network)); // always create a NetworkParameters object to store a sync cloud
+		if(network == null)
+			setCurrentCloud((NetworkParameters)null);
+		else
+			setCurrentCloud(cloudManager.addNetwork(network)); // always create a NetworkParameters object to store a sync cloud
 	}
 	
 	public void setCurrentCloud(NetworkParameters networkParams) {
@@ -194,7 +197,8 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		// Update the selection to show the cloud
 		Set<CyNode> selNodes = cloud.getSelectedNodes();
 		CyNetwork network = cloud.getNetworkParams().getNetwork();
-		SelectionUtils.setSelected(network, selNodes);
+		if(network != null)
+			SelectionUtils.setSelected(network, selNodes);
 	}
 
 	

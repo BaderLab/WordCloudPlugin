@@ -456,8 +456,9 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	 */
 	public void updateSelectedCounts()
 	{
+		CyNetwork network = networkParams.getNetwork();
 		//do nothing if selected hasn't changed initialized
-		if (selInitialized || attributeNames == null)
+		if (selInitialized || attributeNames == null || network == null)
 			return;
 		
 		//Initialize if needed
@@ -468,7 +469,6 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		this.selectedCounts = new HashMap<String, Integer>();
 		this.selectedPairCounts = new HashMap<WordPair, Integer>();
 		
-		CyNetwork network = networkParams.getNetwork();
 		CyTable table = network.getDefaultNodeTable();
 		for (String attributeName : attributeNames)
 		{

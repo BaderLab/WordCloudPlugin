@@ -99,6 +99,10 @@ public class CyActivator extends AbstractCyActivator {
     	registerCommand(context, "create", new CreateWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudModelManager, tableManager, tableFactory));
 		registerCommand(context, "delete", new DeleteWordCloudCommandHandlerTaskFactory(uiManager));
 		registerCommand(context, "select", new SelectWordCloudCommandHandlerTaskFactory(uiManager));
+		
+		
+		// Always show WordCloud panels when Cytoscape starts.
+		showAction.actionPerformed(null);
 	}
 	
 	
