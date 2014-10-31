@@ -5,10 +5,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.baderlab.wordcloud.internal.cluster.CloudWordInfo;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.NetworkParameters;
-import org.baderlab.wordcloud.internal.ui.cloud.CloudWordInfo;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.model.CyColumn;

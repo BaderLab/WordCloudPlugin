@@ -303,11 +303,11 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 			}//end loop through all props files
 			
 //			//Set current network and Initialize the panel appropriately
-			for (NetworkParameters parameters: cloudManager.getNetworks()) {
-				for (CloudParameters cloud : parameters.getClouds()) {
-					cloud.updateSelectedCounts();
-				}
-			}
+//			for (NetworkParameters parameters: cloudManager.getNetworks()) {
+//				for (CloudParameters cloud : parameters.getClouds()) {
+//					cloud.updateSelectedCounts();
+//				}
+//			}
 		}//end try
 		catch (Exception e)
 		{

@@ -30,6 +30,8 @@ import java.awt.FlowLayout;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -54,11 +57,16 @@ import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
+import org.baderlab.wordcloud.internal.SelectionUtils;
+import org.baderlab.wordcloud.internal.cluster.CloudDisplayStyles;
+import org.baderlab.wordcloud.internal.cluster.CloudWordInfo;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.ui.DualPanelDocker;
 import org.baderlab.wordcloud.internal.ui.DualPanelDocker.DockCallback;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 
 /**
  * The CloudDisplayPanel class defines the panel that displays a Semantic 
@@ -205,7 +213,7 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 			if (copy.contains(curWordInfo))
 			{
 				Integer clusterNum = curWordInfo.getCluster();
-				JLabel curLabel = curWordInfo.createCloudLabel(curCloud);
+				JLabel curLabel = createLabel(curWordInfo); 
 			
 				//Retrieve proper Panel
 				JPanel curPanel;
@@ -254,6 +262,50 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 		this.revalidate();
 		this.updateUI();
 		this.repaint();
+	}
+	
+	
+	private JLabel createLabel(final CloudWordInfo info) {
+		JLabel label = info.createCloudLabel();
+		
+		//Listener stuff
+		label.addMouseListener(new MouseAdapter() 
+		{
+			public void mouseClicked(MouseEvent me)
+			{
+				JLabel clickedLabel = (JLabel)me.getComponent();
+				String word = clickedLabel.getText();
+				
+				
+				//Get all nodes containing this word
+				Set<CyNode> nodes = info.getCloudParameters().getStringNodeMapping().get(word);
+				
+				CyNetwork network = info.getCloudParameters().getNetworkParams().getNetwork();
+				if (network == null) {
+					return;
+				}
+				SelectionUtils.setColumns(network.getDefaultNodeTable(), CyNetwork.SELECTED, Boolean.FALSE);
+				SelectionUtils.setColumns(network.getDefaultEdgeTable(), CyNetwork.SELECTED, Boolean.FALSE);
+				SelectionUtils.setColumns(network, nodes, CyNetwork.SELECTED, Boolean.TRUE);
+			
+			}
+			
+			public void mouseEntered(MouseEvent me)
+			{
+				JLabel clickedLabel = (JLabel)me.getComponent();
+				clickedLabel.setForeground(new Color(0,200,255));
+				clickedLabel.repaint();
+			}
+	
+			public void mouseExited(MouseEvent me)
+			{
+				JLabel clickedLabel = (JLabel)me.getComponent();
+				clickedLabel.setForeground(info.getTextColor());
+				clickedLabel.repaint();
+			}
+		});
+		
+		return label;
 	}
 	
 	

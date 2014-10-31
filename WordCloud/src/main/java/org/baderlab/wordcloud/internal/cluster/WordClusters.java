@@ -43,7 +43,7 @@ public class WordClusters
 {
 	//VARIABLES
 	private ArrayList<SingleWordCluster> clusters;
-	private CloudParameters params;
+	private final CloudParameters params;
 	
 	//CONSTRUCTORS
 	
@@ -64,8 +64,8 @@ public class WordClusters
 	private void initialize()
 	{
 		//Initialize params if necessary
-		if (!params.getSelInitialized())
-			params.updateSelectedCounts();
+//		if (!params.getSelInitialized())
+//			params.updateSelectedCounts();
 		
 		//Initialize as singletons
 		clusters = new ArrayList<SingleWordCluster>();
@@ -195,18 +195,9 @@ public class WordClusters
 		return clusters;
 	}
 	
-	public void setClusters(ArrayList<SingleWordCluster> clusterSet)
-	{
-		clusters = clusterSet;
-	}
-	
 	public CloudParameters getCloudParameters()
 	{
 		return params;
 	}
 	
-	public void setCloudParameters(CloudParameters cloudParams)
-	{
-		params = cloudParams;
-	}
 }

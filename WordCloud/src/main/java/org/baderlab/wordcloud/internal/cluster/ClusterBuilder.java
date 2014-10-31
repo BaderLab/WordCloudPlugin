@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.baderlab.wordcloud.internal.model.CloudParameters;
-import org.baderlab.wordcloud.internal.ui.cloud.CloudWordInfo;
 
 /**
  * The SemanticSummaryClusterBuilder class contains the methods and
@@ -38,10 +37,8 @@ import org.baderlab.wordcloud.internal.ui.cloud.CloudWordInfo;
  * @version 1.0
  */
 
-public class SemanticSummaryClusterBuilder 
+public class ClusterBuilder 
 {
-	private final static int NUMCOLORS = 7;
-	
 	private final CloudParameters params;
 	private final ClusterPriorityQueue queue;
 	private final WordClusters clusters;
@@ -51,7 +48,7 @@ public class SemanticSummaryClusterBuilder
 	/** 
 	 * Default constructor to create a fresh instance.  
 	 */
-	public SemanticSummaryClusterBuilder(CloudParameters cloudParams)
+	public ClusterBuilder(CloudParameters cloudParams)
 	{
 		params = cloudParams;
 		queue = new ClusterPriorityQueue(cloudParams);
@@ -93,28 +90,18 @@ public class SemanticSummaryClusterBuilder
 	 * @assumes that the cluster number provided is a valid number.
 	 * @param cluster number
 	 */
-	private Color getClusterColor(Integer clusterNum)
+	private Color getClusterColor(int clusterNum)
 	{
-		Integer rem = clusterNum % NUMCOLORS;
-		Color textColor;
-		
-        switch (rem) 
-        {
-        	case 0:  textColor = Color.BLACK; break;
-        	case 1:  textColor = new Color(204,0,0); break;
-        	//case 2:  textColor = new Color(0,153,0); break;
-        	case 2:  textColor = new Color(0,110,0); break;
-        	case 3:  textColor = new Color(255,179,0); break;
-        	//case 3:  textColor = new Color(220,130,0); break;
-        	//case 4:  textColor = new Color(0,0,204); break;
-        	case 4:  textColor = new Color(0,0,160); break;
-        	//case 5:  textColor = new Color(255,0,204); break;
-        	case 5: textColor = new Color(130, 32, 130); break;
-        	case 6:  textColor = Color.GRAY; break;
-        	default: textColor = Color.BLACK;break; //Black by default
-        
-        }
-        return textColor;
+		switch(clusterNum % 7) {
+			default:
+			case 0:  return Color.BLACK;
+	    	case 1:  return new Color(204,0,0);
+	    	case 2:  return new Color(0,110,0);
+	    	case 3:  return new Color(255,179,0);
+	    	case 4:  return new Color(0,0,160);
+	    	case 5:  return new Color(130, 32, 130);
+	    	case 6:  return Color.GRAY;
+		}
 	}
 	
 	/**
@@ -123,10 +110,8 @@ public class SemanticSummaryClusterBuilder
 	 */
 	public void buildCloudWords()
 	{
-		//Clear old values
 		cloudWords = new ArrayList<CloudWordInfo>();
 		
-		//Word count
 		Integer wordCount = 0;
 		
 		Map<String, Double> ratios = params.getRatios();
@@ -141,18 +126,12 @@ public class SemanticSummaryClusterBuilder
 			{
 				String curWord = curList.get(j);
 				Integer fontSize = params.calculateFontSize(curWord, ratios.get(curWord));
-				CloudWordInfo curInfo = new CloudWordInfo(curWord, fontSize);
-				curInfo.setCloudParameters(params);
-				curInfo.setTextColor(clusterColor);
-				curInfo.setCluster(i);
-				curInfo.setWordNumber(wordCount);
+				CloudWordInfo curInfo = new CloudWordInfo(params, curWord, fontSize, clusterColor, i, wordCount);
 				wordCount++;
-				
-				//Add to list
 				cloudWords.add(curInfo);
-			}//End iterate through cluster
-		}//End iterate through list of clusters
-	}//end method
+			}
+		}
+	}
 	
 	
 	public CloudParameters getCloudParameters()
@@ -173,11 +152,6 @@ public class SemanticSummaryClusterBuilder
 	public ClusterPriorityQueue getQueue()
 	{
 		return queue;
-	}
-	
-	public int getNumColors()
-	{
-		return NUMCOLORS;
 	}
 	
 }

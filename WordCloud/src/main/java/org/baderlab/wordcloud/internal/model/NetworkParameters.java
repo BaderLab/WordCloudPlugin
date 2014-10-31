@@ -29,9 +29,6 @@ public class NetworkParameters {
 	protected static final int NULL_COUNT = -99;
 	protected static final String NULL_NAME = "sync_cloud";
 	
-	//Font Size Values
-	protected static final Integer MINFONTSIZE = 12; 
-	protected static final Integer MAXFONTSIZE = 64;
 	
 	//Filter stuff
 	private WordFilter filter;
@@ -63,10 +60,7 @@ public class NetworkParameters {
 	
 	public void updateAllClouds() {
 		for(CloudParameters cloud : clouds.values()) {
-			cloud.setRatiosInitialized(false);
-			cloud.setCountInitialized(false);
-			cloud.setSelInitialized(false);
-			cloud.calculateFontSizes();
+			cloud.invalidate();
 		}
 	}
 	
@@ -106,8 +100,8 @@ public class NetworkParameters {
 		cloudParams.setCloudName(name);
 		cloudParams.setSelectedNodes(nodes);
 		cloudParams.setAttributeNames(attributes == null ? Collections.<String>emptyList() : attributes);
-		cloudParams.updateRatios();
-		cloudParams.calculateFontSizes();
+//		cloudParams.updateRatios();
+//		cloudParams.calculateFontSizes();
 		return cloudParams;
 	}
 	

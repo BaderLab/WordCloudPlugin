@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.baderlab.wordcloud.internal.SelectionUtils;
+import org.baderlab.wordcloud.internal.cluster.CloudWordInfo;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.CloudProvider;
 import org.baderlab.wordcloud.internal.ui.UIManager;
-import org.baderlab.wordcloud.internal.ui.cloud.CloudWordInfo;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -70,7 +70,7 @@ public class UpdateCloudAction extends AbstractCyAction
 		
 		if(!nodes.equals(cloud.getSelectedNodes())) {
 			cloud.setSelectedNodes(nodes);
-			cloud.calculateFontSizes();
+//			cloud.calculateFontSizes();
 			uiManager.getCloudDisplayPanel().updateCloudDisplay(cloud);	
 		}
 		

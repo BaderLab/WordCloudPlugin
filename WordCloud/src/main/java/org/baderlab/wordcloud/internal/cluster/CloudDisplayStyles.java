@@ -20,23 +20,38 @@
  along with this project.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.baderlab.wordcloud.internal.ui.cloud;
+package org.baderlab.wordcloud.internal.cluster;
 
 /**
  * The CloudDisplayStyles class contains information on the display styles
  * available for the SemanticSummary Cloud.
- * @author Layla Oesper
- * @version 1.0
  */
-
-public class CloudDisplayStyles 
+public enum CloudDisplayStyles 
 {
-	/**
-	 * Names of the different styles.
-	 */
+	CLUSTERED_STANDARD("Clustered-Standard"),
+	CLUSTERED_BOXES("Clustered-Boxes"),
+	NO_CLUSTERING("No Clustering");
 	
-	public static String CLUSTERED_STANDARD = "Clustered-Standard";
-	public static String CLUSTERED_BOXES = "Clustered-Boxes";
-	public static String NO_CLUSTERING = "No Clustering";
-	public static String DEFAULT_STYLE = CLUSTERED_STANDARD;
+	private final String name;
+	
+	private CloudDisplayStyles(String name) {
+		this.name = name;
+	}
+	
+	public String toString() {
+		return name;
+	}
+	
+	public static CloudDisplayStyles getDefault() {
+		return CLUSTERED_STANDARD;
+	}
+	
+	public static CloudDisplayStyles fromString(String s) {
+		for(CloudDisplayStyles style : values()) {
+			if(style.name.equals(s)) {
+				return style;
+			}
+		}
+		return null;
+	}
 }

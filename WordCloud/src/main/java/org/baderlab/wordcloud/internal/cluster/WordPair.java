@@ -118,29 +118,14 @@ public class WordPair implements Comparable<WordPair>
 	}//end compareTo
 	
 	//Getters and Setters
-	public void setFirstWord(String aWord)
-	{
-		firstWord = aWord;
-	}
-	
 	public String getFirstWord()
 	{
 		return firstWord;
 	}
 	
-	public void setSecondWord(String aWord)
-	{
-		secondWord = aWord;
-	}
-	
 	public String getSecondWord()
 	{
 		return secondWord;
-	}
-	
-	public void setCloudParameters(CloudParameters aParam)
-	{
-		params = aParam;
 	}
 	
 	public CloudParameters getCloudParameters()

@@ -77,6 +77,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.baderlab.wordcloud.internal.CyActivator;
+import org.baderlab.wordcloud.internal.cluster.CloudDisplayStyles;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.CloudProvider;
@@ -86,7 +87,6 @@ import org.baderlab.wordcloud.internal.ui.action.CreateCloudAction;
 import org.baderlab.wordcloud.internal.ui.action.DeleteCloudAction;
 import org.baderlab.wordcloud.internal.ui.action.RenameCloudAction;
 import org.baderlab.wordcloud.internal.ui.action.UpdateCloudAction;
-import org.baderlab.wordcloud.internal.ui.cloud.CloudDisplayStyles;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
@@ -628,7 +628,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cmb.addElement(CloudDisplayStyles.CLUSTERED_STANDARD);
 		cmb.addElement(CloudDisplayStyles.CLUSTERED_BOXES);
 		cmb.addElement(CloudDisplayStyles.NO_CLUSTERING);
-		cmbStyle.setSelectedItem(CloudDisplayStyles.DEFAULT_STYLE);
+		cmbStyle.setSelectedItem(CloudDisplayStyles.getDefault());
 		cmbStyle.repaint();
 		
 		panel.add(cloudLayoutPanel);
@@ -646,10 +646,10 @@ public class SemanticSummaryInputPanel extends JPanel {
 		liveUpdateListener.enabled = false;
 		
 		// WHY?
-		params.setRatiosInitialized(false);
-		params.setCountInitialized(false);
-		params.setSelInitialized(false);
-		params.calculateFontSizes();
+//		params.setRatiosInitialized(false);
+//		params.setCountInitialized(false);
+//		params.setSelInitialized(false);
+//		params.calculateFontSizes();
 				
 		// Set the network and cloud in the top panel (null cloud will result in empty list)
 		List<CloudParameters> networkClouds = params.getNetworkParams().getClouds();
@@ -722,11 +722,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		//Style
 		Object style = cmbStyle.getSelectedItem();
-		if (style instanceof String) {
-			cloud.setDisplayStyle((String) style);
+		if (style instanceof CloudDisplayStyles) {
+			cloud.setDisplayStyle((CloudDisplayStyles) style);
 		} else {
-			cloud.setDisplayStyle(CloudParameters.DEFAULT_STYLE);
-			cmbStyle.setSelectedItem(CloudParameters.DEFAULT_STYLE);
+			cloud.setDisplayStyle(CloudDisplayStyles.getDefault());
+			cmbStyle.setSelectedItem(CloudDisplayStyles.getDefault());
 			String message = "You must select one of the available styles.";
 			JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
 		}
@@ -735,10 +735,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloud.getNetworkParams().setIsStemming(stemmer.isSelected());
 		cloud.getNetworkParams().getFilter().setFilterNums(filterNumsCheckBox.isSelected());
 		
-		cloud.setRatiosInitialized(false);
-		cloud.setCountInitialized(false);
-		cloud.setSelInitialized(false);
-		cloud.calculateFontSizes();
+		cloud.invalidate();
 	}
 	
 	

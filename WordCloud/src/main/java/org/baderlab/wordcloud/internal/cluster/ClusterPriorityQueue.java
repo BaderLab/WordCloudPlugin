@@ -64,10 +64,6 @@ public class ClusterPriorityQueue
 	{
 		queue = new ArrayList<WordPair>();
 		
-		//Initialize params if necessary
-		if (!params.getRatiosInitialized())
-			params.updateRatios();
-		
 		for (Entry<WordPair, Integer> entry : params.getSelectedPairCounts().entrySet())
 		{
 			WordPair curPair = entry.getKey();
@@ -76,7 +72,6 @@ public class ClusterPriorityQueue
 		}
 		
 		//Sort the Priority Queue so items with the largest probability are first
-		// MKTODO replace with a reverse sort
 		Collections.sort(queue);
 		Collections.reverse(queue);
 	}
@@ -131,26 +126,17 @@ public class ClusterPriorityQueue
 		return removedPair;	
 	}
 	
-	/**
-	 * Returns the size of the queue.
-	 * @return int size of the queue
-	 */
+	
 	public int size()
 	{
 		return queue.size();
 	}
 	
-	/**
-	 * Returns true if the queue is empty.
-	 * @return boolean - indicating whether or not the queue is emtpy.
-	 */
 	public boolean isEmpty()
 	{
 		return queue.isEmpty();
 	}
 	
-	
-	//Getters and Setters
 	public ArrayList<WordPair> getQueue()
 	{
 		return queue;
