@@ -1,13 +1,10 @@
 package org.baderlab.wordcloud;
 
-import static org.baderlab.wordcloud.TestCloudModel.emptyStream;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.endsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.Properties;
 
 import org.baderlab.wordcloud.internal.command.CreateWordCloudCommandHandlerTask;
 import org.baderlab.wordcloud.internal.command.DeleteWordCloudCommandHandlerTask;
@@ -17,59 +14,45 @@ import org.baderlab.wordcloud.internal.model.NetworkParameters;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.util.NodeList;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.model.TableTestSupport;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 public class TestCommands {
 
-	@Mock private CyApplicationManager applicationManager;
-	@Mock private CyTableManager tableManager;
-	@Mock private StreamUtil streamUtil;
-	@Mock private CyProperty<Properties> cyProperties;
+	@Rule public ServiceRule serviceRule = new ServiceRule();
 	
 	private CyTableFactory tableFactory;
-	private CyNetworkManager networkManager;
 	
 	
 	@Before
 	public void before() throws Exception {
-		// inject mock objects for fields with @Mock annotation
-		MockitoAnnotations.initMocks(this);
-		// stub out methods that get called somewhere in the CloudModelManager
-		when(streamUtil.getInputStream(endsWith("StopWords.txt"))).thenReturn(emptyStream());
-		when(streamUtil.getInputStream(endsWith("FlaggedWords.txt"))).thenReturn(emptyStream());
-		when(cyProperties.getProperties()).thenReturn(new Properties());
-		
-		NetworkTestSupport networkTestSupport = new NetworkTestSupport();
+		NetworkTestSupport networkTestSupport = serviceRule.getNetworkTestSupport();
 		CyNetwork network = networkTestSupport.getNetwork();
-		networkManager = networkTestSupport.getNetworkManager();
 		
-		when(applicationManager.getCurrentNetwork()).thenReturn(network);
+		when(serviceRule.getCyApplicationManager().getCurrentNetwork()).thenReturn(network);
 		
-		TableTestSupport tableTestSupport = new TableTestSupport();
-		tableFactory = tableTestSupport.getTableFactory();
+		tableFactory = serviceRule.getTableTestSupport().getTableFactory();
 	}
+	
 	
 	@Test
 	public void testCreateCommand() {
 		// set up the network
+		CyApplicationManager applicationManager = serviceRule.getCyApplicationManager();
+		CyTableManager tableManager = serviceRule.getTableManager();
+		
 		CyNetwork network = applicationManager.getCurrentNetwork();
 		network.addNode();
 		network.addNode();
 		network.addNode();
 		
-		CloudModelManager manager = new CloudModelManager(networkManager, tableManager, streamUtil, cyProperties); 
+		CloudModelManager manager = serviceRule.getCloudModelManager();
 		
 		// Create the Task
 		CreateWordCloudCommandHandlerTask task = new CreateWordCloudCommandHandlerTask(applicationManager, manager, tableManager, tableFactory);
@@ -106,7 +89,9 @@ public class TestCommands {
 	
 	@Test
 	public void testBadCreateCommand() {
-		CloudModelManager manager = new CloudModelManager(networkManager, tableManager, streamUtil, cyProperties); 
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		CyApplicationManager applicationManager = serviceRule.getCyApplicationManager();
+		CyTableManager tableManager = serviceRule.getTableManager();
 		CyNetwork network = applicationManager.getCurrentNetwork();
 		
 		CreateWordCloudCommandHandlerTask task = new CreateWordCloudCommandHandlerTask(applicationManager, manager, tableManager, tableFactory);
@@ -158,7 +143,9 @@ public class TestCommands {
 	
 	@Test
 	public void testDeleteCommand() {
-		CloudModelManager manager = new CloudModelManager(networkManager, tableManager, streamUtil, cyProperties); 
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		CyApplicationManager applicationManager = serviceRule.getCyApplicationManager();
+		
 		CyNetwork network = applicationManager.getCurrentNetwork();
 		NetworkParameters networkParameters = manager.addNetwork(network);
 		networkParameters.createCloud(network.getNodeList(), "my_cloud_name");
@@ -177,7 +164,9 @@ public class TestCommands {
 	
 	@Test
 	public void testBadDeleteCommand() {
-		CloudModelManager manager = new CloudModelManager(networkManager, tableManager, streamUtil, cyProperties); 
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		CyApplicationManager applicationManager = serviceRule.getCyApplicationManager();
+		
 		CyNetwork network = applicationManager.getCurrentNetwork();
 		NetworkParameters networkParameters = manager.addNetwork(network);
 		

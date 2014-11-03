@@ -95,13 +95,10 @@ public class NetworkParameters {
 	}
 	
 	private CloudParameters createCloudParameters(Collection<CyNode> nodes, int count, String name, List<String> attributes) {
-		CloudParameters cloudParams = new CloudParameters(this);
-		cloudParams.setCloudNum(count);
-		cloudParams.setCloudName(name);
+		// Should be a single constructor
+		CloudParameters cloudParams = new CloudParameters(this, name, count);
 		cloudParams.setSelectedNodes(nodes);
 		cloudParams.setAttributeNames(attributes == null ? Collections.<String>emptyList() : attributes);
-//		cloudParams.updateRatios();
-//		cloudParams.calculateFontSizes();
 		return cloudParams;
 	}
 	
@@ -132,6 +129,8 @@ public class NetworkParameters {
 			throw new NullPointerException("cloudName is null");
 		if(clouds.containsKey(cloudName))
 			throw new IllegalArgumentException("Cloud name already in use: " + cloudName);
+		if(columnAlreadyExists(cloudName))
+			throw new IllegalArgumentException("Column name already in use: " + cloudName);
 		
 		List<String> attributes = CloudModelManager.getColumnNames(network, CyNode.class);
 		CloudParameters cloudParams = createCloudParameters(nodes, getCloudCount(), cloudName, attributes);
@@ -154,6 +153,8 @@ public class NetworkParameters {
 			throw new IllegalArgumentException("Cloud name already in use: " + cloudName);
 		if(attributeName == null)
 			throw new NullPointerException("attributeName cannot be null");
+		if(columnAlreadyExists(cloudName))
+			throw new IllegalArgumentException("Column name already in use: " + cloudName);
 		
 		List<String> attributes = new ArrayList<String>(1);
 		attributes.add(attributeName);
@@ -168,6 +169,9 @@ public class NetworkParameters {
 	/**
 	 * Creates a new CloudParameters object for this network by reading the given
 	 * properties file (which is entirely contained in the string parameter).
+	 * 
+	 * Warning: Do not call this method directly, it is for restoring
+	 * the cloud from the session file.
 	 */
 	public CloudParameters createCloudFromProperties(String propFile) {
 		CloudParameters cloudParams = new CloudParameters(this, propFile);
@@ -213,13 +217,23 @@ public class NetworkParameters {
 	
 	/**
 	 * Returns the name for the next cloud for this network.
-	 * @return String - name of the next cloud
+	 * Note this method is side effecting, it will return a different name every time it is called.
 	 */
 	public String getNextCloudName() {
-		int cloudCount = getCloudCount();
-		String name = CLOUDNAME + SEPARATER + cloudCount;
-		incrementCloudCounter(network);
-		return name;
+		while(true) {
+			int cloudCount = getCloudCount();
+			String name = CLOUDNAME + SEPARATER + cloudCount;
+			incrementCloudCounter(network);
+			if(!columnAlreadyExists(name)) {
+				return name;
+			}
+		}
+	}
+	
+	protected boolean columnAlreadyExists(String name) {
+		CyTable defaultTable = network.getDefaultNodeTable();
+		CyTable localTable = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
+		return defaultTable.getColumn(name) != null && localTable.getColumn(name) != null;
 	}
 	
 	public CyNetwork getNetwork() {

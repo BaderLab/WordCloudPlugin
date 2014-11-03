@@ -1,74 +1,32 @@
 package org.baderlab.wordcloud;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.endsWith;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 import org.baderlab.wordcloud.internal.model.CloudModelListener;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.NetworkParameters;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.property.CyProperty;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 public class TestCloudModel {
 
-	@Mock private CyTableManager tableManager;
-	@Mock private StreamUtil streamUtil;
-	@Mock private CyProperty<Properties> cyProperties;
-	
-	private NetworkTestSupport networkTestSupport;
-	private CloudModelManager manager;
-	
-	
-	@Before
-	public void before() throws Exception {
-		// inject mock objects for fields with @Mock annotation
-		MockitoAnnotations.initMocks(this);
-		
-		// stub out methods that get called somewhere in the CloudModelManager
-		when(streamUtil.getInputStream(endsWith("StopWords.txt"))).thenReturn(emptyStream());
-		when(streamUtil.getInputStream(endsWith("FlaggedWords.txt"))).thenReturn(emptyStream());
-		when(cyProperties.getProperties()).thenReturn(new Properties());
-	
-		networkTestSupport = new NetworkTestSupport();
-		CyNetworkManager networkManager = networkTestSupport.getNetworkManager();
-		manager = new CloudModelManager(networkManager, tableManager, streamUtil, cyProperties); 
-	}
-	
-	public static InputStream emptyStream() {
-		return new ByteArrayInputStream("".getBytes());
-	}
-	
-	@After
-	public void after() {
-		for(NetworkParameters networkParams : manager.getNetworks()) {
-			for(CloudParameters cloudParameters : networkParams.getClouds()) {
-				cloudParameters.delete();
-			}
-		}
-	}
-	
+	@Rule public ServiceRule serviceRule = new ServiceRule();
 	
 	
 	@Test
 	public void testCreateNetworkParameters() {
+		NetworkTestSupport networkTestSupport = serviceRule.getNetworkTestSupport();
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		
 		CyNetwork network = networkTestSupport.getNetwork();
 		
 		assertTrue(manager.getNetworks().isEmpty());
@@ -96,6 +54,9 @@ public class TestCloudModel {
 	
 	@Test
 	public void testCreateCloudParameters() {
+		NetworkTestSupport networkTestSupport = serviceRule.getNetworkTestSupport();
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		
 		CyNetwork network = networkTestSupport.getNetwork();
 		network.addNode();
 		network.addNode();
@@ -130,6 +91,9 @@ public class TestCloudModel {
 	
 	@Test
 	public void testCloudDelete() {
+		NetworkTestSupport networkTestSupport = serviceRule.getNetworkTestSupport();
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		
 		CyNetwork network = networkTestSupport.getNetwork();
 		NetworkParameters networkParams = manager.addNetwork(network);
 		
@@ -153,6 +117,8 @@ public class TestCloudModel {
 	
 	@Test
 	public void testNullNetworkAndNullCloud() {
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		
 		NetworkParameters nullNetwork = manager.getNullNetwork();
 		assertNotNull(nullNetwork);
 		assertTrue(nullNetwork.isNullNetwork());
@@ -168,6 +134,8 @@ public class TestCloudModel {
 	
 	@Test
 	public void testNullNetworkTryToAddCloud() {
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		
 		NetworkParameters nullNetwork = manager.getNullNetwork();
 		List<CyNode> nodes = Collections.emptyList();
 		
@@ -190,6 +158,9 @@ public class TestCloudModel {
 	
 	@Test
 	public void testCreateCloudInvalidParameters() {
+		NetworkTestSupport networkTestSupport = serviceRule.getNetworkTestSupport();
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		
 		CyNetwork network = networkTestSupport.getNetwork();
 		List<CyNode> nodes = network.getNodeList();
 		NetworkParameters networkParams = manager.addNetwork(network);
@@ -240,6 +211,9 @@ public class TestCloudModel {
 	
 	@Test
 	public void testCloudModelListener() {
+		NetworkTestSupport networkTestSupport = serviceRule.getNetworkTestSupport();
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		
 		CloudModelListener listener = mock(CloudModelListener.class);
 		manager.addListener(listener);
 		
@@ -261,6 +235,7 @@ public class TestCloudModel {
 	
 	@Test(expected=NullPointerException.class)
 	public void testCreateNetworkParametersProperFail() {
+		CloudModelManager manager = serviceRule.getCloudModelManager();
 		manager.addNetwork(null);
 	}
 	

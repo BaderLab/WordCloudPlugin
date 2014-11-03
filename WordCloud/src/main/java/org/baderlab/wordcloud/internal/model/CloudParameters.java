@@ -90,11 +90,15 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	/**
 	 * Default constructor to create a fresh instance
 	 */
-	protected CloudParameters(NetworkParameters networkParams)
-	{
+	protected CloudParameters(NetworkParameters networkParams, String cloudName, int cloudNum) {
+		if(cloudName == null)
+			throw new NullPointerException();
 		this.networkParams = networkParams;
 		this.netWeightFactor = networkParams.getManager().getDefaultNetWeight();
 		this.displayStyle = CloudDisplayStyles.getDefault();
+		this.cloudNum = cloudNum;
+		this.cloudName = cloudName;
+		createColumn(cloudName); // create the column for the cloud
 	}
 	
 	
@@ -119,7 +123,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	 */
 	protected CloudParameters(NetworkParameters networkParams, String propFile)
 	{
-		this(networkParams);
+		this.networkParams = networkParams;
 		
 		//Create a hashmap to contain all the values in the rpt file
 		HashMap<String, String> props = new HashMap<String,String>();
@@ -141,13 +145,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		
 		this.netWeightFactor = Double.valueOf(props.get("NetWeightFactor"));
 		this.clusterCutoff = new Double(props.get("ClusterCutoff"));
-////		this.countInitialized = Boolean.parseBoolean(props.get("CountInitialized"));
-////		this.selInitialized = Boolean.parseBoolean(props.get("SelInitialized"));
-////		this.ratiosInitialized = Boolean.parseBoolean(props.get("RatiosInitialized"));
-//		this.maxRatio = new Double(props.get("MaxRatio"));
-//		this.minRatio = new Double(props.get("MinRatio"));
-//		this.maxWords = new Integer(props.get("MaxWords"));
-//		this.cloudNum = new Integer(props.get("CloudNum"));
+		this.cloudNum = new Integer(props.get("CloudNum"));
 		
 		// Reload cloud group table if it has been created (through command line)
 		for (CyTable table : networkParams.getManager().getTableManager().getAllTables(true)) {
@@ -155,37 +153,6 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 				this.clusterTable = table;
 			}
 		}
-		
-		//Backwards compatibale useNetNormal
-//		String val = props.get("UseNetNormal");
-//		if (val == null)
-//		{this.useNetNormal = true;}
-//		else
-//		{this.useNetNormal = Boolean.parseBoolean(props.get("UseNetNormal"));}
-		
-//		//Backwards compatible meanRatio
-//		String val = props.get("MeanRatio");
-//		if (val == null)
-//		{this.ratiosInitialized = false;}
-//		else
-//		{this.meanRatio = new Double(props.get("MeanRatio"));}
-//		
-//		//Backwards compatible Weights
-//		val = props.get("MeanWeight");
-//		if (val != null)
-//		{this.meanWeight = new Double(props.get("MeanWeight"));}
-//		
-//		val = props.get("MinWeight");
-//		if (val != null)
-//		{this.minWeight = new Double(props.get("MinWeight"));}
-//		
-//		val = props.get("MaxWeight");
-//		if (val != null)
-//		{this.maxWeight = new Double(props.get("MaxWeight"));}
-//		
-//		val = props.get("NetworkCount");
-//		if (val != null)
-//		{this.networkCount = new Integer(props.get("NetworkCount"));}
 		
 		//Rebuild attribute List
 		String value = props.get("AttributeName");
@@ -197,29 +164,19 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 			attributeList.add(curAttribute);
 		}
 		this.attributeNames = attributeList;
+	}
+	
+	/**
+	 * This method assumes that NetworkParameters has already checked if the
+	 * column name already exists.
+	 */
+	private void createColumn(String name) {
+		CyNetwork network = networkParams.getNetwork(); // in case of null network
+		if (network == null)
+			return;
 		
-//		//Rebuild CloudWords
-//		if (props.containsKey("CloudWords")) //handle the empty case
-//		{
-//			String value2 = props.get("CloudWords");
-//			String[] words = value2.split(WORDDELIMITER);
-//			ArrayList<CloudWordInfo> cloudWordList = new ArrayList<CloudWordInfo>();
-//			for (int i = 0; i < words.length; i++)
-//			{
-//				String wordInfo = words[i];
-//				CloudWordInfo curInfo = new CloudWordInfo(wordInfo);
-//				curInfo.setCloudParameters(this);
-//				cloudWordList.add(curInfo);
-//			}
-//			this.cloudWords = cloudWordList;
-//		}
-//		else
-//			this.cloudWords = new ArrayList<CloudWordInfo>();
-		
-		CyTable cloudTable = networkParams.getNetwork().getDefaultNodeTable();
-		if (cloudTable == null) {
-			throw new RuntimeException();
-		}
+		CyTable table = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS); // always create new columns in the local table
+		table.createColumn(name, Boolean.class, false);
 	}
 		
 	
@@ -234,8 +191,16 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 			return;
 		
 		CyNetwork network = networkParams.getNetwork();
-		if (network.getDefaultNodeTable().getColumn(cloudName) != null) {
-			network.getDefaultNodeTable().deleteColumn(cloudName);
+		
+		// Check default table for backwards compatibility (older versions of wordcloud created a column in the default table).
+		CyTable defaultNodeTable = network.getDefaultNodeTable();
+		if (defaultNodeTable.getColumn(cloudName) != null) {
+			defaultNodeTable.deleteColumn(cloudName);
+		}
+		
+		CyTable localTable = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
+		if (localTable.getColumn(cloudName) != null) {
+			localTable.deleteColumn(cloudName);
 		}
 		
 		CyTable clusterTable = getClusterTable();
@@ -261,10 +226,26 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 			return;
 		if(networkParams.containsCloud(newName))
 			throw new IllegalArgumentException("Name '" + newName + "' already exists");
+		if(networkParams.columnAlreadyExists(newName))
+			throw new IllegalArgumentException("Column '" + newName + "' already exists");
 		
 		String oldName = cloudName;
-		setCloudName(newName);
+		cloudName = newName;
 		networkParams.changeCloudMapping(oldName, newName);
+		
+		CyNetwork network = networkParams.getNetwork();
+		
+		// Column might be in local or default table (backwards compatibility)
+		CyColumn column;
+		
+		CyTable defaultNodeTable = network.getDefaultNodeTable();
+		column = defaultNodeTable.getColumn(oldName);
+		if(column == null) {
+			CyTable localTable = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
+			column = localTable.getColumn(oldName);
+		}
+		
+		column.setName(newName);
 		
 		CloudModelManager cloudModelManager = networkParams.getManager();
 		cloudModelManager.fireCloudRenamed(this);
@@ -295,33 +276,34 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		}
 		paramVariables.append("AttributeName\t" + output.toString() + "\n");
 		
+		// Save out dummy values for fields that are not longer used just to be compatible with WordCloud 2.0
 		paramVariables.append("NetWeightFactor\t" + netWeightFactor + "\n");
 		paramVariables.append("ClusterCutoff\t" + clusterCutoff + "\n");
-//		paramVariables.append("CountInitialized\t" + countInitialized + "\n");
-//		paramVariables.append("SelInitialized\t" + selInitialized + "\n");
-//		paramVariables.append("RatiosInitialized\t" + ratiosInitialized + "\n");
-//		paramVariables.append("MinRatio\t" + minRatio + "\n");
-//		paramVariables.append("MaxRatio\t" + maxRatio + "\n");
-//		paramVariables.append("MaxWords\t" + maxWords + "\n");
-//		paramVariables.append("MeanRatio\t" + meanRatio + "\n");
-//		paramVariables.append("MeanWeight\t" + meanWeight + "\n");
-//		paramVariables.append("MaxWeight\t" + maxWeight + "\n");
-//		paramVariables.append("MinWeight\t" + minWeight + "\n");
+		paramVariables.append("CountInitialized\t" + false + "\n");
+		paramVariables.append("SelInitialized\t" + false + "\n");
+		paramVariables.append("RatiosInitialized\t" + false + "\n");
+		paramVariables.append("MinRatio\t" + 0.0 + "\n");
+		paramVariables.append("MaxRatio\t" + 0.0 + "\n");
+		paramVariables.append("MaxWords\t" + maxWords + "\n");
+		paramVariables.append("MeanRatio\t" + 0.0 + "\n");
+		paramVariables.append("MeanWeight\t" + 0.0 + "\n");
+		paramVariables.append("MaxWeight\t" + 0.0 + "\n");
+		paramVariables.append("MinWeight\t" + 0.0 + "\n");
 		paramVariables.append("CloudNum\t" + cloudNum + "\n");
-//		paramVariables.append("UseNetNormal\t" + useNetNormal + "\n");
+		paramVariables.append("UseNetNormal\t" + true + "\n");
 		paramVariables.append("NetworkCount\t" + networkCount + "\n");
 		if (clusterTable != null) {
 			paramVariables.append("ClusterTableName\t" + clusterTable.getTitle() + "\n");
 		}
 		
 //		//List of Nodes as a comma delimited list
-//		StringBuffer output2 = new StringBuffer();
+		StringBuffer output2 = new StringBuffer();
 //		for (int i = 0; i < cloudWords.size(); i++)
 //		{
 //			output2.append(cloudWords.get(i).toString() + WORDDELIMITER);
 //		}
-//		
-//		paramVariables.append("CloudWords\t" + output2.toString() + "\n");
+		
+		paramVariables.append("CloudWords\t" + output2.toString() + "\n");
 		
 		return paramVariables.toString();
 	}
@@ -364,26 +346,6 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		return cloudName;
 	}
 	
-	protected void setCloudName(String name)
-	{
-		CyNetwork network = networkParams.getNetwork();
-		if (network == null) {
-			cloudName = name;
-			return;
-		}
-		
-		CyTable table = network.getDefaultNodeTable();
-		if (cloudName != null) {
-			CyColumn column = table.getColumn(cloudName);
-			column.setName(name);
-		} else {
-			if (table.getColumn(name) != null) {
-				table.deleteColumn(name);
-			}
-			table.createColumn(name, Boolean.class, false);
-		}
-		cloudName = name;
-	}
 	
 	public List<String> getAttributeNames()
 	{
@@ -589,11 +551,6 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	{
 		return cloudNum;
 	}
-	
-	public void setCloudNum(int num)
-	{
-		cloudNum = num;
-	}	
 	
 	public CloudDisplayStyles getDisplayStyle()
 	{

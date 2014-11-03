@@ -6,8 +6,8 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 	TestCloudModel.class, 
-	TestCommands.class
+	TestCommands.class,
+	TestColumns.class
 })
 public class TestAll {
-
 }
