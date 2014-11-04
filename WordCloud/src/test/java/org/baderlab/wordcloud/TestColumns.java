@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.Set;
 
+import org.baderlab.wordcloud.internal.cluster.CloudDisplayStyles;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.cytoscape.model.CyColumn;
@@ -173,6 +174,12 @@ public class TestColumns {
 		
 		assertTrue(cloud.getSelectedNodes().isEmpty());
 		assertTrue(cloud.getCloudWordInfoList().isEmpty());
+		
+		// updating the cloud should not blow up
+		cloud.setSelectedNodes(network1.getNodeList());
+		cloud.setDisplayStyle(CloudDisplayStyles.CLUSTERED_BOXES);
+		
+		assertTrue(cloud.getSelectedNodes().isEmpty());
 	}
 	
 }

@@ -27,7 +27,7 @@ public class NetworkParameters {
 	protected static final String SEPARATER = "_";
 	
 	protected static final int NULL_COUNT = -99;
-	protected static final String NULL_NAME = "sync_cloud";
+	protected static final String NULL_NAME = "wordcloud.sync";
 	
 	
 	//Filter stuff

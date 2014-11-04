@@ -176,7 +176,9 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 			return;
 		
 		CyTable table = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS); // always create new columns in the local table
-		table.createColumn(name, Boolean.class, false);
+		if(table.getColumn(name) == null) {
+			table.createColumn(name, Boolean.class, false);
+		}
 	}
 		
 	
@@ -431,6 +433,11 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	
 	private void setSelectedNodes(CyNetwork network, Collection<CyNode> nodes) {
 		if (network == null) {
+			return;
+		}
+		
+		// if the user deleted the column then do nothing, better than an exception
+		if(network.getDefaultNodeTable().getColumn(cloudName) == null) {
 			return;
 		}
 		
