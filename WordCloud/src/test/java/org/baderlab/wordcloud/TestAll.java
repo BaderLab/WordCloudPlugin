@@ -6,6 +6,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 	TestCloudModel.class, 
+	TestCloudWords.class,
 	TestCommands.class,
 	TestColumns.class
 })

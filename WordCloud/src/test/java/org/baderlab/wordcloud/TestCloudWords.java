@@ -1,0 +1,116 @@
+package org.baderlab.wordcloud;
+
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.baderlab.wordcloud.internal.cluster.CloudWordInfo;
+import org.baderlab.wordcloud.internal.model.CloudModelManager;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
+import org.baderlab.wordcloud.internal.model.NetworkParameters;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.NetworkTestSupport;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+
+public class TestCloudWords {
+
+	@Rule public ServiceRule serviceRule = new ServiceRule();
+	
+	private final String WORD_COL = "TestWordCol";
+	
+	private CyNetwork network;
+	
+	
+	@Before
+	public void before() {
+		NetworkTestSupport networkTestSupport = serviceRule.getNetworkTestSupport();
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		
+		network = networkTestSupport.getNetwork();
+		CyTable table = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
+		table.createColumn(WORD_COL, String.class, false);
+		
+		CyNode node1 = network.addNode();
+		network.getRow(node1).set(WORD_COL, "node1");
+		CyNode node2 = network.addNode();
+		network.getRow(node2).set(WORD_COL, "node2");
+		CyNode node3 = network.addNode();
+		network.getRow(node3).set(WORD_COL, "node3");
+		
+		manager.addNetwork(network);
+	}
+	
+	private static List<String> getWords(Collection<CloudWordInfo> wordInfos) {
+		List<String> words = new ArrayList<String>();
+		for(CloudWordInfo info : wordInfos)
+			words.add(info.getWord());
+		return words;
+	}
+	
+	
+	@Test
+	public void testCloudContents() {
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		CloudParameters cloud = manager.getNetworkParameters(network).createCloud(network.getNodeList());
+		List<CloudWordInfo> wordInfos = cloud.getCloudWordInfoList();
+		assertEquals(3, wordInfos.size());
+		
+		List<String> words = getWords(wordInfos);
+
+		assertTrue(words.contains("node1"));
+		assertTrue(words.contains("node2"));
+		assertTrue(words.contains("node3"));
+	}
+	
+	
+	@Test
+	public void testWordFilter() {
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		NetworkParameters networkParameters = manager.getNetworkParameters(network);
+		CloudParameters cloud = networkParameters.createCloud(network.getNodeList());
+		
+		networkParameters.getFilter().add("node1");
+		
+		List<CloudWordInfo> wordInfos = cloud.getCloudWordInfoList();
+		assertEquals(2, wordInfos.size());
+		
+		List<String> words = getWords(wordInfos);
+
+		assertFalse(words.contains("node1"));
+		assertTrue(words.contains("node2"));
+		assertTrue(words.contains("node3"));
+	}
+	
+	
+	@Test
+	public void testDelimeters() {
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		NetworkParameters networkParameters = manager.getNetworkParameters(network);
+		CloudParameters cloud = networkParameters.createCloud(network.getNodeList());
+		
+		CyNode node = network.getNodeList().get(0);
+		network.getRow(node).set(WORD_COL, "axbxcxdxe");
+		
+		assertEquals(3, cloud.getCloudWordInfoList().size());
+		
+		networkParameters.getDelimeters().addDelimToUse("x");
+		cloud.invalidate();
+		
+		List<CloudWordInfo> wordInfos = cloud.getCloudWordInfoList();
+		assertEquals(7, wordInfos.size());
+		
+		List<String> words = getWords(wordInfos);
+
+		assertTrue(words.contains("a"));
+		assertTrue(words.contains("b"));
+		assertTrue(words.contains("c"));
+		assertTrue(words.contains("d"));
+		assertTrue(words.contains("e"));
+	}
+}
