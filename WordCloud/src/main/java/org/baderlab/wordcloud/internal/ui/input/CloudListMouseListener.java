@@ -84,7 +84,7 @@ public class CloudListMouseListener extends MouseAdapter {
 				menu.show(list, e.getX(), e.getY());
 			}
 			else {
-				uiManager.updateSelection(cloud);
+				uiManager.updateNodeSelection(cloud);
 			}
 		}
 	}

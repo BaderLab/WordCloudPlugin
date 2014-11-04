@@ -14,6 +14,9 @@ public class SelectWordCloudCommandHandlerTask implements Task {
 	@Tunable(description="Name of cloud to be selected")
 	public String cloudName = "";
 	
+	@Tunable(description="If true then the graph nodes will be selected to match the cloud. Default: true.")
+	public boolean updateNodeSelection = true;
+	
 	public SelectWordCloudCommandHandlerTask(UIManager uiManager) {
 		this.uiManager = uiManager;
 	}
@@ -24,7 +27,7 @@ public class SelectWordCloudCommandHandlerTask implements Task {
 		if(networkParams != null) {
 			CloudParameters cloud = networkParams.getCloud(cloudName);
 			if(cloud != null) {
-				uiManager.setCurrentCloud(cloud);
+				uiManager.setCurrentCloud(cloud, updateNodeSelection);
 			}
 		}
 	}
