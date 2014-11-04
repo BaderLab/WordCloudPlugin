@@ -546,6 +546,9 @@ public class CloudWordInfoBuilder {
 	private String getNodeAttributeVal(CyNetwork network, CyNode curNode, String attributeName) {
 		CyTable table = network.getDefaultNodeTable();
 		CyColumn column = table.getColumn(attributeName);
+		if (column == null) {
+			return null;
+		}
 		if (column.getType().equals(String.class)) {
 			return table.getRow(curNode.getSUID()).get(attributeName, String.class);
 		}

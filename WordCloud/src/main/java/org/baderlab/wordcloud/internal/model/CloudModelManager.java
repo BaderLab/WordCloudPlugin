@@ -23,13 +23,17 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.ColumnDeletedEvent;
+import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.events.RemovedNodesListener;
 import org.cytoscape.property.CyProperty;
 
-public class CloudModelManager implements NetworkAboutToBeDestroyedListener, RemovedNodesListener {
+public class CloudModelManager implements NetworkAboutToBeDestroyedListener, RemovedNodesListener, ColumnNameChangedListener, ColumnDeletedListener {
 
 	static final Lock uidLock = new ReentrantLock();
 	
@@ -132,9 +136,9 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 		}
 	}
 	
-	protected void fireCloudRenamed(CloudParameters cloudParameters) {
+	protected void fireCloudModified(CloudParameters cloudParameters) {
 		for(CloudModelListener listener : listeners) {
-			listener.cloudRenamed(cloudParameters);
+			listener.cloudModified(cloudParameters);
 		}
 	}
 	
@@ -302,7 +306,38 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 //		}
 	}
 
-	
 
+	@Override
+	public void handleEvent(ColumnNameChangedEvent e) {
+		handleColumnNameChange(e.getSource(), e.getOldColumnName(), e.getNewColumnName());
+	}
+
+	@Override
+	public void handleEvent(ColumnDeletedEvent e) {
+		handleColumnNameChange(e.getSource(), e.getColumnName(), null);
+	}
+
+	
+	private void handleColumnNameChange(CyTable table, String oldName, String newName) {
+		List<CloudParameters> modifiedClouds = new ArrayList<CloudParameters>();
+		
+		for(NetworkParameters networkParams : getNetworks()) {
+			CyNetwork network = networkParams.getNetwork();
+			if(network.getDefaultNodeTable().equals(table) || network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS).equals(table)) {
+				for(CloudParameters cloudParams : networkParams.getClouds()) {
+					if(cloudParams.getAttributeNames().contains(oldName)) {
+						cloudParams.removeAttribtueName(oldName);
+						if(newName != null)
+							cloudParams.addAttributeName(newName);
+						modifiedClouds.add(cloudParams);
+					}
+				}
+			}
+		}
+		
+		for(CloudParameters cloud : modifiedClouds) {
+			fireCloudModified(cloud);
+		}
+	}
 
 }

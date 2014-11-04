@@ -264,7 +264,7 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	}
 	
 	@Override
-	public void cloudRenamed(CloudParameters cloudParams) {
+	public void cloudModified(CloudParameters cloudParams) {
 		if(hidden)
 			return;
 		

@@ -227,7 +227,7 @@ public class TestCloudModel {
 		manager.removeNetwork(network);
 		
 		verify(listener).cloudAdded(cloudParameters);
-		verify(listener).cloudRenamed(cloudParameters);
+		verify(listener).cloudModified(cloudParameters);
 		verify(listener).cloudDeleted(cloudParameters);
 		verify(listener).networkRemoved(networkParams);
 	}

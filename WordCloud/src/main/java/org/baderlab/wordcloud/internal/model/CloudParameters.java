@@ -250,7 +250,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		column.setName(newName);
 		
 		CloudModelManager cloudModelManager = networkParams.getManager();
-		cloudModelManager.fireCloudRenamed(this);
+		cloudModelManager.fireCloudModified(this);
 	}
 	
 	
@@ -394,6 +394,15 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		{
 			attributeNames.add(name);
 			invalidate();
+		}
+	}
+	
+	public void removeAttribtueName(String name) {
+		if(attributeNames != null) {
+			boolean removed = attributeNames.remove(name);
+			if(removed) {
+				invalidate();
+			}
 		}
 	}
 	
