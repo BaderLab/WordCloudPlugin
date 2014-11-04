@@ -1,5 +1,6 @@
 package org.baderlab.wordcloud.internal.ui.action;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JFrame;
@@ -10,6 +11,7 @@ import org.baderlab.wordcloud.internal.model.CloudProvider;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.model.CyNetwork;
 
 @SuppressWarnings("serial")
 public class RenameCloudAction extends AbstractCyAction {
@@ -54,30 +56,45 @@ public class RenameCloudAction extends AbstractCyAction {
 			else if (newName == null || newName.trim().equals("")) { //Blank or null name (or user clicked cancel)
 				return;
 			}
-			else if (isCloudNameTaken(newName)) { //Already taken name
-				Object[] options = { "Try Again", "Cancel"};
-				int value = JOptionPane.showOptionDialog(parent,
-						"That cloud name already exists, try again.",
-						"Duplicate Cloud Name",
-						JOptionPane.WARNING_MESSAGE,
-						JOptionPane.YES_NO_CANCEL_OPTION,
-						null,
-						options,
-						options[0]);
-				
+			else if (isCloudNameTaken(newName)) {
+				int value = showWarnDialog(parent, 
+						"A cloud with the name '" + newName + "' already exists. Please try again.", 
+						"Duplicate Cloud Name");
+				if (value == JOptionPane.NO_OPTION) {
+					return;
+				}
+			}
+			else if (isColumnNameTaken(newName)) {
+				int value = showWarnDialog(parent, 
+						"Cannot name cloud '" + newName + "' because a column with that name exists. Please try again.", 
+						"Duplicate Column Name");
 				if (value == JOptionPane.NO_OPTION) {
 					return;
 				}
 			}
 			else 
 				break;
-		}//end while true loop
+		}
 		
 		
 		cloud.rename(newName);
 		
-	}//end actionPerformed
+	}
 	
+	
+	private int showWarnDialog(Component parent, String message, String title) {
+		Object[] options = { "Try Again", "Cancel"};
+		int value = JOptionPane.showOptionDialog(parent,
+				message,
+				title,
+				JOptionPane.WARNING_MESSAGE,
+				JOptionPane.YES_NO_CANCEL_OPTION,
+				null,
+				options,
+				options[0]);
+		
+		return value;
+	}
 	
 	/**
 	 * Returns true if the specified name is already taken in the current network.
@@ -86,4 +103,11 @@ public class RenameCloudAction extends AbstractCyAction {
 		return uiManager.getCurrentNetwork().containsCloud(name);
 	}
 	
+	private boolean isColumnNameTaken(String name) {
+		CyNetwork network = uiManager.getCurrentNetwork().getNetwork();
+		if(network != null) {
+			return network.getDefaultNodeTable().getColumn(name) != null;
+		}
+		return false;
+	}
 }
