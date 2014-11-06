@@ -54,8 +54,8 @@ public class WordFilter
 	private HashSet<String> addedWords = new HashSet<String>(); //User added words
 	private Boolean filterNums = false;
 	
-	final static public String stopWordFile = "StopWords.txt";
-	final static public String flaggedWordFile = "FlaggedWords.txt";
+	final static public String stopWordFile = "/StopWords.txt";
+	final static public String flaggedWordFile = "/FlaggedWords.txt";
 	final static public String newline = "\n";
 	
 	

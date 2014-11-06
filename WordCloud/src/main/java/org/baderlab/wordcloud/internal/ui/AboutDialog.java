@@ -43,7 +43,8 @@ import org.cytoscape.util.swing.OpenBrowser;
 @SuppressWarnings("serial")
 public class AboutDialog extends JDialog {
 
-	private static final String BUILD_PROPS_FILE = "buildinfo.props";
+	private static final String BUILD_PROPS_FILE = "/buildinfo.props";
+	
 	private static final String BUILD_VERSION = "build.version";
 	private static final String BUILD_TIMESTAMP = "build.timestamp";
 	

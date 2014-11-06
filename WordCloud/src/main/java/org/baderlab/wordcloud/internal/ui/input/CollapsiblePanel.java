@@ -195,13 +195,13 @@ public class CollapsiblePanel extends JPanel {
     private ImageIcon[] createExpandAndCollapseIcon () {
         ImageIcon[] iconArrow = new ImageIcon[2];
         URL iconURL;
-        iconURL = CyActivator.class.getResource("arrow_collapsed.gif");
+        iconURL = CyActivator.class.getResource("/arrow_collapsed.gif");
         
         if (iconURL != null) {
             iconArrow[COLLAPSED] = new ImageIcon(iconURL);
         }
         
-        iconURL = CyActivator.class.getResource("arrow_expanded.gif");
+        iconURL = CyActivator.class.getResource("/arrow_expanded.gif");
         if (iconURL != null) {
             iconArrow[EXPANDED] = new ImageIcon(iconURL);
         }

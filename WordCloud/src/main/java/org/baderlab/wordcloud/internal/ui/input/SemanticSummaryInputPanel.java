@@ -28,7 +28,6 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,7 +35,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -51,7 +49,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -76,12 +73,13 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.baderlab.wordcloud.internal.CyActivator;
 import org.baderlab.wordcloud.internal.cluster.CloudDisplayStyles;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.CloudProvider;
 import org.baderlab.wordcloud.internal.model.NetworkParameters;
+import org.baderlab.wordcloud.internal.ui.IconManager;
+import org.baderlab.wordcloud.internal.ui.IconManagerImpl;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.baderlab.wordcloud.internal.ui.action.CreateCloudAction;
 import org.baderlab.wordcloud.internal.ui.action.DeleteCloudAction;
@@ -108,14 +106,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 	
 	private static final int DEF_ROW_HEIGHT = 20;
 	
-	private static final String ICON_CREATE = "ic_action_new.png";
-	private static final String ICON_UPDATE = "ic_action_refresh.png";
-	
-	
 	private final UIManager uiManager;
 	private final CyApplicationManager applicationManager;
 	private final CySwingApplication application;
 	private final CyServiceRegistrar registrar;
+	private final IconManager iconManager = new IconManagerImpl();
 	
 	private JFormattedTextField maxWordsTextField;
 	private JFormattedTextField clusterCutoffTextField;
@@ -271,7 +266,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		JScrollPane listScrollPane = new JScrollPane(cloudList);
 		listScrollPane.setBorder(BorderFactory.createEmptyBorder());
 		
-		JPanel syncPanel = new JPanel(new BorderLayout());
+		
 		syncCheckBox = new JCheckBox("Sync with selection");
 		syncCheckBox.setToolTipText("Synchronize the cloud display with the currently selected nodes.");
 		syncCheckboxActionListener = new ActionListener() {
@@ -289,20 +284,23 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		createButton = new JButton();
 		createButton.setAction(createCloudAction);
-		createButton.setText("");
-		createButton.setIcon(getButtonIcon(ICON_CREATE));
+		createButton.setText(IconManager.ICON_PLUS);
+		createButton.setFont(iconManager.getIconFont(12.0f));
 		createButton.setToolTipText("Create a new cloud from the selected nodes.");
+		createButton.setPreferredSize(new Dimension(24, 24));
 		
 		updateButton = new JButton();
 		updateButton.setAction(new UpdateCloudAction(cloudListProvider, uiManager));
-		updateButton.setText("");
-		updateButton.setIcon(getButtonIcon(ICON_UPDATE));
+		updateButton.setText(IconManager.ICON_REFRESH);
+		updateButton.setFont(iconManager.getIconFont(12.0f));
 		updateButton.setToolTipText("Update the current cloud to use the selected nodes.");
+		updateButton.setPreferredSize(new Dimension(24, 24));
 		
-		JPanel createUpdatePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+		JPanel createUpdatePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 2));
 		createUpdatePanel.add(updateButton);
 		createUpdatePanel.add(createButton);
 		
+		JPanel syncPanel = new JPanel(new BorderLayout());
 		syncPanel.add(syncCheckBox, BorderLayout.WEST);
 		syncPanel.add(createUpdatePanel, BorderLayout.EAST);
 		
@@ -310,12 +308,6 @@ public class SemanticSummaryInputPanel extends JPanel {
 		panel.add(listScrollPane, BorderLayout.CENTER);
 		panel.add(syncPanel, BorderLayout.SOUTH);
 		return panel;
-	}
-	
-	
-	private static ImageIcon getButtonIcon(String resource) {
-		URL url = CyActivator.class.getResource(resource);
-		return new ImageIcon(new ImageIcon(url).getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
 	}
 	
 	
