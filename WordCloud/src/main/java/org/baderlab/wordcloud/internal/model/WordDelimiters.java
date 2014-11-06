@@ -23,12 +23,11 @@
 package org.baderlab.wordcloud.internal.model;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.TreeSet;
-
-import javax.swing.JOptionPane;
-
-import org.cytoscape.application.swing.CySwingApplication;
+import java.util.regex.Pattern;
 
 /**
  * This class defines the WordDelimiters class.  This class is used to determine
@@ -41,20 +40,26 @@ import org.cytoscape.application.swing.CySwingApplication;
 public class WordDelimiters 
 {
 	
-	//VARIABLES
+	private static final String DELIMITER = "SAVEDELIMITER";
+	private static final String FIRSTDELIMITER = "NewLineEquivalent";
+	private static final String SECONDDELIMITER = "TabbedEquivalent";
+	
+	
+	private Pattern splitter = null; // lazily initialized
 	
 	private TreeSet<String> delimsInUse= new TreeSet<String>();
 	private TreeSet<String> delimsToAdd= new TreeSet<String>();
 	private TreeSet<String> userDelims= new TreeSet<String>();
 	
-	private HashMap<String, String> regexTranslation = new HashMap<String, String>();
- 	
-	//String Delimeters
-	private static final String DELIMITER = "SAVEDELIMITER";
-	private static final String FIRSTDELIMITER = "NewLineEquivalent";
-	private static final String SECONDDELIMITER = "TabbedEquivalent";
+	private final HashMap<String, String> regexTranslation = new HashMap<String,String>();
+	{
+		regexTranslation.put("tab", "\\t");
+		regexTranslation.put("space", " ");
+		regexTranslation.put("newline", "\\n");
+		regexTranslation.put("carriage return", "\\r");
+		regexTranslation.put("form feed", "\\f");
+	}
 	
-	//CONSTRUCTORS
 	
 	/**
 	 * Creates the default WordDelimiters object.
@@ -98,44 +103,6 @@ public class WordDelimiters
 		
 		delimsToAdd.add("-");
 		delimsToAdd.add("'");
-		
-		regexTranslation.put("tab", "\\t");
-		regexTranslation.put("space", " ");
-		regexTranslation.put("newline", "\\n");
-		regexTranslation.put("carriage return", "\\r");
-		regexTranslation.put("form feed", "\\f");
-		regexTranslation.put("!","!");
-		regexTranslation.put("\"", "\"");
-		regexTranslation.put("#", "#");
-		regexTranslation.put("$", "$");
-		regexTranslation.put("%", "%");
-		regexTranslation.put("&", "&");
-		regexTranslation.put("(", "(");
-		regexTranslation.put(")", ")");
-		regexTranslation.put("*", "*");
-		regexTranslation.put("+", "+");
-		regexTranslation.put(",", ",");
-		regexTranslation.put(".", ".");
-		regexTranslation.put("/", "/");
-		regexTranslation.put(":", ":");
-		regexTranslation.put(";", ";");
-		regexTranslation.put("<", "<");
-		regexTranslation.put("=", "=");
-		regexTranslation.put(">", ">");
-		regexTranslation.put("?", "?");
-		regexTranslation.put("@", "@");
-		regexTranslation.put("[", "\\[");
-		regexTranslation.put("\\", "\\\\");
-		regexTranslation.put("]", "\\]");
-		regexTranslation.put("^", "\\^");
-		regexTranslation.put("_", "_");
-		regexTranslation.put("`", "`");
-		regexTranslation.put("{", "{");
-		regexTranslation.put("|", "|");
-		regexTranslation.put("}", "}");
-		regexTranslation.put("~", "~");
-		regexTranslation.put("-", "\\-");
-		regexTranslation.put("'", "'");
 	}
 	
 	
@@ -256,25 +223,44 @@ public class WordDelimiters
 		return delimVariables.toString();
 	}
 	
-	/**
-	 * Returns a String regular expression for all the delimiters currently in use.
-	 * @return String regex of all delimiters
-	 */
-	public String getRegex()
-	{
-		String reg = "";
-		
-		for (Iterator<String> iter = delimsInUse.iterator(); iter.hasNext();)
-		{
-			String curDelim = iter.next();
-			String addDelim = this.translateToRegex(curDelim);
+	
+	private Pattern getSplitter() {
+		if(splitter == null) {
+			StringBuilder sb = new StringBuilder();
+			boolean first = true;
+			for(String delim : delimsInUse) {
+				if(!first) {
+					sb.append('|');
+				}
+				if(regexTranslation.containsKey(delim)) {
+					sb.append(regexTranslation.get(delim));
+				}
+				else {
+					sb.append(Pattern.quote(delim));
+				}
+				first = false;
+			}
+			for(String delim : userDelims) {
+				if(!first) {
+					sb.append('|');
+				}
+				sb.append(Pattern.quote(delim));
+				first = false;
+			}
 			
-			reg = reg + addDelim;
-		}//end for loop
-		
-		String regEx = "[" + reg + "]";
-		
-		return regEx;
+			splitter = Pattern.compile(sb.toString());
+		}
+		return splitter;
+	}
+	
+	
+	public Set<String> split(String s) {
+		Set<String> words = new HashSet<String>();
+		for(String word : getSplitter().split(s)) {
+			words.add(word);
+		}
+		words.remove("");
+		return words;
 	}
 	
 	/**
@@ -282,6 +268,7 @@ public class WordDelimiters
 	 */
 	public void addDelimToUse(String delim)
 	{
+		splitter = null;
 		//If it is one of the defined delims
 		if (delimsToAdd.contains(delim))
 		{
@@ -301,6 +288,7 @@ public class WordDelimiters
 	 */
 	public void removeDelimiter(String delim)
 	{
+		splitter = null;
 		//Disable removal of newline and tab for now
 		if (delim.equals("newline") || delim.equals("tab"))
 		{
@@ -324,18 +312,6 @@ public class WordDelimiters
 		}
 	}
 	
-	/**
-	 * Retrieves the regex translation of the given string or null if the string is bad
-	 */
-	public String translateToRegex(String val)
-	{
-		if (regexTranslation.containsKey(val))
-			return regexTranslation.get(val);
-		else
-			return null;
-	}
-	
-	
 	//Getters and Setters
 	
 	public TreeSet<String> getDelimsInUse()
@@ -353,9 +329,5 @@ public class WordDelimiters
 		return userDelims;
 	}
 	
-	public HashMap<String,String> getRegExTranslation()
-	{
-		return regexTranslation;
-	}
 	
 }

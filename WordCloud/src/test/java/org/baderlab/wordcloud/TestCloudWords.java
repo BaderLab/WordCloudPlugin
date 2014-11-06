@@ -5,11 +5,13 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.baderlab.wordcloud.internal.cluster.CloudWordInfo;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.NetworkParameters;
+import org.baderlab.wordcloud.internal.model.WordDelimiters;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -89,7 +91,7 @@ public class TestCloudWords {
 	
 	
 	@Test
-	public void testDelimeters() {
+	public void testCustomDelimeter() {
 		CloudModelManager manager = serviceRule.getCloudModelManager();
 		NetworkParameters networkParameters = manager.getNetworkParameters(network);
 		CloudParameters cloud = networkParameters.createCloud(network.getNodeList());
@@ -112,5 +114,60 @@ public class TestCloudWords {
 		assertTrue(words.contains("c"));
 		assertTrue(words.contains("d"));
 		assertTrue(words.contains("e"));
+	}
+	
+	
+	@Test
+	public void testDelimeterSplit() {
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		NetworkParameters networkParameters = manager.getNetworkParameters(network);
+		WordDelimiters wordDelimeters = networkParameters.getDelimeters();
+		
+		String input = "mutS homolog 2, colon   cancer, nonpolyposis type 1 (E. coli)".toLowerCase();
+		Set<String> result = wordDelimeters.split(input);
+		
+		assertEquals(10, result.size());
+		assertTrue(result.contains("muts"));
+		assertTrue(result.contains("homolog"));
+		assertTrue(result.contains("2"));
+		assertTrue(result.contains("colon"));
+		assertTrue(result.contains("cancer"));
+		assertTrue(result.contains("nonpolyposis"));
+		assertTrue(result.contains("type"));
+		assertTrue(result.contains("1"));
+		assertTrue(result.contains("e"));
+		assertTrue(result.contains("coli"));
+	}
+	
+	
+	@Test
+	public void testDelimeterCloudWordInfo() {
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		NetworkParameters networkParameters = manager.getNetworkParameters(network);
+		CloudParameters cloud = networkParameters.createCloud(network.getNodeList());
+		
+		String input = "mutS homolog 2, colon    cancer, nonpolyposis type 1 (E. coli)";
+		
+		CyNode node = network.getNodeList().get(0);
+		network.getRow(node).set(WORD_COL, input);
+		
+		
+		List<CloudWordInfo> wordInfos = cloud.getCloudWordInfoList();
+		List<String> result = getWords(wordInfos);
+
+		assertEquals(12, result.size());
+		
+		assertTrue(result.contains("node1"));
+		assertTrue(result.contains("node2"));
+		assertTrue(result.contains("muts"));
+		assertTrue(result.contains("homolog"));
+		assertTrue(result.contains("2"));
+		assertTrue(result.contains("colon"));
+		assertTrue(result.contains("cancer"));
+		assertTrue(result.contains("nonpolyposis"));
+		assertTrue(result.contains("type"));
+		assertTrue(result.contains("1"));
+		assertTrue(result.contains("e"));
+		assertTrue(result.contains("coli"));
 	}
 }

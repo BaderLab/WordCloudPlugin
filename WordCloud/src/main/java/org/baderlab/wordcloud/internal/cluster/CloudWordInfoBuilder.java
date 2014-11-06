@@ -1,6 +1,7 @@
 package org.baderlab.wordcloud.internal.cluster;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.baderlab.wordcloud.internal.Stemmer;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
@@ -96,60 +96,32 @@ public class CloudWordInfoBuilder {
 	 * @param String from a node that we are processing.
 	 * @return Set of distinct words.
 	 */
-	private List<String> processNodeString(String nodeValue)
-	{
-		//Only deal with lower case
-		nodeValue = nodeValue.toLowerCase();
-		
-		//replace all punctuation with white spaces except ' and -
-		//nodeValue = nodeValue.replaceAll("[[\\p{Punct}] && [^'-]]", " ");
-		String controlString = Character.toString('\u001F');
-		
-		//Remove all standard delimiters and replace with controlChar
+	private Collection<String> processNodeString(String nodeValue) {
 		WordDelimiters delims = cloud.getNetworkParams().getDelimeters();
-		nodeValue = nodeValue.replaceAll(delims.getRegex(),controlString);
-        
-		//Remove all user stated delimiters and replace with controlChar
-		for (Iterator<String> iter = delims.getUserDelims().iterator(); iter.hasNext();)
-		{
-			String userDelim = iter.next();
-			nodeValue = nodeValue.replaceAll(userDelim, controlString);
+		Set<String> words = delims.split(nodeValue.toLowerCase());
+		
+		if(cloud.getNetworkParams().getIsStemming()) {
+			Set<String> stemmedWords = new HashSet<String>();
+			for(String word : words) {
+				Stemmer stemmer = new Stemmer();
+				for(int i = 0; i < word.length(); i++) {
+					stemmer.add(word.charAt(i));
+				}
+				stemmer.stem();
+				stemmedWords.add(stemmer.toString());
+			}
+			words = stemmedWords;
 		}
 		
-        //Separate into non repeating set of words
-		List<String> wordSet = new ArrayList<String>();
-		StringTokenizer token = new StringTokenizer(nodeValue, controlString);
-        while (token.hasMoreTokens())
-        {
-        	String a = token.nextToken();
-        	
-        	
-        	//Stem the word if parameter is set
-        	if (cloud.getNetworkParams().getIsStemming()) //Check for stemming
-        	{
-        		Stemmer stem = new Stemmer();
-        		for (int i = 0; i < a.length(); i++)
-        		{
-        			char ch = a.charAt(i);
-        			stem.add(ch);
-        		}
-        		stem.stem();
-        		a = stem.toString();
-        	}
-        	
-        	
-        	if (!wordSet.contains(a))
-        		wordSet.add(a);
-        }
-        
-        return wordSet;
+		return words;
 	}
+	
 	
 	private void updateNetworkWordCounts(CyNode curNode, String nodeValue) {
 		if (nodeValue == null) // problem with nodes or attributes
 			return;
 	
-		List<String> wordSet = this.processNodeString(nodeValue);
+		Collection<String> wordSet = this.processNodeString(nodeValue);
 		String lastWord = ""; //Used for calculating pair counts
     
 		//Iterate through all words
@@ -247,7 +219,7 @@ public class CloudWordInfoBuilder {
 		if (nodeValue == null) // problem with nodes or attributes
 			return;
 	
-		List<String> wordSet = this.processNodeString(nodeValue);
+		Collection<String> wordSet = this.processNodeString(nodeValue);
 		String lastWord = ""; //Used for calculating pair counts
     
 		//Iterate through all words
