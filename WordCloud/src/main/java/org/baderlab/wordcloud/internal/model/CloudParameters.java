@@ -29,13 +29,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.wordcloud.internal.cluster.CloudDisplayStyles;
-import org.baderlab.wordcloud.internal.cluster.CloudWordInfo;
-import org.baderlab.wordcloud.internal.cluster.CloudWordInfoBuilder;
-import org.baderlab.wordcloud.internal.cluster.WordPair;
+import org.baderlab.wordcloud.internal.cluster.CloudInfo;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -61,7 +58,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	public static final double DEFAULT_CLUSTER_CUTOFF = 1.0;
 	
 	private final NetworkParameters networkParams; //parent network
-	private CloudWordInfoBuilder cloudWordInfoBuilder;
+	private CloudInfo cloudWordInfoBuilder;
 	
 	private String cloudName;
 	private List<String> attributeNames;
@@ -85,8 +82,6 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	private static final String NETWORKNAME = "Net";
 	private static final String SEPARATER = "_";
 	
-	
-	
 	/**
 	 * Default constructor to create a fresh instance
 	 */
@@ -103,13 +98,18 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	
 	
 	public void invalidate() {
+		System.out.println("invalidate " + getCloudName());
 		cloudWordInfoBuilder = null;
 	}
 	
 	
-	private CloudWordInfoBuilder getBuilder() {
+	/**
+	 * Returns the object that is responsible for calculating the cloud.
+	 * Warning this method has the potential to be long running.
+	 */
+	public synchronized CloudInfo calculateCloud() {
 		if(cloudWordInfoBuilder == null) {
-			cloudWordInfoBuilder = new CloudWordInfoBuilder(this);
+			cloudWordInfoBuilder = new CloudInfo(this);
 			cloudWordInfoBuilder.calculateFontSizes();
 		}
 		return cloudWordInfoBuilder;
@@ -474,40 +474,6 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		}
 		
 		return getSelectedNodes(network).size();
-	}
-
-	public Map<String, Set<CyNode>> getStringNodeMapping()
-	{
-		return getBuilder().getStringNodeMapping();
-	}
-	
-	public Map<String,Integer> getSelectedCounts()
-	{
-		return getBuilder().getSelectedCounts();
-	}
-	
-	public Map<WordPair,Integer> getSelectedPairCounts()
-	{
-		return getBuilder().getSelectedPairCounts();
-	}
-	
-	public Map<String,Double> getRatios()
-	{
-		return getBuilder().getRatios();
-	}
-	
-	public int calculateFontSize(String aWord, double ratio) {
-		return getBuilder().calculateFontSize(aWord, ratio);
-	}
-	
-	public Map<WordPair,Double> getPairRatios()
-	{
-		return getBuilder().getPairRatios();
-	}
-	
-	public List<CloudWordInfo> getCloudWordInfoList()
-	{
-		return getBuilder().getCloudWordInfoList();
 	}
 	
 	

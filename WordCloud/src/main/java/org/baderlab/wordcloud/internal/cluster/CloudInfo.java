@@ -21,7 +21,10 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 
-public class CloudWordInfoBuilder {
+/**
+ * This class does the heavy lifting of calculating the contents of the cloud.
+ */
+public class CloudInfo {
 
 	//Font Size Values
 	protected static final Integer MINFONTSIZE = 12; 
@@ -37,7 +40,7 @@ public class CloudWordInfoBuilder {
 	
 	private List<CloudWordInfo> cloudWords = new ArrayList<CloudWordInfo>();
 	
-	private final CloudParameters cloud;
+	
 
 	private double minRatio;
 	private double maxRatio;
@@ -52,13 +55,39 @@ public class CloudWordInfoBuilder {
 	private boolean selInitialized = false; //true when selected counts initialized
 	private boolean ratiosInitialized = false; //true when ratios are computed
 	
+	private final CloudParameters cloud; 
 	
-	public CloudWordInfoBuilder(CloudParameters cloud) {
+	
+	/**
+	 * This object is not thread safe.
+	 * 
+	 * If another thread changes the state of the CloudParameters object while
+	 * the cloud is being calculated that might have unintended results.
+	 * However the implementation of CloudTaskManager serializes
+	 * calls to calculateCloud(), and the info panel updates the cloud every
+	 * time a UI field changes. This means that the cloud will be always
+	 * be recalcuated any time something changes.
+	 */
+	public CloudInfo(CloudParameters cloud) {
 		this.cloud = cloud;
 	}
 	
 	
+	public boolean isForCloud(CloudParameters cloud) {
+		return this.cloud == cloud;
+	}
 	
+	public CyNetwork getNetwork() {
+		return cloud.getNetworkParams().getNetwork();
+	}
+	
+	public int getMaxWords() {
+		return cloud.getMaxWords();
+	}
+	
+	public CloudDisplayStyles getDisplayStyle() {
+		return cloud.getDisplayStyle();
+	}
 	
 	//Calculate Counts
 	/**
@@ -97,8 +126,8 @@ public class CloudWordInfoBuilder {
 	 * @return Set of distinct words.
 	 */
 	private Collection<String> processNodeString(String nodeValue) {
-		WordDelimiters delims = cloud.getNetworkParams().getDelimeters();
-		Set<String> words = delims.split(nodeValue.toLowerCase());
+		WordDelimiters delimeters = cloud.getNetworkParams().getDelimeters();
+		Collection<String> words = delimeters.split(nodeValue.toLowerCase());
 		
 		if(cloud.getNetworkParams().getIsStemming()) {
 			Set<String> stemmedWords = new HashSet<String>();
@@ -155,7 +184,7 @@ public class CloudWordInfoBuilder {
 				//Add to pair counts
 				if (!lastWord.equals(""))
 				{
-					WordPair pair = new WordPair(lastWord, curWord, cloud);
+					WordPair pair = new WordPair(lastWord, curWord, this);
 					
 					Integer curPairCount = networkPairCounts.get(pair);
 					int count;
@@ -185,6 +214,7 @@ public class CloudWordInfoBuilder {
 	 */
 	private void updateSelectedCounts()
 	{
+		System.out.println("updateSelectedCounts");
 		CyNetwork network = cloud.getNetworkParams().getNetwork();
 		//do nothing if selected hasn't changed initialized
 		if (selInitialized || network == null)
@@ -248,7 +278,7 @@ public class CloudWordInfoBuilder {
 				//Add to pair counts
 				if (!lastWord.equals(""))
 				{
-					WordPair pair = new WordPair(lastWord, curWord, cloud);
+					WordPair pair = new WordPair(lastWord, curWord, this);
 					
 					Integer curPairCount = selectedPairCounts.get(pair);
 					int count;
@@ -339,6 +369,9 @@ public class CloudWordInfoBuilder {
 		//Check that selected counts are up to date
 		if(!selInitialized)
 			this.updateSelectedCounts();
+		
+		System.out.println("updateRatios");
+
 		
 		//SINGLE COUNTS
 		//Clear old counts
@@ -435,9 +468,18 @@ public class CloudWordInfoBuilder {
 	 */
 	public void calculateFontSizes()
 	{
+		
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		if (!ratiosInitialized)
 			this.updateRatios();
 		
+		System.out.println("calculateFontSizes");
 		//Clear old fonts
 		this.cloudWords = new ArrayList<CloudWordInfo>();
 		
@@ -447,7 +489,7 @@ public class CloudWordInfoBuilder {
 			{
 				String curWord = entry.getKey();
 				int fontSize = calculateFontSize(curWord, entry.getValue());
-				CloudWordInfo curInfo = new CloudWordInfo(cloud, curWord, fontSize);
+				CloudWordInfo curInfo = new CloudWordInfo(this, curWord, fontSize);
 				cloudWords.add(curInfo);
 			}//end while loop
 			
@@ -456,12 +498,14 @@ public class CloudWordInfoBuilder {
 		}
 		else
 		{
-			ClusterBuilder builder = new ClusterBuilder(cloud);
+			ClusterBuilder builder = new ClusterBuilder(this);
 			builder.clusterData(cloud.getClusterCutoff());
 			builder.clusterData(0.0);
 			builder.buildCloudWords();
 			cloudWords = builder.getCloudWords();
 		}
+		
+		System.out.println("done");
 	}
 	
 	
@@ -514,6 +558,8 @@ public class CloudWordInfoBuilder {
 	/**
 	 * This method takes in the ID of a node and returns the string that is associated
 	 * with that node and the current attribute of this CloudParameters.
+	 * 
+	 * 
 	 */
 	private String getNodeAttributeVal(CyNetwork network, CyNode curNode, String attributeName) {
 		CyTable table = network.getDefaultNodeTable();
@@ -543,6 +589,9 @@ public class CloudWordInfoBuilder {
 	}
 	
 	
+	public String getCloudName() {
+		return cloud.getCloudName();
+	}
 	
 	public List<CloudWordInfo> getCloudWordInfoList() {
 		return cloudWords;

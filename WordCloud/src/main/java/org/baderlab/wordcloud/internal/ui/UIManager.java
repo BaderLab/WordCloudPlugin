@@ -99,7 +99,7 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		if(docker == null) {
 			inputWindow = new SemanticSummaryInputPanel(applicationManager, application, this, registrar);
 			inputWindow.setPreferredSize(new Dimension(350, 400));
-			cloudWindow = new CloudDisplayPanel();
+			cloudWindow = new CloudDisplayPanel(this);
 			docker = new DualPanelDocker(inputWindow, cloudWindow, application, registrar);
 			cloudWindow.setDocker(docker);
 			if(showHideAction != null) {
@@ -245,6 +245,7 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		if(hidden)
 			return;
 		
+		cloudWindow.disposeCloud(cloud);
 		if(cloud.getNetworkParams() == currentNetwork) {
 			setCurrentCloud(cloud.getNetworkParams());
 		}

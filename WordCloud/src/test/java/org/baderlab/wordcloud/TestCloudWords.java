@@ -60,7 +60,7 @@ public class TestCloudWords {
 	public void testCloudContents() {
 		CloudModelManager manager = serviceRule.getCloudModelManager();
 		CloudParameters cloud = manager.getNetworkParameters(network).createCloud(network.getNodeList());
-		List<CloudWordInfo> wordInfos = cloud.getCloudWordInfoList();
+		List<CloudWordInfo> wordInfos = cloud.calculateCloud().getCloudWordInfoList();
 		assertEquals(3, wordInfos.size());
 		
 		List<String> words = getWords(wordInfos);
@@ -79,7 +79,7 @@ public class TestCloudWords {
 		
 		networkParameters.getFilter().add("node1");
 		
-		List<CloudWordInfo> wordInfos = cloud.getCloudWordInfoList();
+		List<CloudWordInfo> wordInfos = cloud.calculateCloud().getCloudWordInfoList();
 		assertEquals(2, wordInfos.size());
 		
 		List<String> words = getWords(wordInfos);
@@ -99,12 +99,12 @@ public class TestCloudWords {
 		CyNode node = network.getNodeList().get(0);
 		network.getRow(node).set(WORD_COL, "axbxcxdxe");
 		
-		assertEquals(3, cloud.getCloudWordInfoList().size());
+		assertEquals(3, cloud.calculateCloud().getCloudWordInfoList().size());
 		
 		networkParameters.getDelimeters().addDelimToUse("x");
 		cloud.invalidate();
 		
-		List<CloudWordInfo> wordInfos = cloud.getCloudWordInfoList();
+		List<CloudWordInfo> wordInfos = cloud.calculateCloud().getCloudWordInfoList();
 		assertEquals(7, wordInfos.size());
 		
 		List<String> words = getWords(wordInfos);
@@ -152,7 +152,7 @@ public class TestCloudWords {
 		network.getRow(node).set(WORD_COL, input);
 		
 		
-		List<CloudWordInfo> wordInfos = cloud.getCloudWordInfoList();
+		List<CloudWordInfo> wordInfos = cloud.calculateCloud().getCloudWordInfoList();
 		List<String> result = getWords(wordInfos);
 
 		assertEquals(12, result.size());

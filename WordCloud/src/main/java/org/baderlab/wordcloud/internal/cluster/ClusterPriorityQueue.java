@@ -27,8 +27,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import org.baderlab.wordcloud.internal.model.CloudParameters;
-
 /**
  * The ClusterPriorityQueue builds a priority queue of WordPairs from
  * a specified CloudParameters object.  This is a max priority queue based
@@ -43,16 +41,16 @@ import org.baderlab.wordcloud.internal.model.CloudParameters;
 public class ClusterPriorityQueue 
 {
 	private ArrayList<WordPair> queue;
-	private CloudParameters params;
+	private CloudInfo cloudInfo;
 	
 	
 	/**
 	 * Creates a fresh instance of the priority queue.
 	 */
-	public ClusterPriorityQueue(CloudParameters params)
+	public ClusterPriorityQueue(CloudInfo cloudInfo)
 	{
 		this.queue = new ArrayList<WordPair>();
-		this.params = params;
+		this.cloudInfo = cloudInfo;
 		initialize();
 	}
 	
@@ -64,7 +62,7 @@ public class ClusterPriorityQueue
 	{
 		queue = new ArrayList<WordPair>();
 		
-		for (Entry<WordPair, Integer> entry : params.getSelectedPairCounts().entrySet())
+		for (Entry<WordPair, Integer> entry : cloudInfo.getSelectedPairCounts().entrySet())
 		{
 			WordPair curPair = entry.getKey();
 			curPair.calculateProbability(entry.getValue());
@@ -147,14 +145,5 @@ public class ClusterPriorityQueue
 		queue = aQueue;
 	}
 	
-	public CloudParameters getCloudParameters()
-	{
-		return params;
-	}
-	
-	public void setCloudParameters(CloudParameters cloudParams)
-	{
-		params = cloudParams;
-	}
 	
 }

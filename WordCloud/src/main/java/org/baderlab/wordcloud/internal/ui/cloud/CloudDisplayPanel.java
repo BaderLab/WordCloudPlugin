@@ -53,16 +53,18 @@ import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
 import org.baderlab.wordcloud.internal.SelectionUtils;
 import org.baderlab.wordcloud.internal.cluster.CloudDisplayStyles;
 import org.baderlab.wordcloud.internal.cluster.CloudWordInfo;
+import org.baderlab.wordcloud.internal.cluster.CloudInfo;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
+import org.baderlab.wordcloud.internal.ui.CloudTaskManager;
 import org.baderlab.wordcloud.internal.ui.DualPanelDocker;
 import org.baderlab.wordcloud.internal.ui.DualPanelDocker.DockCallback;
+import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyNetwork;
@@ -71,9 +73,6 @@ import org.cytoscape.model.CyNode;
 /**
  * The CloudDisplayPanel class defines the panel that displays a Semantic 
  * Summary tag cloud in the South data panel.
- * 
- * @author Layla Oesper
- * @version 1.0
  */
 public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 {
@@ -82,13 +81,14 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 	
 	private JPanel tagCloudFlowPanel;//add JLabels here for words
 	private JScrollPane cloudScroll; 
-	private CloudParameters curCloud;
 	private JRootPane rootPane;
 
+	private final CloudTaskManager cloudTaskManager = new CloudTaskManager();
+	private final UIManager uiManager;
+	
 
-
-	public CloudDisplayPanel()
-	{
+	public CloudDisplayPanel(UIManager uiManager) {
+		this.uiManager = uiManager;
 		setLayout(new BorderLayout());
 		
 		//Create JPanel containing tag words
@@ -117,7 +117,7 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 		buttonPanel.setOpaque(false);
 		
 		// add some space so the floating button doesn't overlap the scrollbar
-		int scrollWidth = ((Integer)UIManager.get("ScrollBar.width")).intValue(); 
+		int scrollWidth = ((Integer)javax.swing.UIManager.get("ScrollBar.width")).intValue(); 
 		buttonPanel.add(Box.createRigidArea(new Dimension(scrollWidth, 0)));
 		
 		JPanel glassPane = (JPanel) rootPane.getGlassPane();
@@ -156,31 +156,56 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 	/**
 	 * Clears all words from the CloudDisplay.
 	 */
-	public void clearCloud()
+	private void clearCloud()
 	{
 		tagCloudFlowPanel.removeAll();
 		tagCloudFlowPanel.setLayout(new ModifiedFlowLayout(ModifiedFlowLayout.CENTER, 30, 25));
 		tagCloudFlowPanel.revalidate();
 		cloudScroll.revalidate();
 		tagCloudFlowPanel.updateUI();
-		curCloud = null;
-		
+	}
+	
+	
+	public void disposeCloud(CloudParameters cloud) {
+		cloudTaskManager.dispose(cloud);
 	}
 	
 	/**
 	 * Updates the tagCloudFlowPanel to include all of the words at the size they
 	 * are defined for in params.
-	 * @param CloudParameters - parameters of the cloud we want to display.
+	 * 
+	 * To clear the display pass a NetworkParameters.getNullCloud();
 	 */
 	public void updateCloudDisplay(CloudParameters params)
 	{
-		//clear old info
 		this.clearCloud();
-		curCloud = params;
+		
+		if(!params.getNetworkParams().isNullNetwork()) {
+			String name = params.getCloudName();
+			tagCloudFlowPanel.removeAll();
+			JLabel loadingLabel = new JLabel("Loading " + name + "...");
+			tagCloudFlowPanel.add(loadingLabel);
+		}
+		
+		cloudTaskManager.submit(params, new CloudTaskManager.Callback() {
+			public void onFinish(CloudInfo cloudInfo) {
+				if(cloudInfo.isForCloud(uiManager.getCurrentCloud())) {
+					displayCloud(cloudInfo);
+				}
+			}
+		});
+	}
+	
+	
+	private synchronized void displayCloud(CloudInfo cloudInfo) {
+		tagCloudFlowPanel.removeAll(); // remove the loading label
+		
+		JLabel nameLabel = new JLabel(cloudInfo.getCloudName());
+		tagCloudFlowPanel.add(nameLabel);
 		
 		//Create a list of the words to include based on MaxWords parameters
 		List<CloudWordInfo> copy = new ArrayList<CloudWordInfo>();
-		List<CloudWordInfo> original = curCloud.getCloudWordInfoList();
+		List<CloudWordInfo> original = cloudInfo.getCloudWordInfoList();
 		
 		for (int i = 0; i < original.size(); i++)
 		{
@@ -189,7 +214,7 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 		}
 		Collections.sort(copy);
 		
-		Integer max = params.getMaxWords();
+		Integer max = cloudInfo.getMaxWords();
 		Integer numWords = copy.size();
 		if (max < numWords)
 		{
@@ -201,11 +226,11 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 		int count = 0;
 		
 		Map<Integer,JPanel> clusters = new HashMap<Integer, JPanel>();
-		List<CloudWordInfo> wordInfo = curCloud.getCloudWordInfoList();
+		List<CloudWordInfo> wordInfo = cloudInfo.getCloudWordInfoList();
 		Iterator<CloudWordInfo> iter = wordInfo.iterator();
 		
 		//Loop while more words exist and we are under the max
-		while(iter.hasNext() && (count < params.getMaxWords()))
+		while(iter.hasNext() && (count < cloudInfo.getMaxWords()))
 		{
 			CloudWordInfo curWordInfo = iter.next();
 			
@@ -223,7 +248,7 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 				}
 				else
 				{
-					if (params.getDisplayStyle().equals(CloudDisplayStyles.NO_CLUSTERING))
+					if (cloudInfo.getDisplayStyle().equals(CloudDisplayStyles.NO_CLUSTERING))
 					{
 						//curPanel =  new JPanel(new ModifiedFlowLayout(ModifiedFlowLayout.CENTER,10,0));
 						curPanel = tagCloudFlowPanel;
@@ -234,7 +259,7 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 					curPanel = new JPanel(new ModifiedClusterFlowLayout(ModifiedFlowLayout.CENTER,10,0));
 					}
 					
-					if (params.getDisplayStyle().equals(CloudDisplayStyles.CLUSTERED_BOXES))
+					if (cloudInfo.getDisplayStyle().equals(CloudDisplayStyles.CLUSTERED_BOXES))
 					{
 						curPanel.setBorder(new CompoundBorder(BorderFactory.createLineBorder(Color.GRAY), new EmptyBorder(10,10,10,10)));
 					}
@@ -278,9 +303,9 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 				
 				
 				//Get all nodes containing this word
-				Set<CyNode> nodes = info.getCloudParameters().getStringNodeMapping().get(word);
+				Set<CyNode> nodes = info.getCloudInfo().getStringNodeMapping().get(word);
 				
-				CyNetwork network = info.getCloudParameters().getNetworkParams().getNetwork();
+				CyNetwork network = info.getCloudInfo().getNetwork();
 				if (network == null) {
 					return;
 				}
@@ -322,11 +347,6 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 	}
 
 	
-	public CloudParameters getCloudParameters()
-	{
-		return curCloud;
-	}
-
 	@Override
 	public Component getComponent() {
 		return this;
@@ -346,6 +366,6 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 	public String getTitle() {
 		return "WordCloud Display";
 	}
-	
+
 
 }

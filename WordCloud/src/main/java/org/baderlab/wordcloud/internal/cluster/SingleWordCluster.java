@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.baderlab.wordcloud.internal.model.CloudParameters;
-
 /**
  * The SingleWordCluster class contains information about a single set of 
  * clustered words for a CloudParameters object.  These objects can be 
@@ -44,11 +42,11 @@ public class SingleWordCluster implements Comparable<SingleWordCluster>
 	private int totalSum = 0;
 	private int numItems = 0;
 	
-	private CloudParameters params;
+	private final CloudInfo cloudInfo;
 	
 	
-	public SingleWordCluster(CloudParameters cloudParams) {
-		this.params = cloudParams;
+	public SingleWordCluster(CloudInfo cloudInfo) {
+		this.cloudInfo = cloudInfo;
 	}
 	
 	/**
@@ -57,8 +55,8 @@ public class SingleWordCluster implements Comparable<SingleWordCluster>
 	 */
 	public void add(String aWord)
 	{
-		double ratio = params.getRatios().get(aWord); 
-		int fontSize = params.calculateFontSize(aWord, ratio);
+		double ratio = cloudInfo.getRatios().get(aWord); 
+		int fontSize = cloudInfo.calculateFontSize(aWord, ratio);
 		totalSum = totalSum + fontSize;
 		numItems = numItems + 1;
 		wordList.add(aWord);
@@ -74,8 +72,8 @@ public class SingleWordCluster implements Comparable<SingleWordCluster>
 		if (!wordList.contains(aWord))
 			return null;
 		
-		double ratio = params.getRatios().get(aWord); 
-		int fontSize = params.calculateFontSize(aWord, ratio);
+		double ratio = cloudInfo.getRatios().get(aWord); 
+		int fontSize = cloudInfo.calculateFontSize(aWord, ratio);
 		totalSum = totalSum - fontSize;
 		numItems = numItems - 1;
 		wordList.remove(aWord);
@@ -110,8 +108,8 @@ public class SingleWordCluster implements Comparable<SingleWordCluster>
 		for (Iterator<String> iter = wordList.iterator(); iter.hasNext();)
 		{
 			String curWord = iter.next();
-			double ratio = params.getRatios().get(curWord); 
-			int curSize = params.calculateFontSize(curWord, ratio);
+			double ratio = cloudInfo.getRatios().get(curWord); 
+			int curSize = cloudInfo.calculateFontSize(curWord, ratio);
 			if (largest < curSize)
 			{
 				largest = curSize;
@@ -132,8 +130,8 @@ public class SingleWordCluster implements Comparable<SingleWordCluster>
 		for (Iterator<String> iter = wordList.iterator(); iter.hasNext();)
 		{
 			String curWord = iter.next();
-			double ratio = params.getRatios().get(curWord); 
-			int curSize = params.calculateFontSize(curWord, ratio);
+			double ratio = cloudInfo.getRatios().get(curWord); 
+			int curSize = cloudInfo.calculateFontSize(curWord, ratio);
 			
 			sum = sum + Math.pow(curSize, k);
 		}

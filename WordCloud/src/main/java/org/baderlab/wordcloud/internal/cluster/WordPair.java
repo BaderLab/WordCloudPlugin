@@ -24,8 +24,6 @@ package org.baderlab.wordcloud.internal.cluster;
 
 import java.util.Map;
 
-import org.baderlab.wordcloud.internal.model.CloudParameters;
-
 /**
  * A WordPair object contains information about adjacent pairs of words that
  * appear in a selected node.
@@ -36,22 +34,22 @@ import org.baderlab.wordcloud.internal.model.CloudParameters;
 public class WordPair implements Comparable<WordPair>
 {
 	//VARIABLES
-	private String firstWord;
-	private String secondWord;
+	private final String firstWord;
+	private final String secondWord;
 	private Double probability;
-	private CloudParameters params;
+	private final CloudInfo cloudInfo;
 	
 	//CONSTRUCTOR
 	/**
 	 * Creates a fresh instance of a WordPair object for the specified words
 	 * and CloudParameters.
 	 */
-	public WordPair(String aWord, String nextWord, CloudParameters cloudParams)
+	public WordPair(String aWord, String nextWord, CloudInfo cloudInfo)
 	{
-		firstWord = aWord;
-		secondWord = nextWord;
-		params = cloudParams;
-		probability = 0.0;
+		this.firstWord = aWord;
+		this.secondWord = nextWord;
+		this.cloudInfo = cloudInfo;
+		this.probability = 0.0;
 	}
 	
 	//METHODS
@@ -70,7 +68,7 @@ public class WordPair implements Comparable<WordPair>
 		 * (#(A,B)* #Total)/ (#A * #B)
 		 */
 		// Getting the total number of words in the selection
-		Map<String, Integer> selectedCounts = params.getSelectedCounts();
+		Map<String, Integer> selectedCounts = cloudInfo.getSelectedCounts();
 		Integer total = 0;
 		for (String word : selectedCounts.keySet()) {
 			total += selectedCounts.get(word);
@@ -98,8 +96,8 @@ public class WordPair implements Comparable<WordPair>
 		else //They are the same - so now compare with ratios
 		{
 			//Assumes that Ratios have been calculated
-			Double firstRatio = this.getCloudParameters().getPairRatios().get(this);
-			Double secondRatio = second.getCloudParameters().getPairRatios().get(second);
+			Double firstRatio = this.getCloudInfo().getPairRatios().get(this);
+			Double secondRatio = second.getCloudInfo().getPairRatios().get(second);
 			
 			if (firstRatio < secondRatio)
 				return -1;
@@ -128,9 +126,9 @@ public class WordPair implements Comparable<WordPair>
 		return secondWord;
 	}
 	
-	public CloudParameters getCloudParameters()
+	public CloudInfo getCloudInfo()
 	{
-		return params;
+		return cloudInfo;
 	}
 	
 	public Double getProbability()

@@ -27,8 +27,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.baderlab.wordcloud.internal.model.CloudParameters;
-
 /**
  * The WordClusters class contains information about the current clustering
  * state for a CloudParameters object.  When it is first initialized every
@@ -43,17 +41,17 @@ public class WordClusters
 {
 	//VARIABLES
 	private ArrayList<SingleWordCluster> clusters;
-	private final CloudParameters params;
+	private final CloudInfo cloudInfo;
 	
 	//CONSTRUCTORS
 	
 	/**
 	 * Creates a fresh instance of a WordClusters object.
 	 */
-	public WordClusters(CloudParameters cloudParams)
+	public WordClusters(CloudInfo cloudInfo)
 	{
-		clusters = new ArrayList<SingleWordCluster>();
-		params = cloudParams;
+		this.clusters = new ArrayList<SingleWordCluster>();
+		this.cloudInfo = cloudInfo;
 		initialize();
 	}
 	
@@ -69,10 +67,10 @@ public class WordClusters
 		
 		//Initialize as singletons
 		clusters = new ArrayList<SingleWordCluster>();
-		for (String curWord : params.getSelectedCounts().keySet())
+		for (String curWord : cloudInfo.getSelectedCounts().keySet())
 		{
 			//Create a list for each word and add to main list
-			SingleWordCluster curList = new SingleWordCluster(params);
+			SingleWordCluster curList = new SingleWordCluster(cloudInfo);
 			curList.add(curWord);
 			clusters.add(curList);
 		}
@@ -115,7 +113,7 @@ public class WordClusters
 			}//end non null
 		}//end iterator
 		
-		SingleWordCluster newCluster = new SingleWordCluster(params);
+		SingleWordCluster newCluster = new SingleWordCluster(cloudInfo);
 		List<String> firstList = firstCluster.getWordList();
 		List<String> secondList = secondCluster.getWordList();
 		
@@ -193,11 +191,6 @@ public class WordClusters
 	public ArrayList<SingleWordCluster> getClusters()
 	{
 		return clusters;
-	}
-	
-	public CloudParameters getCloudParameters()
-	{
-		return params;
 	}
 	
 }

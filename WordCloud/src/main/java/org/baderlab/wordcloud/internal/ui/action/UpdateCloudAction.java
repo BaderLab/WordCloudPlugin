@@ -70,12 +70,11 @@ public class UpdateCloudAction extends AbstractCyAction
 		
 		if(!nodes.equals(cloud.getSelectedNodes())) {
 			cloud.setSelectedNodes(nodes);
-//			cloud.calculateFontSizes();
 			uiManager.getCloudDisplayPanel().updateCloudDisplay(cloud);	
 		}
 		
 		if (cloud.getClusterTable() != null) {
-			List<CloudWordInfo> wordInfos = cloud.getCloudWordInfoList();
+			List<CloudWordInfo> wordInfos = cloud.calculateCloud().getCloudWordInfoList();
 			ArrayList<String> WC_Word = new ArrayList<String>();
 			ArrayList<String> WC_FontSize = new ArrayList<String>();
 			ArrayList<String> WC_Cluster = new ArrayList<String>();

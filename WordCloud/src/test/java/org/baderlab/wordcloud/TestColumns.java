@@ -173,7 +173,7 @@ public class TestColumns {
 		table.deleteColumn(cloud.getCloudName());
 		
 		assertTrue(cloud.getSelectedNodes().isEmpty());
-		assertTrue(cloud.getCloudWordInfoList().isEmpty());
+		assertTrue(cloud.calculateCloud().getCloudWordInfoList().isEmpty());
 		
 		// updating the cloud should not blow up
 		cloud.setSelectedNodes(network1.getNodeList());

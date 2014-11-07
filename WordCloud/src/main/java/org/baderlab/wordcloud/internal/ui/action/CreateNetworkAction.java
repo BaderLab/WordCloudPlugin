@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.baderlab.wordcloud.internal.cluster.CloudInfo;
 import org.baderlab.wordcloud.internal.cluster.WordPair;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.CloudProvider;
@@ -103,8 +104,9 @@ public class CreateNetworkAction extends AbstractCyAction {
 		if(cloud == null)
 			return;
 		
-		Map<String, Double> ratios = cloud.getRatios();
-		Map<WordPair, Double> pairRatios = cloud.getPairRatios();
+		CloudInfo cloudInfo = cloud.calculateCloud();
+		Map<String, Double> ratios = cloudInfo.getRatios();
+		Map<WordPair, Double> pairRatios = cloudInfo.getPairRatios();
 		
 		//Create the network
 		String newNetworkName = cloud.getNextNetworkName();

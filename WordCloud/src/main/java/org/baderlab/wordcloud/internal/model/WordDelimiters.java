@@ -224,7 +224,7 @@ public class WordDelimiters
 	}
 	
 	
-	private Pattern getSplitter() {
+	public synchronized Pattern getSplitter() {
 		if(splitter == null) {
 			StringBuilder sb = new StringBuilder();
 			boolean first = true;

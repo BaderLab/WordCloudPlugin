@@ -100,7 +100,7 @@ public class CreateWordCloudCommandHandlerTask implements Task {
 		CloudParameters cloudParams = networkParams.createCloud(nodes, cloudName, wordColumnName, cloudGroupTable);
 		
 		// Add wordInfo to table
-		List<CloudWordInfo> wordInfo = cloudParams.getCloudWordInfoList();
+		List<CloudWordInfo> wordInfo = cloudParams.calculateCloud().getCloudWordInfoList();
 		ArrayList<String> WC_Word = new ArrayList<String>();
 		ArrayList<String> WC_FontSize = new ArrayList<String>();
 		ArrayList<String> WC_Cluster = new ArrayList<String>();

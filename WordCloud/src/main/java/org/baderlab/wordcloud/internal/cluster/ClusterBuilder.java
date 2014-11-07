@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.baderlab.wordcloud.internal.model.CloudParameters;
-
 /**
  * The SemanticSummaryClusterBuilder class contains the methods and
  * variables necessary for clustering the data contained in a 
@@ -39,7 +37,7 @@ import org.baderlab.wordcloud.internal.model.CloudParameters;
 
 public class ClusterBuilder 
 {
-	private final CloudParameters params;
+	private final CloudInfo cloudInfo;
 	private final ClusterPriorityQueue queue;
 	private final WordClusters clusters;
 	private List<CloudWordInfo> cloudWords;
@@ -48,12 +46,12 @@ public class ClusterBuilder
 	/** 
 	 * Default constructor to create a fresh instance.  
 	 */
-	public ClusterBuilder(CloudParameters cloudParams)
+	public ClusterBuilder(CloudInfo cloudInfo)
 	{
-		params = cloudParams;
-		queue = new ClusterPriorityQueue(cloudParams);
-		clusters = new WordClusters(cloudParams);
-		cloudWords = new ArrayList<CloudWordInfo>();
+		this.cloudInfo = cloudInfo;
+		this.queue = new ClusterPriorityQueue(cloudInfo);
+		this.clusters = new WordClusters(cloudInfo);
+		this.cloudWords = new ArrayList<CloudWordInfo>();
 	}
 	
 	/**
@@ -114,7 +112,7 @@ public class ClusterBuilder
 		
 		Integer wordCount = 0;
 		
-		Map<String, Double> ratios = params.getRatios();
+		Map<String, Double> ratios = cloudInfo.getRatios();
 		for(int i = 0; i < clusters.getClusters().size(); i++)
 		{
 			SingleWordCluster curCluster = clusters.getClusters().get(i);
@@ -125,8 +123,8 @@ public class ClusterBuilder
 			for (int j = 0; j < curList.size(); j++)
 			{
 				String curWord = curList.get(j);
-				Integer fontSize = params.calculateFontSize(curWord, ratios.get(curWord));
-				CloudWordInfo curInfo = new CloudWordInfo(params, curWord, fontSize, clusterColor, i, wordCount);
+				Integer fontSize = cloudInfo.calculateFontSize(curWord, ratios.get(curWord));
+				CloudWordInfo curInfo = new CloudWordInfo(cloudInfo, curWord, fontSize, clusterColor, i, wordCount);
 				wordCount++;
 				cloudWords.add(curInfo);
 			}
@@ -134,10 +132,6 @@ public class ClusterBuilder
 	}
 	
 	
-	public CloudParameters getCloudParameters()
-	{
-		return params;
-	}
 	
 	public List<CloudWordInfo> getCloudWords()
 	{

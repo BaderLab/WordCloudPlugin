@@ -25,6 +25,7 @@ package org.baderlab.wordcloud.internal.ui.input;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 
@@ -47,13 +48,14 @@ public class CloudListMouseListener extends MouseAdapter {
 	private CySwingApplication swingApplication;
 	private UIManager uiManager;
 	private CyServiceRegistrar registrar;
-
+	private JCheckBox syncCheckBox;
 	
-	public CloudListMouseListener(UIManager uiManager, CySwingApplication swingApplication, CyServiceRegistrar registrar, JList list) {
+	public CloudListMouseListener(UIManager uiManager, CySwingApplication swingApplication, CyServiceRegistrar registrar, JList list, JCheckBox syncCheckBox) {
 		this.uiManager = uiManager;
 		this.swingApplication = swingApplication;
 		this.list = list;
 		this.registrar = registrar;
+		this.syncCheckBox = syncCheckBox;
 	}
 	
 	
@@ -72,6 +74,7 @@ public class CloudListMouseListener extends MouseAdapter {
 	private void showPopup(MouseEvent e) {
 		int clicked = list.locationToIndex(e.getPoint());
 		if(clicked != -1 && list.getCellBounds(clicked, clicked).contains(e.getPoint())) {
+			syncCheckBox.setSelected(false); // important, prevents unnecessary cloud updates
 			list.setSelectedIndex(clicked);
 			final String cloudName = (String)list.getSelectedValue();
 			CloudParameters cloud = uiManager.getCurrentNetwork().getCloud(cloudName);

@@ -129,6 +129,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	
 	private ListSelectionListener cloudListSelectionListener;
 	private ActionListener syncCheckboxActionListener;
+	private ChangeListener networkUpdateListener;
 	
 	private Action createCloudAction;
 	
@@ -204,7 +205,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cmbStyle.addActionListener(liveUpdateListener);
 
 		// Stemming and filtering is on the network level
-		ChangeListener networkUpdateListener = new ChangeListener() {
+		networkUpdateListener = new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				uiManager.getCurrentNetwork().updateAllClouds();
 				liveUpdateListener.update();
@@ -237,7 +238,6 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloudList.setSelectedIndex(0);
 		cloudList.setVisibleRowCount(10);
 		cloudList.setFixedCellHeight(DEF_ROW_HEIGHT);
-		cloudList.addMouseListener(new CloudListMouseListener(uiManager, application, registrar, cloudList));
 		
 		CloudProvider cloudListProvider = new CloudProvider() {
 			public CloudParameters getCloud() {
@@ -281,6 +281,8 @@ public class SemanticSummaryInputPanel extends JPanel {
 			}
 		};
 		syncCheckBox.addActionListener(syncCheckboxActionListener);
+		
+		cloudList.addMouseListener(new CloudListMouseListener(uiManager, application, registrar, cloudList, syncCheckBox));
 		
 		createButton = new JButton();
 		createButton.setAction(createCloudAction);
@@ -635,14 +637,10 @@ public class SemanticSummaryInputPanel extends JPanel {
 	public void setCurrentCloud(CloudParameters params) {
 		cloudList.removeListSelectionListener(cloudListSelectionListener);
 		syncCheckBox.removeActionListener(syncCheckboxActionListener);
+		stemmer.removeChangeListener(networkUpdateListener);
+		filterNumsCheckBox.removeChangeListener(networkUpdateListener);
 		liveUpdateListener.enabled = false;
 		
-		// WHY?
-//		params.setRatiosInitialized(false);
-//		params.setCountInitialized(false);
-//		params.setSelInitialized(false);
-//		params.calculateFontSizes();
-				
 		// Set the network and cloud in the top panel (null cloud will result in empty list)
 		List<CloudParameters> networkClouds = params.getNetworkParams().getClouds();
 		DefaultListModel listModel = new DefaultListModel();
@@ -672,6 +670,8 @@ public class SemanticSummaryInputPanel extends JPanel {
 		liveUpdateListener.enabled = true;
 		cloudList.addListSelectionListener(cloudListSelectionListener);
 		syncCheckBox.addActionListener(syncCheckboxActionListener);
+		stemmer.addChangeListener(networkUpdateListener);
+		filterNumsCheckBox.addChangeListener(networkUpdateListener);
 	}
 	
 	

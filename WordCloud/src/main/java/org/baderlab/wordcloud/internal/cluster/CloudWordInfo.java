@@ -27,8 +27,6 @@ import java.awt.Font;
 
 import javax.swing.JLabel;
 
-import org.baderlab.wordcloud.internal.model.CloudParameters;
-
 /**
  * The CloudWordInfo class defines information pertaining to a particular
  * word in a Cloud.  In particular this class defines information that 
@@ -41,7 +39,7 @@ public class CloudWordInfo implements Comparable<CloudWordInfo>
 {
 	private final String word;
 	private final int fontSize;
-	private final CloudParameters params;
+	private final CloudInfo cloudInfo;
 	private final Color textColor;
 	private final int cluster;
 	private final int wordNum;
@@ -53,8 +51,8 @@ public class CloudWordInfo implements Comparable<CloudWordInfo>
 	
 	
 	
-	public CloudWordInfo(CloudParameters params, String word, int fontSize, Color textColor, int cluster, int wordNum) {
-		this.params = params;
+	public CloudWordInfo(CloudInfo cloudInfo, String word, int fontSize, Color textColor, int cluster, int wordNum) {
+		this.cloudInfo = cloudInfo;
 		this.word = word;
 		this.fontSize = fontSize;
 		this.textColor = textColor;
@@ -62,8 +60,8 @@ public class CloudWordInfo implements Comparable<CloudWordInfo>
 		this.wordNum = wordNum;
 	}
 	
-	public CloudWordInfo(CloudParameters params, String word, int fontSize) {
-		this(params, word, fontSize, null, 0, 0);
+	public CloudWordInfo(CloudInfo cloudInfo, String word, int fontSize) {
+		this(cloudInfo, word, fontSize, null, 0, 0);
 	}
 
 	
@@ -151,9 +149,9 @@ public class CloudWordInfo implements Comparable<CloudWordInfo>
 		return fontSize;
 	}
 	
-	public CloudParameters getCloudParameters()
+	public CloudInfo getCloudInfo()
 	{
-		return params;
+		return cloudInfo;
 	}
 	
 	public Color getTextColor()
