@@ -7,6 +7,7 @@ import org.baderlab.wordcloud.internal.command.CreateWordCloudCommandHandlerTask
 import org.baderlab.wordcloud.internal.command.DeleteWordCloudCommandHandlerTaskFactory;
 import org.baderlab.wordcloud.internal.command.SelectWordCloudCommandHandlerTaskFactory;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
+import org.baderlab.wordcloud.internal.ui.CloudTaskManager;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.baderlab.wordcloud.internal.ui.action.CreateCloudAction;
 import org.baderlab.wordcloud.internal.ui.action.ExportImageAction;
@@ -35,6 +36,8 @@ public class CyActivator extends AbstractCyActivator {
 	
 	private static final String APPS_MENU = "Apps.WordCloud";
 	
+	private CloudTaskManager cloudTaskManager;
+	
 	@Override
 	public void start(BundleContext context) throws Exception {
 		
@@ -61,7 +64,9 @@ public class CyActivator extends AbstractCyActivator {
 		// Managers
 		CloudModelManager cloudModelManager = new CloudModelManager(networkManager, tableManager, streamUtil, propsReader);
 		registerAllServices(context, cloudModelManager, new Properties());
-		UIManager uiManager = new UIManager(cloudModelManager, applicationManager, application, registrar, viewManager);
+		cloudTaskManager = new CloudTaskManager();
+		
+		UIManager uiManager = new UIManager(cloudModelManager, applicationManager, application, registrar, viewManager, cloudTaskManager);
 		cloudModelManager.addListener(uiManager);
 		registerAllServices(context, uiManager, new Properties());
 		
@@ -103,6 +108,12 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Always show WordCloud panels when Cytoscape starts.
 		showAction.actionPerformed(null);
+	}
+	
+	
+	@Override
+	public void shutDown() {
+		cloudTaskManager.disposeAll();
 	}
 	
 	

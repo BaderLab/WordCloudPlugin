@@ -58,8 +58,8 @@ import javax.swing.border.EmptyBorder;
 
 import org.baderlab.wordcloud.internal.SelectionUtils;
 import org.baderlab.wordcloud.internal.cluster.CloudDisplayStyles;
-import org.baderlab.wordcloud.internal.cluster.CloudWordInfo;
 import org.baderlab.wordcloud.internal.cluster.CloudInfo;
+import org.baderlab.wordcloud.internal.cluster.CloudWordInfo;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.ui.CloudTaskManager;
 import org.baderlab.wordcloud.internal.ui.DualPanelDocker;
@@ -83,12 +83,14 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 	private JScrollPane cloudScroll; 
 	private JRootPane rootPane;
 
-	private final CloudTaskManager cloudTaskManager = new CloudTaskManager();
+	private final CloudTaskManager cloudTaskManager;
 	private final UIManager uiManager;
 	
 
-	public CloudDisplayPanel(UIManager uiManager) {
+	public CloudDisplayPanel(UIManager uiManager, CloudTaskManager cloudTaskManager) {
 		this.uiManager = uiManager;
+		this.cloudTaskManager = cloudTaskManager;
+		
 		setLayout(new BorderLayout());
 		
 		//Create JPanel containing tag words
@@ -166,33 +168,30 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 	}
 	
 	
-	public void disposeCloud(CloudParameters cloud) {
-		cloudTaskManager.dispose(cloud);
-	}
-	
 	/**
 	 * Updates the tagCloudFlowPanel to include all of the words at the size they
 	 * are defined for in params.
 	 * 
 	 * To clear the display pass a NetworkParameters.getNullCloud();
 	 */
-	public void updateCloudDisplay(CloudParameters params)
+	public void updateCloudDisplay(final CloudParameters params)
 	{
 		this.clearCloud();
 		
 		if(!params.getNetworkParams().isNullNetwork()) {
 			String name = params.getCloudName();
 			tagCloudFlowPanel.removeAll();
-			JLabel loadingLabel = new JLabel("Loading " + name + "...");
-			tagCloudFlowPanel.add(loadingLabel);
+			String loading = params.isNullCloud() ? "Loading..." : "Loading " + name + "...";
+			tagCloudFlowPanel.add(new JLabel(loading));
 		}
 		
 		cloudTaskManager.submit(params, new CloudTaskManager.Callback() {
 			public void onFinish(CloudInfo cloudInfo) {
-				if(cloudInfo.isForCloud(uiManager.getCurrentCloud())) {
+				if(cloudInfo != null && cloudInfo.isForCloud(uiManager.getCurrentCloud())) {
 					displayCloud(cloudInfo);
 				}
 			}
+			
 		});
 	}
 	

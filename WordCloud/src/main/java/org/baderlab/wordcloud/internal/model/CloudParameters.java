@@ -98,7 +98,6 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	
 	
 	public void invalidate() {
-		System.out.println("invalidate " + getCloudName());
 		cloudWordInfoBuilder = null;
 	}
 	

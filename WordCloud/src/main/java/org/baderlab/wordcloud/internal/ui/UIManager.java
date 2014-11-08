@@ -42,6 +42,7 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	private final CySwingApplication application;
 	private final CyServiceRegistrar registrar;
 	private final CyNetworkViewManager viewManager;
+	private final CloudTaskManager cloudTaskManager;
 	
 	// UI components that are managed
 	private SemanticSummaryInputPanel inputWindow;
@@ -63,13 +64,14 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 			CyApplicationManager applicationManager, 
 			CySwingApplication application, 
 			CyServiceRegistrar registrar,
-			CyNetworkViewManager viewManager) {
+			CyNetworkViewManager viewManager,
+			CloudTaskManager cloudTaskManager) {
 		this.cloudManager = cloudManager;
 		this.applicationManager = applicationManager;
 		this.application = application;
 		this.registrar = registrar;
 		this.viewManager = viewManager;
-		
+		this.cloudTaskManager = cloudTaskManager;
 	}
 	
 	@SuppressWarnings("serial")
@@ -99,7 +101,7 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		if(docker == null) {
 			inputWindow = new SemanticSummaryInputPanel(applicationManager, application, this, registrar);
 			inputWindow.setPreferredSize(new Dimension(350, 400));
-			cloudWindow = new CloudDisplayPanel(this);
+			cloudWindow = new CloudDisplayPanel(this, cloudTaskManager);
 			docker = new DualPanelDocker(inputWindow, cloudWindow, application, registrar);
 			cloudWindow.setDocker(docker);
 			if(showHideAction != null) {
@@ -123,6 +125,8 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 			if(showHideAction != null) {
 				showHideAction.setName("Show WordCloud");
 			}
+			
+			cloudTaskManager.disposeAll();
 		}
 	}
 	
@@ -245,7 +249,8 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		if(hidden)
 			return;
 		
-		cloudWindow.disposeCloud(cloud);
+		cloudTaskManager.dispose(cloud);
+		
 		if(cloud.getNetworkParams() == currentNetwork) {
 			setCurrentCloud(cloud.getNetworkParams());
 		}

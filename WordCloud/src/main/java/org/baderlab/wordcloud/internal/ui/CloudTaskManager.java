@@ -1,5 +1,7 @@
 package org.baderlab.wordcloud.internal.ui;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +26,7 @@ import org.baderlab.wordcloud.internal.model.CloudParameters;
 public class CloudTaskManager {
 	
 	public interface Callback {
-		public void onFinish(CloudInfo cloudInfo);
+		void onFinish(CloudInfo cloudInfo);
 	}
 	
 	// Create one thread per CloudParameters, this will serialize each cloud but allow multiple clouds to be calculated concurrently.
@@ -42,9 +44,27 @@ public class CloudTaskManager {
 	public synchronized void dispose(CloudParameters cloud) {
 		ExecutorService executor = threads.remove(cloud);
 		if(executor != null) {
-			executor.shutdown();
+			try {
+				executor.shutdown();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
+	
+	public synchronized void disposeAll() {
+		Collection<ExecutorService> executors = new ArrayList<ExecutorService>(threads.values());
+		threads.clear();
+		
+		for(ExecutorService executor : executors) {
+			try {
+				executor.shutdown();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	
 	/**
 	 * Submits the task.
@@ -60,7 +80,9 @@ public class CloudTaskManager {
 	public void submit(final CloudParameters cloudParams, final Callback callback) {
 		Runnable task = new Runnable() {
 			public void run() {
+				
 				final CloudInfo cloudInfo = cloudParams.calculateCloud(); // long running
+				
 				if(callback != null) {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
@@ -68,6 +90,7 @@ public class CloudTaskManager {
 						}
 					});
 				}
+				
 			}
 		};
 		
