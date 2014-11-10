@@ -46,7 +46,7 @@ public class SliderBarPanel extends JPanel {
 //    private NumberRangeModel rangeModel;
 
     //precision that the slider can be adjusted to
-    private final double precision = 10.0;
+    private final double precision = 100.0;
     private int dec_precision = (int) Math.log10(precision); // number of decimals for given precision
 
     private JLabel label;
@@ -112,7 +112,7 @@ public class SliderBarPanel extends JPanel {
         slider.setLabelTable(labelTable);
 
         slider.setPaintLabels(true);
-        slider.setSnapToTicks(true);
+        //slider.setSnapToTicks(true);
 
         Dimension currentsize = slider.getPreferredSize();
         currentsize.width = desired_width;

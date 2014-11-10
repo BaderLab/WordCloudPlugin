@@ -82,7 +82,8 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 	private JPanel tagCloudFlowPanel;//add JLabels here for words
 	private JScrollPane cloudScroll; 
 	private JRootPane rootPane;
-
+	private JPanel loadingPanel;
+	
 	private final CloudTaskManager cloudTaskManager;
 	private final UIManager uiManager;
 	
@@ -127,6 +128,9 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 		glassPane.setVisible(true);
 		glassPane.add(buttonPanel, BorderLayout.SOUTH);
 		
+		loadingPanel = new JPanel(new BorderLayout());
+		loadingPanel.setOpaque(false);
+		glassPane.add(loadingPanel, BorderLayout.NORTH);
 		
 		dockButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -176,12 +180,12 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 	 */
 	public void updateCloudDisplay(final CloudParameters params)
 	{
-		this.clearCloud();
-		
 		if(!params.isAlreadyCalculated() && !params.getNetworkParams().isNullNetwork()) {
-			tagCloudFlowPanel.removeAll();
-			String loading = params.isNullCloud() ? "Loading..." : "Loading " + params.getCloudName() + "...";
-			tagCloudFlowPanel.add(new JLabel(loading));
+			String loading = params.isNullCloud() ? " Loading..." : " Loading " + params.getCloudName() + "...";
+			JLabel label = new JLabel(loading);
+			label.setOpaque(true);
+			loadingPanel.add(label, BorderLayout.CENTER);
+//			loadingPanel.revalidate();
 		}
 		
 		cloudTaskManager.submit(params, new CloudTaskManager.Callback() {
@@ -196,7 +200,8 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 	
 	
 	private synchronized void displayCloud(CloudInfo cloudInfo) {
-		tagCloudFlowPanel.removeAll(); // remove the loading label
+		loadingPanel.removeAll(); // remove the loading label
+		this.clearCloud();
 		
 		//Create a list of the words to include based on MaxWords parameters
 		List<CloudWordInfo> copy = new ArrayList<CloudWordInfo>();
