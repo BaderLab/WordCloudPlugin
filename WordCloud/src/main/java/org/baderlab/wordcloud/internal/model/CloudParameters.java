@@ -114,6 +114,12 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		return cloudWordInfoBuilder;
 	}
 	
+	/**
+	 * Returns true if the cloud has already been calculated.
+	 */
+	public synchronized boolean isAlreadyCalculated() {
+		return cloudWordInfoBuilder != null;
+	}
 	
 	/**
 	 * Constructor to create CloudParameters from a cytoscape property file

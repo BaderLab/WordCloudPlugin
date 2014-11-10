@@ -178,10 +178,9 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 	{
 		this.clearCloud();
 		
-		if(!params.getNetworkParams().isNullNetwork()) {
-			String name = params.getCloudName();
+		if(!params.isAlreadyCalculated() && !params.getNetworkParams().isNullNetwork()) {
 			tagCloudFlowPanel.removeAll();
-			String loading = params.isNullCloud() ? "Loading..." : "Loading " + name + "...";
+			String loading = params.isNullCloud() ? "Loading..." : "Loading " + params.getCloudName() + "...";
 			tagCloudFlowPanel.add(new JLabel(loading));
 		}
 		
@@ -198,9 +197,6 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 	
 	private synchronized void displayCloud(CloudInfo cloudInfo) {
 		tagCloudFlowPanel.removeAll(); // remove the loading label
-		
-		JLabel nameLabel = new JLabel(cloudInfo.getCloudName());
-		tagCloudFlowPanel.add(nameLabel);
 		
 		//Create a list of the words to include based on MaxWords parameters
 		List<CloudWordInfo> copy = new ArrayList<CloudWordInfo>();
