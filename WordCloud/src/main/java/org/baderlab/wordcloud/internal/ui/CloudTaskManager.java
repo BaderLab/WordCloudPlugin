@@ -1,10 +1,6 @@
 package org.baderlab.wordcloud.internal.ui;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,40 +25,28 @@ public class CloudTaskManager {
 		void onFinish(CloudInfo cloudInfo);
 	}
 	
-	// Create one thread per CloudParameters, this will serialize each cloud but allow multiple clouds to be calculated concurrently.
-	private Map<CloudParameters,ExecutorService> threads = Collections.synchronizedMap(new HashMap<CloudParameters, ExecutorService>());
+	/**
+	 * Locks are used to serialize the computation for each CloudParameters object.
+	 * The results of a cloud are usually cached so if the same cloud is submitted
+	 * several times it should only be recalculated if something actually changed.
+	 */
+	private final WeakHashMap<CloudParameters, Object> locks = new WeakHashMap<CloudParameters, Object>();
 	
-	private synchronized ExecutorService getThread(CloudParameters cloud) {
-		ExecutorService executor = threads.get(cloud);
-		if(executor == null) {
-			executor = Executors.newSingleThreadExecutor(); // one thread per cloud
-			threads.put(cloud, executor);
-		}
-		return executor;
-	}
+	private final ExecutorService executor = Executors.newCachedThreadPool();
 	
-	public synchronized void dispose(CloudParameters cloud) {
-		ExecutorService executor = threads.remove(cloud);
-		if(executor != null) {
-			try {
-				executor.shutdown();
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
+	
+	private synchronized Object getLock(CloudParameters cloudParams) {
+		Object lock = locks.get(cloudParams);
+		if(lock == null) {
+			lock = new Object();
+			locks.put(cloudParams, lock);
 		}
+		return lock;
 	}
 	
 	public synchronized void disposeAll() {
-		Collection<ExecutorService> executors = new ArrayList<ExecutorService>(threads.values());
-		threads.clear();
-		
-		for(ExecutorService executor : executors) {
-			try {
-				executor.shutdown();
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
+		executor.shutdown();
+		locks.clear(); 
 	}
 	
 	
@@ -71,17 +55,16 @@ public class CloudTaskManager {
 	 * Runs on a non UI thread.
 	 * Callback runs on the UI thread.
 	 * 
-	 * If the cloud has already been computed then the callback executes immediately.
-	 * 
-	 * 
-	 * @param cloudParams
-	 * @param callback Will only get
+	 * If the cloud has already been computed then the callback usually executes immediately.
 	 */
 	public void submit(final CloudParameters cloudParams, final Callback callback) {
 		Runnable task = new Runnable() {
 			public void run() {
 				
-				final CloudInfo cloudInfo = cloudParams.calculateCloud(); // long running
+				final CloudInfo cloudInfo;
+				synchronized(getLock(cloudParams)) {
+					cloudInfo = cloudParams.calculateCloud(); // long running
+				}
 				
 				if(callback != null) {
 					SwingUtilities.invokeLater(new Runnable() {
@@ -94,7 +77,7 @@ public class CloudTaskManager {
 			}
 		};
 		
-		getThread(cloudParams).submit(task);
+		executor.submit(task);
 	}
 	
 

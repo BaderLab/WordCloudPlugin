@@ -249,8 +249,6 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 		if(hidden)
 			return;
 		
-		cloudTaskManager.dispose(cloud);
-		
 		if(cloud.getNetworkParams() == currentNetwork) {
 			setCurrentCloud(cloud.getNetworkParams());
 		}

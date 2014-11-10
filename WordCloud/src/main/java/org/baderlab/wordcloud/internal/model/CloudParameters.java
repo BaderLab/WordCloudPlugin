@@ -59,6 +59,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	
 	private final NetworkParameters networkParams; //parent network
 	private CloudInfo cloudWordInfoBuilder;
+	private boolean calculated = false;
 	
 	private String cloudName;
 	private List<String> attributeNames;
@@ -98,6 +99,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	
 	
 	public void invalidate() {
+		calculated = false;
 		cloudWordInfoBuilder = null;
 	}
 	
@@ -105,11 +107,15 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	/**
 	 * Returns the object that is responsible for calculating the cloud.
 	 * Warning this method has the potential to be long running.
+	 * Warning this method is synchronized, so only one thread may be
+	 * calculated the could at one time. This is done because 
+	 * the CloudParameters object is mutable.
 	 */
 	public synchronized CloudInfo calculateCloud() {
 		if(cloudWordInfoBuilder == null) {
 			cloudWordInfoBuilder = new CloudInfo(this);
 			cloudWordInfoBuilder.calculateFontSizes();
+			calculated = true;
 		}
 		return cloudWordInfoBuilder;
 	}
@@ -117,8 +123,8 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	/**
 	 * Returns true if the cloud has already been calculated.
 	 */
-	public synchronized boolean isAlreadyCalculated() {
-		return cloudWordInfoBuilder != null;
+	public boolean isAlreadyCalculated() {
+		return calculated;
 	}
 	
 	/**
