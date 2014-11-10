@@ -25,6 +25,9 @@ package org.baderlab.wordcloud.internal.cluster;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -40,7 +43,7 @@ import java.util.Map.Entry;
 
 public class ClusterPriorityQueue 
 {
-	private ArrayList<WordPair> queue;
+	private List<WordPair> queue;
 	private CloudInfo cloudInfo;
 	
 	
@@ -49,7 +52,7 @@ public class ClusterPriorityQueue
 	 */
 	public ClusterPriorityQueue(CloudInfo cloudInfo)
 	{
-		this.queue = new ArrayList<WordPair>();
+		this.queue = new LinkedList<WordPair>();
 		this.cloudInfo = cloudInfo;
 		initialize();
 	}
@@ -60,9 +63,13 @@ public class ClusterPriorityQueue
 	 */
 	private void initialize()
 	{
-		queue = new ArrayList<WordPair>();
 		
-		for (Entry<WordPair, Integer> entry : cloudInfo.getSelectedPairCounts().entrySet())
+		Map<WordPair, Integer> selectedPairCounts = cloudInfo.getSelectedPairCounts();
+		queue = new ArrayList<WordPair>(selectedPairCounts.size());
+//		queue = new LinkedList<WordPair>();
+		
+		
+		for (Entry<WordPair, Integer> entry : selectedPairCounts.entrySet())
 		{
 			WordPair curPair = entry.getKey();
 			curPair.calculateProbability(entry.getValue());
@@ -95,54 +102,48 @@ public class ClusterPriorityQueue
 	 */
 	public WordPair remove()
 	{
-		WordPair removedPair;
-		if (!queue.isEmpty())
-			removedPair = queue.remove(0);
-		else
-			removedPair = null;
+		if(queue.isEmpty())
+			return null;
+		
+		WordPair removedPair = queue.remove(0);
 		
 		//Remove all other entries from queue necessary
-		if (removedPair != null)
+		String firstWord = removedPair.getFirstWord();
+		String secondWord = removedPair.getSecondWord();
+		
+		int h1 = firstWord.hashCode();
+		int h2 = secondWord.hashCode();
+		
+		//Create list to remove
+		for(Iterator<WordPair> iter = queue.iterator(); iter.hasNext();)
 		{
-			String firstWord = removedPair.getFirstWord();
-			String secondWord = removedPair.getSecondWord();
+			WordPair curPair = iter.next();
+			String curFirst = curPair.getFirstWord();
+			String curSecond = curPair.getSecondWord();
 			
-			//Create list to remove
-			for(Iterator<WordPair> iter = queue.iterator(); iter.hasNext();)
-			{
-				WordPair curPair = iter.next();
-				String curFirst = curPair.getFirstWord();
-				String curSecond = curPair.getSecondWord();
-				
-				//Remove all pairs with words in the same position as the removed
-				//and the inverse of the removed
-				if (firstWord.equals(curFirst) || secondWord.equals(curSecond) ||
-						(firstWord.equals(curSecond) && secondWord.equals(curFirst)))
+//			//Remove all pairs with words in the same position as the removed
+//			//and the inverse of the removed
+//			if (firstWord.equals(curFirst) || secondWord.equals(curSecond) || (firstWord.equals(curSecond) && secondWord.equals(curFirst)))
+//				iter.remove();
+			
+			// believe it or not comparing hashcodes first actually speeds this up a lot
+			int c1 = curFirst.hashCode();
+			int c2 = curSecond.hashCode();
+			if(h1 == c1 || h2 == c2 || h1 == c2 || h2 == c1) {
+				if (firstWord.equals(curFirst) || secondWord.equals(curSecond) || (firstWord.equals(curSecond) && secondWord.equals(curFirst))) {
 					iter.remove();
+				}
 			}
+			
+			
 		}
 		return removedPair;	
 	}
 	
-	
-	public int size()
-	{
-		return queue.size();
-	}
-	
+
 	public boolean isEmpty()
 	{
 		return queue.isEmpty();
-	}
-	
-	public ArrayList<WordPair> getQueue()
-	{
-		return queue;
-	}
-	
-	public void setQueue(ArrayList<WordPair> aQueue)
-	{
-		queue = aQueue;
 	}
 	
 	

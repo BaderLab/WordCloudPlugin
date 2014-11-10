@@ -51,6 +51,7 @@ public class ClusterBuilder
 		this.cloudInfo = cloudInfo;
 		this.queue = new ClusterPriorityQueue(cloudInfo);
 		this.clusters = new WordClusters(cloudInfo);
+		
 		this.cloudWords = new ArrayList<CloudWordInfo>();
 	}
 	
@@ -59,23 +60,26 @@ public class ClusterBuilder
 	 * using the input cutoff if this object has been initialized.
 	 * @param Double - the cutoff value to use for clustering.
 	 */
-	public void clusterData(Double cutoffVal)
+	public void clusterData(double cutoffVal)
 	{
 		boolean isDone = false; //flag for when we pass the cutoff value
+		
 		
 		while (!isDone && !queue.isEmpty())
 		{
 			WordPair curPair = queue.peak();
 			
 			//Check cutoff
-			if (curPair.getProbability()< cutoffVal)
+			if (curPair.getProbability() < cutoffVal)
 			{
 				isDone = true;
 				continue;
 			}
 			
 			curPair = queue.remove();
+			
 			clusters.combineClusters(curPair);
+			
 		}//end while
 		
 		//Sort Clusters

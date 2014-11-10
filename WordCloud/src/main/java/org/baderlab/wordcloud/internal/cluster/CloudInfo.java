@@ -54,6 +54,8 @@ public class CloudInfo {
 	private boolean countInitialized = false; //true when network counts are initialized
 	private boolean selInitialized = false; //true when selected counts initialized
 	private boolean ratiosInitialized = false; //true when ratios are computed
+	private int countTotal = 0;
+	
 	
 	private final CloudParameters cloud; 
 	
@@ -214,7 +216,7 @@ public class CloudInfo {
 	 */
 	private void updateSelectedCounts()
 	{
-		System.out.println("updateSelectedCounts");
+		
 		CyNetwork network = cloud.getNetworkParams().getNetwork();
 		//do nothing if selected hasn't changed initialized
 		if (selInitialized || network == null)
@@ -228,9 +230,11 @@ public class CloudInfo {
 		this.selectedCounts = new HashMap<String, Integer>();
 		this.selectedPairCounts = new HashMap<WordPair, Integer>();
 		
+		Collection<CyNode> selectedNodes = cloud.getSelectedNodes();
+		
 		for (String attributeName : cloud.getAttributeNames())
 		{
-			for (CyNode curNode : cloud.getSelectedNodes())
+			for (CyNode curNode : selectedNodes)
 			{
 				String value = getNodeAttributeVal(network, curNode, attributeName);
 				if(value != null) {
@@ -242,6 +246,7 @@ public class CloudInfo {
 		calculateWeights();
 		
 		selInitialized = true;
+		
 	}
 	
 	
@@ -310,6 +315,8 @@ public class CloudInfo {
 		double total = 0.0;
 		int count = 0;
 		
+		final int selTotal = cloud.getSelectedNumNodes();
+		
 		//Iterate through to calculate ratios
 		boolean initialized = false;
 		for (Entry<String, Integer> entry : selectedCounts.entrySet())
@@ -322,7 +329,6 @@ public class CloudInfo {
 			 * This is the same as the original definition of ratio, just with some
 			 * different algebra.
 			 */
-			int selTotal = cloud.getSelectedNumNodes();
 			int selCount = entry.getValue();
 			int netCount = networkCounts.get(curWord);
 			double newNetCount = Math.pow(netCount, 0.0);
@@ -370,8 +376,6 @@ public class CloudInfo {
 		if(!selInitialized)
 			this.updateSelectedCounts();
 		
-		System.out.println("updateRatios");
-
 		
 		//SINGLE COUNTS
 		//Clear old counts
@@ -381,6 +385,8 @@ public class CloudInfo {
 		double curMax = 0.0;
 		double total = 0.0;
 		int count = 0;
+		
+		final int selTotal = cloud.getSelectedNumNodes();
 		
 		//Iterate through to calculate ratios
 		boolean initialized = false;
@@ -394,7 +400,6 @@ public class CloudInfo {
 			 * This is the same as the original definition of ratio, just with some
 			 * different algebra.
 			 */
-			int selTotal = cloud.getSelectedNumNodes();
 			int selCount = entry.getValue();
 			int netCount = networkCounts.get(curWord);
 			double newNetCount = Math.pow(netCount, cloud.getNetWeightFactor());
@@ -443,7 +448,7 @@ public class CloudInfo {
 			 * This is the same as the original definition of ratio, just with some
 			 * different algebra.
 			 */
-			int selTotal = cloud.getSelectedNumNodes();
+			
 			int selPairCount = entry.getValue();
 			int netPairCount = networkPairCounts.get(pair);
 			double newNetCount = Math.pow(netPairCount, cloud.getNetWeightFactor());
@@ -468,18 +473,9 @@ public class CloudInfo {
 	 */
 	public void calculateFontSizes()
 	{
-		
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		if (!ratiosInitialized)
 			this.updateRatios();
 		
-		System.out.println("calculateFontSizes");
 		//Clear old fonts
 		this.cloudWords = new ArrayList<CloudWordInfo>();
 		
@@ -498,14 +494,13 @@ public class CloudInfo {
 		}
 		else
 		{
-			ClusterBuilder builder = new ClusterBuilder(this);
-			builder.clusterData(cloud.getClusterCutoff());
+			ClusterBuilder builder = new ClusterBuilder(this); // half the time here
+			builder.clusterData(cloud.getClusterCutoff()); // other half the time here
 			builder.clusterData(0.0);
 			builder.buildCloudWords();
 			cloudWords = builder.getCloudWords();
 		}
 		
-		System.out.println("done");
 	}
 	
 	
@@ -586,6 +581,19 @@ public class CloudInfo {
 		while(iter.hasNext())
 			sb.append(delimiter).append(iter.next());
 		return sb.toString();
+	}
+	
+	public int getCountTotal()	 {
+		if(countTotal == 0) {
+			// Cache the total once so it doesn't have to be repeatedly recalculated
+			Map<String, Integer> selectedCounts = getSelectedCounts();
+			int total = 0;
+			for(int x : selectedCounts.values()) {
+				total += x;
+			}
+			countTotal = total;
+		}
+		return countTotal;
 	}
 	
 	

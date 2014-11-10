@@ -36,7 +36,7 @@ public class WordPair implements Comparable<WordPair>
 	//VARIABLES
 	private final String firstWord;
 	private final String secondWord;
-	private Double probability;
+	private double probability;
 	private final CloudInfo cloudInfo;
 	
 	//CONSTRUCTOR
@@ -67,21 +67,17 @@ public class WordPair implements Comparable<WordPair>
 		 * which is what we actually calculate:
 		 * (#(A,B)* #Total)/ (#A * #B)
 		 */
+		
 		// Getting the total number of words in the selection
 		Map<String, Integer> selectedCounts = cloudInfo.getSelectedCounts();
-		Integer total = 0;
-		for (String word : selectedCounts.keySet()) {
-			total += selectedCounts.get(word);
-		}
-		Integer firstCount = selectedCounts.get(firstWord);
-		Integer secondCount = selectedCounts.get(secondWord);
 		
-		Integer numerator = pairCount * total;
-		Double doubleNumerator = numerator.doubleValue();
-		Integer denominator = firstCount * secondCount;
-		Double doubleDenom = denominator.doubleValue();
+		int firstCount = selectedCounts.get(firstWord);
+		int secondCount = selectedCounts.get(secondWord);
 		
-		probability = doubleNumerator/doubleDenom;
+		int numerator = pairCount * cloudInfo.getCountTotal();
+		int denominator = firstCount * secondCount;
+		
+		probability = (double)numerator/(double)denominator;
 	}
 	
 	public int compareTo(WordPair second) 
@@ -131,7 +127,7 @@ public class WordPair implements Comparable<WordPair>
 		return cloudInfo;
 	}
 	
-	public Double getProbability()
+	public double getProbability()
 	{
 		return probability;
 	}
