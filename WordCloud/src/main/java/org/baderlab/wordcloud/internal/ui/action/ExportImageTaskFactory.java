@@ -22,7 +22,6 @@
 
 package org.baderlab.wordcloud.internal.ui.action;
 
-import java.awt.event.ActionEvent;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
@@ -32,23 +31,20 @@ import java.util.Collections;
 import javax.imageio.ImageIO;
 
 import org.baderlab.wordcloud.internal.ui.UIManager;
-import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskMonitor.Level;
 
-@SuppressWarnings("serial")
-public class ExportImageAction extends AbstractCyAction {
+public class ExportImageTaskFactory implements TaskFactory {
 	
 	// Extensions for the new file
-	public static String SESSION_EXT = ".png";
-	
+	public static final String SESSION_EXT = ".png";
+	public static final String TITLE = "Export Cloud Image";
 	
 	private CySwingApplication application;
 	private FileUtil fileUtil;
@@ -56,16 +52,10 @@ public class ExportImageAction extends AbstractCyAction {
 
 	
 	
-	public ExportImageAction(CySwingApplication application, FileUtil fileUtil, UIManager uiManager) {
-		super("Export Cloud Image");
+	public ExportImageTaskFactory(CySwingApplication application, FileUtil fileUtil, UIManager uiManager) {
 		this.application = application;
 		this.fileUtil = fileUtil;
 		this.uiManager = uiManager;
-	}
-	
-
-	public void actionPerformed(ActionEvent e) { // don't use parameter
-		exportImage();
 	}
 	
 	
@@ -105,27 +95,30 @@ public class ExportImageAction extends AbstractCyAction {
 		}
 	}
 	
-	
-	public Task asTask() {
-		return new Task() {
+	@Override
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new Task() {
+			@Override
 			public void run(TaskMonitor monitor) throws Exception {
-				monitor.setTitle(getName());
+				monitor.setTitle(TITLE);
 				String fileName = exportImage();
 				if(fileName == null)
 					monitor.showMessage(Level.WARN, "Cloud image export cancelled");
 				else
 					monitor.setStatusMessage("Cloud image saved to file '" + fileName + "'");
 			}
-			public void cancel() { }
-		};
-	}
-	
-	public TaskFactory asTaskFactory() {
-		return new AbstractTaskFactory() {
-			public TaskIterator createTaskIterator() {
-				return new TaskIterator(asTask());
+			
+			@Override
+			public void cancel() {
+				// TODO Auto-generated method stub
+				
 			}
-		};
+		});
+	}
+
+	@Override
+	public boolean isReady() {
+		return true;
 	}
 
 }
