@@ -14,6 +14,7 @@ import org.baderlab.wordcloud.internal.ui.action.ExportImageAction;
 import org.baderlab.wordcloud.internal.ui.action.ShowAboutDialogAction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
@@ -36,6 +37,7 @@ public class CyActivator extends AbstractCyActivator {
 	private static final String APPS_MENU = "Apps.WordCloud";
 	
 	private CloudTaskManager cloudTaskManager;
+	private UIManager uiManager;
 	
 	@Override
 	public void start(BundleContext context) throws Exception {
@@ -64,7 +66,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(context, cloudModelManager, new Properties());
 		cloudTaskManager = new CloudTaskManager();
 		
-		UIManager uiManager = new UIManager(cloudModelManager, applicationManager, application, registrar, cloudTaskManager);
+		uiManager = new UIManager(cloudModelManager, applicationManager, application, registrar, cloudTaskManager);
 		cloudModelManager.addListener(uiManager);
 		registerAllServices(context, uiManager, new Properties());
 		
@@ -72,11 +74,11 @@ public class CyActivator extends AbstractCyActivator {
 		// Actions
 		AbstractCyAction showAction = uiManager.createShowHideAction();
 		showAction.setPreferredMenu(APPS_MENU);
-		application.addAction(showAction);
+		registerService(context, showAction, CyAction.class, new Properties());
 		
 		CreateCloudAction createAction = new CreateCloudAction(applicationManager, application, cloudModelManager);
 		createAction.setPreferredMenu(APPS_MENU);
-		application.addAction(createAction);
+		registerService(context, createAction, CyAction.class, new Properties());
 		
 		ExportImageAction exportImageAction = new ExportImageAction(application, fileUtil, uiManager);
 		Properties props = new Properties();
@@ -90,7 +92,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		AbstractCyAction aboutAction = new ShowAboutDialogAction(application, openBrowser);
 		aboutAction.setPreferredMenu(APPS_MENU);
-		application.addAction(aboutAction);
+		registerService(context, aboutAction, CyAction.class, new Properties());
 		
 		
 		// Session persistence
@@ -111,8 +113,8 @@ public class CyActivator extends AbstractCyActivator {
 	
 	@Override
 	public void shutDown() {
+		uiManager.dispose();
 		cloudTaskManager.disposeAll();
-		
 	}
 	
 	

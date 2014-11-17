@@ -109,7 +109,7 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	/**
 	 * Disposes of the panels.
 	 */
-	public void hide() {
+	private void hide() {
 		hidden = true;
 		if(docker != null) {
 			// selected clouds are still remembered
@@ -121,9 +121,14 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 			if(showHideAction != null) {
 				showHideAction.setName("Show WordCloud");
 			}
-			
-			cloudTaskManager.disposeAll();
 		}
+	}
+	
+	/**
+	 * Call when the App is shutting down.
+	 */
+	public void dispose() {
+		hide();
 	}
 	
 	public SemanticSummaryInputPanel getInputPanel() {
