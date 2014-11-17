@@ -113,6 +113,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	private final IconManager iconManager = new IconManagerImpl();
 	
 	private JFormattedTextField maxWordsTextField;
+	private JFormattedTextField minOccurrenceField;
 	private JFormattedTextField clusterCutoffTextField;
 	private JComboBox<CloudDisplayStyles> cmbStyle;
 	private JLabel networkLabel;
@@ -200,6 +201,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		// Live update
 		sliderPanel.getSlider().addChangeListener(liveUpdateListener);
 		maxWordsTextField.getDocument().addDocumentListener(liveUpdateListener);
+		minOccurrenceField.getDocument().addDocumentListener(liveUpdateListener);
 		clusterCutoffTextField.getDocument().addDocumentListener(liveUpdateListener);
 		cmbStyle.addActionListener(liveUpdateListener);
 
@@ -499,25 +501,44 @@ public class SemanticSummaryInputPanel extends JPanel {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		
-		//Max words input
-		JLabel maxWordsLabel = new JLabel("Max Number of Words");
 		NumberFormat intFormat = NumberFormat.getIntegerInstance();
 		intFormat.setParseIntegerOnly(true);
+		
+		//Max words input
+		JLabel maxWordsLabel = new JLabel("Max Number of Words");
 		maxWordsTextField = new JFormattedTextField(intFormat);
 		maxWordsTextField.setColumns(7);
 		maxWordsTextField.setValue(40);  
 		maxWordsTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
 		
-		StringBuilder buf = new StringBuilder();
-		buf.append("<html>" + "Sets a limit on the number of words to display in the cloud" + "<br>");
-		buf.append("<b>Acceptable Values:</b> greater than or equal to 0" + "</html>");
-		maxWordsTextField.setToolTipText(buf.toString());
-		maxWordsLabel.setToolTipText(buf.toString());
+		String tooltip = 
+			"<html>Sets a limit on the number of words to display in the cloud<br><b>Acceptable Values:</b> greater than or equal to 0</html>";
+		maxWordsTextField.setToolTipText(tooltip);
+		maxWordsLabel.setToolTipText(tooltip);
 		//Max words panel
 		JPanel maxWordsPanel = new JPanel();
 		maxWordsPanel.setLayout(new BorderLayout());
 		maxWordsPanel.add(maxWordsLabel, BorderLayout.WEST);
 		maxWordsPanel.add(maxWordsTextField, BorderLayout.EAST);
+		
+
+		//Min occurrence
+		JLabel minOccurrenceLabel = new JLabel("Minimum Word Occurrence");
+		minOccurrenceField = new JFormattedTextField(intFormat);
+		minOccurrenceField.setColumns(7);
+		minOccurrenceField.setValue(40);  
+		minOccurrenceField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
+		
+		tooltip = 
+			"<html>Sets a lower limit on the number of times a word must occur for it to be included in the cloud.<br>" +
+			"<b>Acceptable Values:</b> greater than or equal to 0</html>";
+		minOccurrenceField.setToolTipText(tooltip);
+		minOccurrenceLabel.setToolTipText(tooltip);
+		//Max words panel
+		JPanel minOccurancePanel = new JPanel();
+		minOccurancePanel.setLayout(new BorderLayout());
+		minOccurancePanel.add(minOccurrenceLabel, BorderLayout.WEST);
+		minOccurancePanel.add(minOccurrenceField, BorderLayout.EAST);
 		
 		
 		//Clustering Cutoff
@@ -529,11 +550,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 		clusterCutoffTextField.setValue(20);
 		clusterCutoffTextField.addPropertyChangeListener(new SemanticSummaryInputPanel.FormattedTextFieldAction());
 		
-		buf = new StringBuilder();
-		buf.append("<html>" + "Cutoff for placing two words in the same cluster - ratio of the observed joint probability of the words to their joint probability if the words appeared independently of each other" + "<br>");
-		buf.append("<b>Acceptable Values:</b> greater than or equal to 0" + "</html>");
-		clusterCutoffTextField.setToolTipText(buf.toString());
-		clusterCutoffLabel.setToolTipText(buf.toString());
+		tooltip = 
+			"<html>Cutoff for placing two words in the same cluster - ratio of the observed joint probability of the words to their joint probability if the words appeared independently of each other<br>" +
+			"<b>Acceptable Values:</b> greater than or equal to 0</html>";
+		clusterCutoffTextField.setToolTipText(tooltip);
+		clusterCutoffLabel.setToolTipText(tooltip);
 		//Clustering Cutoff Panel
 		JPanel clusterCutoffPanel = new JPanel(new BorderLayout());
 		clusterCutoffPanel.add(clusterCutoffLabel, BorderLayout.WEST);
@@ -542,11 +563,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 		//Create Checkbox
 		stemmer = new JCheckBox("Enable Stemming");
 		
-		buf = new StringBuilder();
-		buf.append("<html>" + "Causes all words to be stemmed using the Porter Stemmer algorithm." + "<br>");
-		buf.append("<b>Notice:</b> This will allow words with a similar stem to map to the same word." + "<br>");
-		buf.append("However, words stems may not be what you expect." + "</html>");
-		stemmer.setToolTipText(buf.toString());
+		tooltip =
+			"<html>Causes all words to be stemmed using the Porter Stemmer algorithm.<br>" +
+			"<b>Notice:</b> This will allow words with a similar stem to map to the same word.<br>" +
+			"However, words stems may not be what you expect.</html>";
+		stemmer.setToolTipText(tooltip);
 		stemmer.setSelected(false);
 		
 		JPanel stemmingPanel = new JPanel(new BorderLayout());
@@ -565,6 +586,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		//Add components to main panel
 		panel.add(maxWordsPanel);
+		panel.add(minOccurancePanel);
 		panel.add(clusterCutoffPanel);
 		panel.add(stemmingPanel);
 		panel.add(filterNumsPanel);
@@ -661,6 +683,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		List<String> attributeNames = params.getAttributeNames();
 		setAttributeNames(attributeNames == null ? Collections.<String>emptyList() : attributeNames);
 		maxWordsTextField.setValue(params.getMaxWords());
+		minOccurrenceField.setValue(params.getMinWordOccurrence());
 		clusterCutoffTextField.setValue(params.getClusterCutoff());
 		cmbStyle.setSelectedItem(params.getDisplayStyle());
 		setupNetworkNormalization(params);
@@ -701,9 +724,20 @@ public class SemanticSummaryInputPanel extends JPanel {
 			JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
 		}
 		
+		// Min occurrence
+		value = (Number) minOccurrenceField.getValue();
+		if(value != null && value.intValue() >= 0) {
+			cloud.setMinWordOccurrence(value.intValue());
+		} else {
+			minOccurrenceField.setValue(CloudParameters.DEFAULT_MIN_OCCURRENCE);
+			cloud.setMinWordOccurrence(CloudParameters.DEFAULT_MIN_OCCURRENCE);
+			String message = "Minimum word occurrences must be greater than or equal to 0.";
+			JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+		}
+		
 		// Culster Cutoff
 		value = (Number) clusterCutoffTextField.getValue();
-		if ((value != null) && (value.doubleValue() >= 0.0)) {
+		if (value != null && value.doubleValue() >= 0.0) {
 			cloud.setClusterCutoff(value.doubleValue()); //sets all necessary flags
 		} else {
 			clusterCutoffTextField.setValue(CloudParameters.DEFAULT_CLUSTER_CUTOFF);
@@ -867,7 +901,6 @@ public class SemanticSummaryInputPanel extends JPanel {
 			String message = "The value you have entered is invalid. \n";
 			boolean invalid = false;
 			
-			//Max Words
 			if (source == maxWordsTextField) {
 				Number value = (Number) maxWordsTextField.getValue();
 				if ((value != null) && (value.intValue() >= 0)) {
@@ -878,7 +911,19 @@ public class SemanticSummaryInputPanel extends JPanel {
 					message += "The maximum number of words to display must be greater than or equal to 0.";
 					invalid = true;
 				}
-			}// end max Words
+			}
+			
+			else if (source == minOccurrenceField) {
+				Number value = (Number) minOccurrenceField.getValue();
+				if ((value != null) && (value.intValue() >= 0)) {
+					//All is well - do nothing
+				}
+				else {
+					minOccurrenceField.setValue(CloudParameters.DEFAULT_MIN_OCCURRENCE);
+					message += "Minimum word occurrences must be greater than or equal to 0.";
+					invalid = true;
+				}
+			}
 			
 			else if (source == clusterCutoffTextField) {
 				Number value = (Number) clusterCutoffTextField.getValue();

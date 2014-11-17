@@ -214,13 +214,11 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 		}
 		Collections.sort(copy);
 		
-		Integer max = cloudInfo.getMaxWords();
-		Integer numWords = copy.size();
-		if (max < numWords)
-		{
+		int max = cloudInfo.getMaxWords();
+		int numWords = copy.size();
+		if (max < numWords) {
 			copy.subList(max, numWords).clear();
 		}
-		
 		
 		//Loop through to create labels and add them
 		int count = 0;
@@ -228,6 +226,7 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 		Map<Integer,JPanel> clusters = new HashMap<Integer, JPanel>();
 		List<CloudWordInfo> wordInfo = cloudInfo.getCloudWordInfoList();
 		Iterator<CloudWordInfo> iter = wordInfo.iterator();
+		
 		
 		//Loop while more words exist and we are under the max
 		while(iter.hasNext() && (count < cloudInfo.getMaxWords()))
@@ -237,37 +236,40 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 			//Check that word in in our range
 			if (copy.contains(curWordInfo))
 			{
-				Integer clusterNum = curWordInfo.getCluster();
-				JLabel curLabel = createLabel(curWordInfo); 
-			
-				//Retrieve proper Panel
-				JPanel curPanel;
-				if (clusters.containsKey(clusterNum))
-				{
-					curPanel = clusters.get(clusterNum);
-				}
-				else
-				{
-					if (cloudInfo.getDisplayStyle().equals(CloudDisplayStyles.NO_CLUSTERING))
+				int minOccurrence = cloudInfo.getMinWordOccurrence();
+				if(cloudInfo.getSelectedCounts().get(curWordInfo.getWord()) >= minOccurrence) {
+					Integer clusterNum = curWordInfo.getCluster();
+					JLabel curLabel = createLabel(curWordInfo); 
+				
+					//Retrieve proper Panel
+					JPanel curPanel;
+					if (clusters.containsKey(clusterNum))
 					{
-						//curPanel =  new JPanel(new ModifiedFlowLayout(ModifiedFlowLayout.CENTER,10,0));
-						curPanel = tagCloudFlowPanel;
-						curPanel.setLayout(new ModifiedFlowLayout(ModifiedFlowLayout.CENTER, 10, 0));
+						curPanel = clusters.get(clusterNum);
 					}
 					else
 					{
-					curPanel = new JPanel(new ModifiedClusterFlowLayout(ModifiedFlowLayout.CENTER,10,0));
+						if (cloudInfo.getDisplayStyle().equals(CloudDisplayStyles.NO_CLUSTERING))
+						{
+							//curPanel =  new JPanel(new ModifiedFlowLayout(ModifiedFlowLayout.CENTER,10,0));
+							curPanel = tagCloudFlowPanel;
+							curPanel.setLayout(new ModifiedFlowLayout(ModifiedFlowLayout.CENTER, 10, 0));
+						}
+						else
+						{
+							curPanel = new JPanel(new ModifiedClusterFlowLayout(ModifiedFlowLayout.CENTER,10,0));
+						}
+						
+						if (cloudInfo.getDisplayStyle().equals(CloudDisplayStyles.CLUSTERED_BOXES))
+						{
+							curPanel.setBorder(new CompoundBorder(BorderFactory.createLineBorder(Color.GRAY), new EmptyBorder(10,10,10,10)));
+						}
 					}
-					
-					if (cloudInfo.getDisplayStyle().equals(CloudDisplayStyles.CLUSTERED_BOXES))
-					{
-						curPanel.setBorder(new CompoundBorder(BorderFactory.createLineBorder(Color.GRAY), new EmptyBorder(10,10,10,10)));
-					}
+				
+					curPanel.add(curLabel);
+					clusters.put(clusterNum, curPanel);
+					count++;
 				}
-			
-				curPanel.add(curLabel);
-				clusters.put(clusterNum, curPanel);
-				count++;
 			}
 		}
 		

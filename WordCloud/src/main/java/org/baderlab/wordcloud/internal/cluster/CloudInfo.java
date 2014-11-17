@@ -87,6 +87,10 @@ public class CloudInfo {
 		return cloud.getMaxWords();
 	}
 	
+	public int getMinWordOccurrence() {
+		return cloud.getMinWordOccurrence();
+	}
+	
 	public CloudDisplayStyles getDisplayStyle() {
 		return cloud.getDisplayStyle();
 	}
@@ -155,29 +159,25 @@ public class CloudInfo {
 		Collection<String> wordSet = this.processNodeString(nodeValue);
 		String lastWord = ""; //Used for calculating pair counts
     
-		//Iterate through all words
-		Iterator<String> wordIter = wordSet.iterator();
-		while(wordIter.hasNext())
-		{
-			String curWord = wordIter.next();
+		WordFilter filter = cloud.getNetworkParams().getFilter();
 		
+		//Iterate through all words
+		for(String curWord : wordSet)
+		{
 			//Check filters
-			WordFilter filter = cloud.getNetworkParams().getFilter();
 			if (!filter.contains(curWord))
 			{
 				//If this word has not been encountered, or not encountered
 				//in this node, add it to our mappings and counts
-				Map<String, Set<CyNode>> curMapping = stringNodeMapping;
-		
 				//If we have not encountered this word, add it to the mapping
-				if (!curMapping.containsKey(curWord))
+				if (!stringNodeMapping.containsKey(curWord))
 				{
-					curMapping.put(curWord, new HashSet<CyNode>());
+					stringNodeMapping.put(curWord, new HashSet<CyNode>());
 					networkCounts.put(curWord, 0);
 				}
 			
 				//Add node to mapping, update counts
-				curMapping.get(curWord).add(curNode);
+				stringNodeMapping.get(curWord).add(curNode);
 				int num = networkCounts.get(curWord);
 				num = num + 1;
 				networkCounts.put(curWord, num);
@@ -201,9 +201,8 @@ public class CloudInfo {
 			
 				//Update curWord to be LastWord
 				lastWord = curWord;
-			
-			}//end filter if
-		}// word iterator
+			}
+		}
 	}
 	
 
@@ -214,9 +213,7 @@ public class CloudInfo {
 	 * 
 	 * MKTODO does this have to be called manually, can we fire from an event listener of some sort
 	 */
-	private void updateSelectedCounts()
-	{
-		
+	private void updateSelectedCounts() {
 		CyNetwork network = cloud.getNetworkParams().getNetwork();
 		//do nothing if selected hasn't changed initialized
 		if (selInitialized || network == null)
@@ -232,16 +229,14 @@ public class CloudInfo {
 		
 		Collection<CyNode> selectedNodes = cloud.getSelectedNodes();
 		
-		for (String attributeName : cloud.getAttributeNames())
-		{
-			for (CyNode curNode : selectedNodes)
-			{
+		for (String attributeName : cloud.getAttributeNames()) {
+			for (CyNode curNode : selectedNodes) {
 				String value = getNodeAttributeVal(network, curNode, attributeName);
 				if(value != null) {
 					updateSelectedWordCounts(curNode, value);
 				}
-			}// end attribute list
-		}//end node iterator
+			}
+		}
 		
 		calculateWeights();
 		
@@ -257,32 +252,19 @@ public class CloudInfo {
 		Collection<String> wordSet = this.processNodeString(nodeValue);
 		String lastWord = ""; //Used for calculating pair counts
     
-		//Iterate through all words
-		Iterator<String> wordIter = wordSet.iterator();
-		while(wordIter.hasNext())
-		{
-			String curWord = wordIter.next();
-		
+		for(String curWord : wordSet) {
 			//Check filters
 			WordFilter filter = cloud.getNetworkParams().getFilter();
-			if (!filter.contains(curWord))
-			{
-				//Add to selected Counts
-			
+			if (!filter.contains(curWord)) {
+
 				int curCount = 0; 
-			
 				if (selectedCounts.containsKey(curWord))
 					curCount = selectedCounts.get(curWord);
-			
-				//Update Count
 				curCount = curCount + 1;
-			
-				//Add updated count to HashMap
 				selectedCounts.put(curWord, curCount);
 			
 				//Add to pair counts
-				if (!lastWord.equals(""))
-				{
+				if (!lastWord.equals("")) {
 					WordPair pair = new WordPair(lastWord, curWord, this);
 					
 					Integer curPairCount = selectedPairCounts.get(pair);
@@ -296,11 +278,9 @@ public class CloudInfo {
 					selectedPairCounts.put(pair, count);
 				}
 			
-				//Update curWord to be LastWord
 				lastWord = curWord;
-			
-			}//end filter if
-		}// word iterator
+			}
+		}
 	}
 	
 	
@@ -438,6 +418,7 @@ public class CloudInfo {
 		//Clear old counts
 		this.pairRatios = new HashMap<WordPair, Double>();
 		
+		int netTotal = cloud.getNetworkNumNodes();
 		//Iterate through to calculate ratios
 		for (Entry<WordPair, Integer> entry : selectedPairCounts.entrySet())
 		{
@@ -452,7 +433,6 @@ public class CloudInfo {
 			int selPairCount = entry.getValue();
 			int netPairCount = networkPairCounts.get(pair);
 			double newNetCount = Math.pow(netPairCount, cloud.getNetWeightFactor());
-			int netTotal = cloud.getNetworkNumNodes();
 			double newNetTotal = Math.pow(netTotal, cloud.getNetWeightFactor());
 			
 			double numerator = selPairCount * newNetTotal;

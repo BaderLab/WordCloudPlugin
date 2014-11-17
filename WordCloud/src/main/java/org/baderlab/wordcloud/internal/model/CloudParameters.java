@@ -56,6 +56,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	public static final String DEFAULT_ATT_NAME = CyNetwork.NAME;
 	public static final int    DEFAULT_MAX_WORDS = 250;
 	public static final double DEFAULT_CLUSTER_CUTOFF = 1.0;
+	public static final int    DEFAULT_MIN_OCCURRENCE = 1;
 	
 	private final NetworkParameters networkParams; //parent network
 	private CloudInfo cloudWordInfoBuilder;
@@ -69,6 +70,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	private int maxWords = DEFAULT_MAX_WORDS;
 	private double clusterCutoff =  DEFAULT_CLUSTER_CUTOFF;
 	private double netWeightFactor;
+	private int minWordOccurrence = DEFAULT_MIN_OCCURRENCE;
 	
 	private String clusterColumnName;
 	private CyTable clusterTable;
@@ -153,10 +155,16 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		this.cloudName = props.get("CloudName");
 		this.displayStyle = CloudDisplayStyles.fromString(props.get("DisplayStyle"));
 		
-		
 		this.netWeightFactor = Double.valueOf(props.get("NetWeightFactor"));
-		this.clusterCutoff = new Double(props.get("ClusterCutoff"));
-		this.cloudNum = new Integer(props.get("CloudNum"));
+		this.clusterCutoff = Double.valueOf(props.get("ClusterCutoff"));
+		this.cloudNum = Integer.valueOf(props.get("CloudNum"));
+		
+		if(props.get("MaxWords") != null) {
+			maxWords = Integer.valueOf(props.get("MaxWords"));
+		}
+		if(props.get("MinOccurrence") != null) {
+			minWordOccurrence = Integer.valueOf(props.get("MinOccurrence"));
+		}
 		
 		// Reload cloud group table if it has been created (through command line)
 		for (CyTable table : networkParams.getManager().getTableManager().getAllTables(true)) {
@@ -308,6 +316,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		if (clusterTable != null) {
 			paramVariables.append("ClusterTableName\t" + clusterTable.getTitle() + "\n");
 		}
+		paramVariables.append("MinOccurrence\t" + minWordOccurrence + "\n");
 		
 //		//List of Nodes as a comma delimited list
 		StringBuffer output2 = new StringBuffer();
@@ -538,6 +547,16 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	public void setMaxWords(int val)
 	{
 		maxWords = val;
+	}
+	
+	public int getMinWordOccurrence()
+	{
+		return minWordOccurrence;
+	}
+	
+	public void setMinWordOccurrence(int val) 
+	{
+		minWordOccurrence = val;
 	}
 	
 	public int getCloudNum()
