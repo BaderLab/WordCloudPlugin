@@ -39,10 +39,12 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -63,10 +65,12 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -127,6 +131,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	private JButton updateButton;
 	private JCheckBox syncCheckBox;
 	private JCheckBox filterNumsCheckBox;
+	private JToggleButton sortButton;
 	
 	private ListSelectionListener cloudListSelectionListener;
 	private ActionListener syncCheckboxActionListener;
@@ -193,7 +198,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		optionsScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		cloudList.setBorder(optionsScroll.getBorder());
 		
-		cloudList.setMinimumSize(cloudList.getPreferredSize());
+		//cloudList.setMinimumSize(cloudList.getPreferredSize());
 		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, cloudList, optionsScroll);
 		splitPane.setBorder(BorderFactory.createEmptyBorder());
 		add(splitPane, BorderLayout.CENTER);
@@ -227,11 +232,24 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		//Name of the network
 		JPanel networkPanel = new JPanel();
-		networkPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 2, 2));
+		networkPanel.setLayout(new BorderLayout());
 		networkLabel = new JLabel();
-		networkPanel.add(networkLabel);
+		networkLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		networkPanel.add(networkLabel, BorderLayout.CENTER);
+		networkPanel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
+		sortButton = new JToggleButton();
+		setIcon(sortButton, IconManager.ICON_SORT_BY_ALPHABET);
+		sortButton.setToolTipText("Sort Alphabetically");
+		networkPanel.add(sortButton, BorderLayout.EAST);
+		networkPanel.add(Box.createRigidArea(sortButton.getPreferredSize()), BorderLayout.WEST);
 		
-		networkPanel.setBorder(BorderFactory.createEmptyBorder());
+		sortButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				cloudList.removeListSelectionListener(cloudListSelectionListener);
+				setCloudListModel();
+				cloudList.addListSelectionListener(cloudListSelectionListener);
+			}
+		});
 		
 		// list of clouds
 		cloudList = new JList<String>(new DefaultListModel<String>());
@@ -287,17 +305,13 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		createButton = new JButton();
 		createButton.setAction(createCloudAction);
-		createButton.setText(IconManager.ICON_PLUS);
-		createButton.setFont(iconManager.getIconFont(12.0f));
+		setIcon(createButton, IconManager.ICON_PLUS);
 		createButton.setToolTipText("Create a new cloud from the selected nodes.");
-		createButton.setPreferredSize(new Dimension(24, 24));
 		
 		updateButton = new JButton();
 		updateButton.setAction(new UpdateCloudAction(cloudListProvider, uiManager));
-		updateButton.setText(IconManager.ICON_REFRESH);
-		updateButton.setFont(iconManager.getIconFont(12.0f));
+		setIcon(updateButton, IconManager.ICON_REFRESH);
 		updateButton.setToolTipText("Update the current cloud to use the selected nodes.");
-		updateButton.setPreferredSize(new Dimension(24, 24));
 		
 		JPanel createUpdatePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 2));
 		createUpdatePanel.add(updateButton);
@@ -311,6 +325,12 @@ public class SemanticSummaryInputPanel extends JPanel {
 		panel.add(listScrollPane, BorderLayout.CENTER);
 		panel.add(syncPanel, BorderLayout.SOUTH);
 		return panel;
+	}
+	
+	private void setIcon(AbstractButton button, String icon) {
+		button.setText(icon);
+		button.setFont(iconManager.getIconFont(12.0f));
+		button.setPreferredSize(new Dimension(24, 24));
 	}
 	
 	
@@ -651,7 +671,47 @@ public class SemanticSummaryInputPanel extends JPanel {
 		return panel;
 	}
 	
-
+	
+	/**
+	 * Make sure the cloudListSelectionListener is removed from cloudList before calling.
+	 */
+	private ListModel<String> setCloudListModel() {
+		
+		// Set the network and cloud in the top panel (null cloud will result in empty list)
+		NetworkParameters networkParams = uiManager.getCurrentNetwork();
+		List<CloudParameters> networkClouds = networkParams.getClouds();
+		
+		DefaultListModel<String> listModel = new DefaultListModel<String>();
+		
+		if(sortButton.isSelected()) {
+			List<String> list = new ArrayList<String>(networkClouds.size());
+			for(CloudParameters cloud : networkClouds) {
+				list.add(cloud.getCloudName());
+			}
+			Collections.sort(list, new Comparator<String>() {
+				public int compare(String s1, String s2) {
+					return s1.compareToIgnoreCase(s2);
+				}
+			});
+			for(String name : list) {
+				listModel.addElement(name);
+			}
+		}
+		else {
+			for(CloudParameters cloud : networkClouds) {
+				listModel.addElement(cloud.getCloudName());
+			}
+		}
+		
+		cloudList.setModel(listModel);
+		
+		String cloudName = uiManager.getCurrentCloud().getCloudName();
+		int index = listModel.lastIndexOf(cloudName);
+		cloudList.setSelectedIndex(index);
+		
+		return listModel;
+	}
+	
 	
 	/**
 	 * Sets all the controls to display the given cloud.
@@ -663,17 +723,8 @@ public class SemanticSummaryInputPanel extends JPanel {
 		filterNumsCheckBox.removeChangeListener(networkUpdateListener);
 		liveUpdateListener.enabled = false;
 		
-		// Set the network and cloud in the top panel (null cloud will result in empty list)
-		List<CloudParameters> networkClouds = params.getNetworkParams().getClouds();
-		DefaultListModel<String> listModel = new DefaultListModel<String>();
-		for(CloudParameters cloud : networkClouds) {
-			listModel.addElement(cloud.getCloudName());
-		}
-		cloudList.setModel(listModel);
+		setCloudListModel();
 		
-		String cloudName = params.getCloudName();
-		int index = listModel.lastIndexOf(cloudName);
-		cloudList.setSelectedIndex(index);
 		networkLabel.setText(params.getNetworkParams().getNetworkName());
 		syncCheckBox.setSelected(params.isNullCloud());
 		updateButton.setEnabled(!params.isNullCloud());
