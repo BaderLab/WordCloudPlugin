@@ -38,6 +38,9 @@ public enum CloudDisplayStyles
 		this.name = name;
 	}
 	
+	/**
+	 * This gets displayed in the combo box.
+	 */
 	public String toString() {
 		return name;
 	}

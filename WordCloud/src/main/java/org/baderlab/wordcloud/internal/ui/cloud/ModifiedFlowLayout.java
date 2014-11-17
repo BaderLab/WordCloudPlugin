@@ -22,7 +22,11 @@
 
 package org.baderlab.wordcloud.internal.ui.cloud;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Insets;
 
 /**
  * A modified version of FlowLayout that allows containers using this
@@ -129,27 +133,5 @@ public class ModifiedFlowLayout extends FlowLayout
 	        return new Dimension(0, 0);
 	     }
 	  }//computeSize
-	  
-	  
-	  private int getMaxWidth(Container target)
-	  {
-		  int maxWidth = 0;
-		  int n = target.getComponentCount();
-		  for (int i = 0; i < n; i++) 
-		  {
-	           Component c = target.getComponent(i);
-	           if (c.isVisible()) 
-	           {
-	        	  int curWidth = c.getPreferredSize().width;
-	        	  if (maxWidth == 0)
-	        		  maxWidth = maxWidth + curWidth;
-	        	  else
-	        	  {
-	        		  maxWidth = maxWidth + curWidth + getHgap();
-	        	  }
-	           }
-		  }
-		  return maxWidth;
-	  }
 	  
 	}//ModifiedFlowLayout

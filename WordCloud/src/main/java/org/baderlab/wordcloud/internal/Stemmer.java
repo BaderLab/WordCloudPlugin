@@ -56,7 +56,9 @@ Release 4
 
 */
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
 * Stemmer, implementing the Porter Stemming Algorithm
@@ -439,6 +441,13 @@ public static void main(String[] args)
       catch (IOException e)
       {  System.out.println("error reading " + args[i]);
          break;
+      }
+      finally {
+    	  try {
+			in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
       }
    }
    catch (FileNotFoundException e)

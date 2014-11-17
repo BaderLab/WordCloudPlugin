@@ -44,13 +44,13 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  */
 public class CloudListMouseListener extends MouseAdapter {
 	
-	private JList list;
+	private JList<String> list;
 	private CySwingApplication swingApplication;
 	private UIManager uiManager;
 	private CyServiceRegistrar registrar;
 	private JCheckBox syncCheckBox;
 	
-	public CloudListMouseListener(UIManager uiManager, CySwingApplication swingApplication, CyServiceRegistrar registrar, JList list, JCheckBox syncCheckBox) {
+	public CloudListMouseListener(UIManager uiManager, CySwingApplication swingApplication, CyServiceRegistrar registrar, JList<String> list, JCheckBox syncCheckBox) {
 		this.uiManager = uiManager;
 		this.swingApplication = swingApplication;
 		this.list = list;

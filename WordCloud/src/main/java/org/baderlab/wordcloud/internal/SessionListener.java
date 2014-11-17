@@ -24,15 +24,11 @@ package org.baderlab.wordcloud.internal;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
@@ -253,7 +249,7 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 					int uid = Integer.parseInt(net_name);
 					
 					//Get the cloudID from the props file
-					String[] fullname2 = prop_file.getName().split(cloudNameSep);
+					//String[] fullname2 = prop_file.getName().split(cloudNameSep);
 //					String cloud_name = fullname2[1]; // cloud name is in properties file
 					
 					//Get the Network Parameters
@@ -317,25 +313,5 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 		// show the panels once the session has finished loading
 		uiManager.setCurrentCloud(applicationManager.getCurrentNetwork());
 	}//end restore session method
-	
-    /**
-     * 
-     * @param propFileName
-     * @return
-     * @throws IOException
-     */
-	private Properties getPropertiesFromClasspath(String propFileName) throws IOException {
-        // loading properties file from the classpath
-        Properties props = new Properties();
-        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(propFileName);
-
-        if (inputStream == null) {
-            throw new FileNotFoundException("property file '" + propFileName
-                    + "' not found in the classpath");
-        }
-
-        props.load(inputStream);
-        return props;
-    }
 	
 }

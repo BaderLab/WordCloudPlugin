@@ -27,7 +27,6 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 
 
 /**
@@ -41,7 +40,6 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	private final CyApplicationManager applicationManager;
 	private final CySwingApplication application;
 	private final CyServiceRegistrar registrar;
-	private final CyNetworkViewManager viewManager;
 	private final CloudTaskManager cloudTaskManager;
 	
 	// UI components that are managed
@@ -64,13 +62,11 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 			CyApplicationManager applicationManager, 
 			CySwingApplication application, 
 			CyServiceRegistrar registrar,
-			CyNetworkViewManager viewManager,
 			CloudTaskManager cloudTaskManager) {
 		this.cloudManager = cloudManager;
 		this.applicationManager = applicationManager;
 		this.application = application;
 		this.registrar = registrar;
-		this.viewManager = viewManager;
 		this.cloudTaskManager = cloudTaskManager;
 	}
 	

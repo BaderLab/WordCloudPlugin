@@ -60,6 +60,7 @@ import org.baderlab.wordcloud.internal.CyActivator;
 /**
  * The user-triggered collapsable panel containing the component (trigger) in the titled border
  */
+@SuppressWarnings("serial")
 public class CollapsiblePanel extends JPanel {
     //Border
     CollapsableTitledBorder border; // includes upper left component and line type
@@ -260,14 +261,6 @@ public class CollapsiblePanel extends JPanel {
         JComponent component;
         //Border border;
 
-        public CollapsableTitledBorder(JComponent component) {
-            this(null, component, LEFT, TOP);
-        }
-
-        public CollapsableTitledBorder(Border border) {
-            this(border, null, LEFT, TOP);
-        }
-
         public CollapsableTitledBorder(Border border, JComponent component) {
             this(border, component, LEFT, TOP);
         }
@@ -365,14 +358,6 @@ public class CollapsiblePanel extends JPanel {
                     break;
             }
             return insets;
-        }
-
-        public JComponent getTitleComponent() {
-            return component;
-        }
-
-        public void setTitleComponent(JComponent component) {
-            this.component = component;
         }
 
         public Rectangle getComponentRect(Rectangle rect, Insets borderInsets) {

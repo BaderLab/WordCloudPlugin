@@ -145,7 +145,7 @@ public class WordSelectPanel extends JPanel {
 		add(title, c);
 		
 		
-		final JList wordList = new JList(createListModel());
+		final JList<String> wordList = new JList<String>(createListModel());
 		JScrollPane wordScroll = new JScrollPane();
 		wordScroll.setPreferredSize(wordList.getPreferredSize());
 		wordScroll.setViewportView(wordList);
@@ -172,7 +172,7 @@ public class WordSelectPanel extends JPanel {
 		
 		// create either a text field or a combo box for the add field
 		JComponent text;
-		final JComboBox addWordCombo;
+		final JComboBox<String> addWordCombo;
 		final JTextField addWordTextField;
 		List<String> available = model.getAvailable();
 		if(available == null) {
@@ -180,7 +180,7 @@ public class WordSelectPanel extends JPanel {
 			addWordCombo = null;
 		}
 		else {
-			text = addWordCombo = new JComboBox(createComboModel());
+			text = addWordCombo = new JComboBox<String>(createComboModel());
 			addWordCombo.setEditable(true);
 			addWordTextField = null;
 		}
@@ -198,15 +198,6 @@ public class WordSelectPanel extends JPanel {
 		c.gridy = 2;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		add(addButton, c);
-		
-//		JCheckBox checkBox = new JCheckBox("Exclude Numbers 0-999");
-//		c = new GridBagConstraints();
-//		c.insets = insets;
-//		c.gridx = 0;
-//		c.gridy = 3;
-//		c.gridwidth = 2;
-//		c.anchor = GridBagConstraints.WEST;
-//		add(checkBox, c);
 		
 		// MKTODO
 //		JButton restoreDefaultsButton = new JButton("Restore Defaults");
@@ -230,8 +221,7 @@ public class WordSelectPanel extends JPanel {
 		
 		removeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				for(Object selected : wordList.getSelectedValues()) {
-					String word = (String) selected;
+				for(String word : wordList.getSelectedValuesList()) {
 					model.remove(word);
 				}
 				wordList.setModel(createListModel());
@@ -262,16 +252,16 @@ public class WordSelectPanel extends JPanel {
 	}
 	
 	
-	private ListModel createListModel() {
-		DefaultListModel listModel = new DefaultListModel();
+	private ListModel<String> createListModel() {
+		DefaultListModel<String> listModel = new DefaultListModel<String>();
 		for(String word : model.getCurrent()) {
 			listModel.addElement(word);
 		}
 		return listModel;
 	}
 	
-	private ComboBoxModel createComboModel() {
-		DefaultComboBoxModel comboModel = new DefaultComboBoxModel();
+	private ComboBoxModel<String> createComboModel() {
+		DefaultComboBoxModel<String> comboModel = new DefaultComboBoxModel<String>();
 		comboModel.addElement("");
 		for(String s : model.getAvailable()) {
 			comboModel.addElement(s);

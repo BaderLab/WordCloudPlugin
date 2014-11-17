@@ -75,7 +75,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	
 	
 	//String Delimeters
-	private static final String NODEDELIMITER = "CloudParamNodeDelimiter";
+	//private static final String NODEDELIMITER = "CloudParamNodeDelimiter";
 	private static final String WORDDELIMITER = "CloudParamWordDelimiter";
 	
 	//Network Name creation variables

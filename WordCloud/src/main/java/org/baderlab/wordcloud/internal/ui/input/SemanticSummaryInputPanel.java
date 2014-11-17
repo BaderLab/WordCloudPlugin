@@ -47,6 +47,7 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -107,16 +108,15 @@ public class SemanticSummaryInputPanel extends JPanel {
 	private static final int DEF_ROW_HEIGHT = 20;
 	
 	private final UIManager uiManager;
-	private final CyApplicationManager applicationManager;
 	private final CySwingApplication application;
 	private final CyServiceRegistrar registrar;
 	private final IconManager iconManager = new IconManagerImpl();
 	
 	private JFormattedTextField maxWordsTextField;
 	private JFormattedTextField clusterCutoffTextField;
-	private JComboBox cmbStyle;
+	private JComboBox<CloudDisplayStyles> cmbStyle;
 	private JLabel networkLabel;
-	private JList cloudList;
+	private JList<String> cloudList;
 	private JCheckBox stemmer;
 	private SliderBarPanel sliderPanel;
 	private CheckBoxJList attributeList;
@@ -163,7 +163,6 @@ public class SemanticSummaryInputPanel extends JPanel {
 		this.uiManager = uiManager;
 		this.application = application;
 		this.registrar = registrar;
-		this.applicationManager = applicationManager;
 		
 		this.createCloudAction = new CreateCloudAction(applicationManager, application, uiManager.getCloudModelManager());
 		
@@ -233,7 +232,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		networkPanel.setBorder(BorderFactory.createEmptyBorder());
 		
 		// list of clouds
-		cloudList = new JList(new DefaultListModel());
+		cloudList = new JList<String>(new DefaultListModel<String>());
 		cloudList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		cloudList.setSelectedIndex(0);
 		cloudList.setVisibleRowCount(10);
@@ -378,6 +377,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	/**
 	 * Creates a Panel that holds the Semantic Analysis information.
 	 */
+	@SuppressWarnings("unchecked")
 	private JPanel createSemAnalysisPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(0,1));
@@ -387,7 +387,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 
 	    //Testing of stuff
 	    attributeList = new CheckBoxJList();
-	    DefaultListModel model = new DefaultListModel();
+	    DefaultListModel<String> model = new DefaultListModel<String>();
 	    attributeList.setModel(model);
 	    attributeList.addPropertyChangeListener(CheckBoxJList.LIST_UPDATED, new PropertyChangeListener() {
 			@Override
@@ -412,7 +412,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	    	}
 	    });
 
-	    attNames = new JTextArea();
+	    attNames = new JTextArea();      
 	    attNames.setColumns(15);
 	    attNames.setRows(4);
 	    attNames.setEditable(false);
@@ -441,9 +441,10 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		JButton selectAllButton = new JButton("Select all");
 		selectAllButton.addActionListener(new ActionListener() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ListModel model = attributeList.getModel();
+				ListModel<String> model = attributeList.getModel();
 				List<String> items = new ArrayList<String>(model.getSize());
 				for(int i = 0; i < model.getSize(); i++) {
 					items.add((String) model.getElementAt(i));
@@ -588,9 +589,8 @@ public class SemanticSummaryInputPanel extends JPanel {
 		JLabel cloudStyleLabel = new JLabel("Cloud Style: ");
 		cloudStyleLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
 		
-		WidestStringComboBoxModel wscbm = new WidestStringComboBoxModel();
-		cmbStyle = new JComboBox(wscbm);
-		cmbStyle.addPopupMenuListener(new WidestStringComboBoxPopupMenuListener());
+		ComboBoxModel<CloudDisplayStyles> comboModel = new DefaultComboBoxModel<CloudDisplayStyles>();
+		cmbStyle = new JComboBox<CloudDisplayStyles>(comboModel);
 		cmbStyle.setEditable(false);
 	    Dimension d = cmbStyle.getPreferredSize();
 	    cmbStyle.setPreferredSize(new Dimension(15, d.height));
@@ -617,7 +617,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		gridBagConstraints.insets = new Insets(5, 10, 0, 0);
 		cloudLayoutPanel.add(cmbStyle, gridBagConstraints);
 	    
-	    DefaultComboBoxModel cmb = ((DefaultComboBoxModel)cmbStyle.getModel());
+	    DefaultComboBoxModel<CloudDisplayStyles> cmb = ((DefaultComboBoxModel<CloudDisplayStyles>)cmbStyle.getModel());
 		cmb.removeAllElements();
 		cmb.addElement(CloudDisplayStyles.CLUSTERED_STANDARD);
 		cmb.addElement(CloudDisplayStyles.CLUSTERED_BOXES);
@@ -643,7 +643,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		
 		// Set the network and cloud in the top panel (null cloud will result in empty list)
 		List<CloudParameters> networkClouds = params.getNetworkParams().getClouds();
-		DefaultListModel listModel = new DefaultListModel();
+		DefaultListModel<String> listModel = new DefaultListModel<String>();
 		for(CloudParameters cloud : networkClouds) {
 			listModel.addElement(cloud.getCloudName());
 		}
@@ -683,8 +683,8 @@ public class SemanticSummaryInputPanel extends JPanel {
 		cloud.setNetWeightFactor(sliderPanel.getNetNormValue());
 		
 		// Attributes
-		Object[] attributes = attributeList.getSelectedValues();
-		List<String> attributeNames = new ArrayList<String>(attributes.length);
+		List<?> attributes = attributeList.getSelectedValuesList();
+		List<String> attributeNames = new ArrayList<String>(attributes.size());
 		for(Object attribute : attributes) {
 			attributeNames.add((String) attribute);
 		}
@@ -794,15 +794,11 @@ public class SemanticSummaryInputPanel extends JPanel {
 	private void updateAttNames() {
 		StringBuilder buffer = new StringBuilder();
 		if (!attributeList.isSelectionEmpty()) {
-			Object[] names = attributeList.getSelectedValues();
-			for (int i = 0; i < names.length; i++) {
-				if (names[i] instanceof String) {
-					String curName = (String)names[i];
-					if (i > 0) {
-						buffer.append("\n");
-					}
-					buffer.append(curName);
-				}
+			List<?> names = attributeList.getSelectedValuesList();
+			for(int i = 0; i < names.size(); i++) {
+				if(i > 0)
+					buffer.append("\n");
+				buffer.append(names.get(i).toString());
 			}
 		}
 		attNames.setText(buffer.toString());
@@ -812,6 +808,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	/**
 	 * Update the attribute list in the attribute combobox.
 	 */
+	@SuppressWarnings("unchecked")
 	private void updateCMBAttributes() {
 		//Turn off listeners
 		ListSelectionListener[] listeners = attributeList.getListSelectionListeners();
@@ -821,8 +818,8 @@ public class SemanticSummaryInputPanel extends JPanel {
 		}
 		
 		//Updated GUI
-		DefaultListModel listModel;
-		listModel = ((DefaultListModel)attributeList.getModel());
+		DefaultListModel<String> listModel;
+		listModel = ((DefaultListModel<String>)attributeList.getModel());
 		listModel.removeAllElements();
 		
 		

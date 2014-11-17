@@ -26,7 +26,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
@@ -47,7 +46,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableManager tableManager = getService(context, CyTableManager.class);
 		CyTableFactory tableFactory = getService(context, CyTableFactory.class);
 		CyNetworkManager networkManager = getService(context, CyNetworkManager.class);
-		CyNetworkViewManager viewManager = getService(context, CyNetworkViewManager.class);
 		CyServiceRegistrar registrar = getService(context, CyServiceRegistrar.class);
 		FileUtil fileUtil = getService(context, FileUtil.class);
 		StreamUtil streamUtil = getService(context, StreamUtil.class);
@@ -66,7 +64,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(context, cloudModelManager, new Properties());
 		cloudTaskManager = new CloudTaskManager();
 		
-		UIManager uiManager = new UIManager(cloudModelManager, applicationManager, application, registrar, viewManager, cloudTaskManager);
+		UIManager uiManager = new UIManager(cloudModelManager, applicationManager, application, registrar, cloudTaskManager);
 		cloudModelManager.addListener(uiManager);
 		registerAllServices(context, uiManager, new Properties());
 		
@@ -114,6 +112,7 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void shutDown() {
 		cloudTaskManager.disposeAll();
+		
 	}
 	
 	

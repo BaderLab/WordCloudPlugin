@@ -47,7 +47,6 @@ public class WordCloudVisualStyleFactory
 	public static String WORD_VAL = "Word_Prob";
 	public static String CO_VAL = "CO_Prob";
 	public static String INTERACTION_TYPE = "CO";
-	private static final char controlChar = '\u001F';
 	
 	
 	VisualStyleFactory styleFactory;
