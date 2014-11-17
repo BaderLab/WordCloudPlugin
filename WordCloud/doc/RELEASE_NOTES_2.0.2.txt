@@ -1,0 +1,1 @@
+WordCloud 2.0.2 Release Notes=============================* Works with Cytoscape 3.2* Added command line commands �create�, �delete�, and �select�.* Fixed bug with calculating similarity scores
