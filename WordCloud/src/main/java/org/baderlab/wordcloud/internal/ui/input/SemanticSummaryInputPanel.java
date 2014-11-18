@@ -580,26 +580,28 @@ public class SemanticSummaryInputPanel extends JPanel {
 		clusterCutoffPanel.add(clusterCutoffLabel, BorderLayout.WEST);
 		clusterCutoffPanel.add(clusterCutoffTextField, BorderLayout.EAST);
 		
+		JLabel networkLabel = new JLabel("Network Options");
+		networkLabel.setToolTipText("Options below apply to all clouds in the network");
+		JPanel networkLabelPanel = new JPanel(new BorderLayout());
+		networkLabelPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
+		networkLabelPanel.add(networkLabel, BorderLayout.WEST);
+		
 		//Create Checkbox
 		stemmer = new JCheckBox("Enable Stemming");
-		
 		tooltip =
 			"<html>Causes all words to be stemmed using the Porter Stemmer algorithm.<br>" +
 			"<b>Notice:</b> This will allow words with a similar stem to map to the same word.<br>" +
 			"However, words stems may not be what you expect.</html>";
 		stemmer.setToolTipText(tooltip);
 		stemmer.setSelected(false);
-		
 		JPanel stemmingPanel = new JPanel(new BorderLayout());
 		stemmingPanel.add(stemmer, BorderLayout.WEST);
 		
 		filterNumsCheckBox = new JCheckBox("Exclude Numbers");
 		filterNumsCheckBox.setSelected(false);
 		filterNumsCheckBox.setToolTipText("Causes numbers to be excluded from the cloud.");
-		
 		JPanel filterNumsPanel = new JPanel(new BorderLayout());
 		filterNumsPanel.add(filterNumsCheckBox, BorderLayout.WEST);
-		
 		
 		JPanel wordsPanel = new JPanel(new BorderLayout());
 		wordsPanel.add(createExcludedWordsPanel(), BorderLayout.WEST);
@@ -608,6 +610,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		panel.add(maxWordsPanel);
 		panel.add(minOccurancePanel);
 		panel.add(clusterCutoffPanel);
+		panel.add(networkLabelPanel);
 		panel.add(stemmingPanel);
 		panel.add(filterNumsPanel);
 		panel.add(wordsPanel);
