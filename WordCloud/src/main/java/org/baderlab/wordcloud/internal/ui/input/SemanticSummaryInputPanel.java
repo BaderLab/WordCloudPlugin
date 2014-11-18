@@ -286,7 +286,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		listScrollPane.setBorder(BorderFactory.createEmptyBorder());
 		
 		
-		syncCheckBox = new JCheckBox("Sync with selected nodes");
+		syncCheckBox = new JCheckBox("Selected Nodes");
 		syncCheckBox.setToolTipText("Synchronize the cloud display with the currently selected nodes.");
 		syncCheckboxActionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -409,8 +409,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 
 	    //Testing of stuff
 	    attributeList = new CheckBoxJList();
-	    DefaultListModel<String> model = new DefaultListModel<String>();
-	    attributeList.setModel(model);
+	    attributeList.setModel(new DefaultListModel<String>()); 
 	    attributeList.addPropertyChangeListener(CheckBoxJList.LIST_UPDATED, new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
@@ -430,6 +429,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	    attributeButton.setToolTipText("Edit nodes values to use for semantic analysis");
 	    attributeButton.addMouseListener(new MouseAdapter() {
 	    	public void mouseClicked(MouseEvent e) {
+	    		refreshAttributeCMB();
 	    		attributeSelectionPopupMenu.show(e.getComponent(), 0,e.getComponent().getPreferredSize().height);
 	    	}
 	    });
@@ -926,7 +926,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 	/**
 	 * Refreshes the list of attributes
 	 */
-	public void refreshAttributeCMB() {
+	private void refreshAttributeCMB() {
 		updateCMBAttributes();
 		CloudParameters curCloud = uiManager.getCurrentCloud();
 		if(curCloud != null) {
