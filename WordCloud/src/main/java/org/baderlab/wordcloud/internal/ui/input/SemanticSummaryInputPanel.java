@@ -170,7 +170,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		this.application = application;
 		this.registrar = registrar;
 		
-		this.createCloudAction = new CreateCloudAction(applicationManager, application, uiManager.getCloudModelManager());
+		this.createCloudAction = new CreateCloudAction(applicationManager, application, uiManager.getCloudModelManager(), uiManager);
 		
 		createPanel();
 		
@@ -286,7 +286,7 @@ public class SemanticSummaryInputPanel extends JPanel {
 		listScrollPane.setBorder(BorderFactory.createEmptyBorder());
 		
 		
-		syncCheckBox = new JCheckBox("Sync with selection");
+		syncCheckBox = new JCheckBox("Sync with selected nodes");
 		syncCheckBox.setToolTipText("Synchronize the cloud display with the currently selected nodes.");
 		syncCheckboxActionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

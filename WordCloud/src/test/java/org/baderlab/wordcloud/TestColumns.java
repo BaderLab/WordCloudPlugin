@@ -65,13 +65,13 @@ public class TestColumns {
 		manager.addNetwork(network1);
 		manager.addNetwork(network2);
 		
-		manager.getNetworkParameters(network1).createCloud(network1.getNodeList(), "CloudName");
+		manager.getNetworkParameters(network1).getCloudBuilder().setName("CloudName").setNodes(network1.getNodeList()).build();
 		
 		// Sanity check
 		Boolean node2CloudState = network1.getRow(node2).get("CloudName", Boolean.class);
 		assertTrue(Boolean.TRUE.equals(node2CloudState));
 		
-		manager.getNetworkParameters(network2).createCloud(network2.getNodeList(), "CloudName"); // use same name
+		manager.getNetworkParameters(network2).getCloudBuilder().setName("CloudName").setNodes(network2.getNodeList()).build(); // use same name
 		
 		// Creating a cloud with the same name in another subnetwork should not have the side effect
 		// of changing node state in the first subnetwork.
@@ -86,7 +86,7 @@ public class TestColumns {
 		CyNode node1 = network1.addNode();
 		network1.addNode();
 		
-		CloudParameters cloud1 = manager.addNetwork(network1).createCloud(network1.getNodeList(), "MyCloud");
+		CloudParameters cloud1 = manager.addNetwork(network1).getCloudBuilder().setName("MyCloud").setNodes(network1.getNodeList()).build();
 		
 		// We want the column to be in the default node table
 		CyTable localTable = network1.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
@@ -105,7 +105,7 @@ public class TestColumns {
 		CySubNetwork network2 = rootNetwork.addSubNetwork();
 
 		try {
-			manager.addNetwork(network2).createCloud(network2.getNodeList(), "MyCloud");
+			manager.addNetwork(network2).getCloudBuilder().setName("MyCloud").setNodes(network2.getNodeList()).build();
 			fail();
 		} catch(IllegalArgumentException e) { }
 	}
@@ -121,7 +121,7 @@ public class TestColumns {
 		localTable.createColumn("Cloud_2", Boolean.class, false);
 		localTable.createColumn("Cloud_3", Boolean.class, false);
 		
-		CloudParameters cloud = manager.addNetwork(network1).createCloud(network1.getNodeList());
+		CloudParameters cloud = manager.addNetwork(network1).getCloudBuilder().setNodes(network1.getNodeList()).build();
 		assertEquals("Cloud_4", cloud.getCloudName());
 	}
 	
@@ -131,7 +131,7 @@ public class TestColumns {
 		CySubNetwork network1 = (CySubNetwork) networkFactory.createNetwork();
 		network1.addNode();
 		
-		CloudParameters cloud = manager.addNetwork(network1).createCloud(network1.getNodeList());
+		CloudParameters cloud = manager.addNetwork(network1).getCloudBuilder().setNodes(network1.getNodeList()).build();
 		
 		CyColumn column = network1.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS).getColumn(cloud.getCloudName());
 		assertNotNull(column);
@@ -148,7 +148,7 @@ public class TestColumns {
 		CySubNetwork network1 = (CySubNetwork) networkFactory.createNetwork();
 		network1.addNode();
 		
-		CloudParameters cloud = manager.addNetwork(network1).createCloud(network1.getNodeList());
+		CloudParameters cloud = manager.addNetwork(network1).getCloudBuilder().setNodes(network1.getNodeList()).build();
 		final String oldName = cloud.getCloudName();
 		final String newName = "MyNewName";
 		cloud.rename(newName);
@@ -167,7 +167,7 @@ public class TestColumns {
 		CySubNetwork network1 = (CySubNetwork) networkFactory.createNetwork();
 		network1.addNode();
 		
-		CloudParameters cloud = manager.addNetwork(network1).createCloud(network1.getNodeList());
+		CloudParameters cloud = manager.addNetwork(network1).getCloudBuilder().setNodes(network1.getNodeList()).build();
 		
 		CyTable table = network1.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
 		table.deleteColumn(cloud.getCloudName());

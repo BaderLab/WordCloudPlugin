@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import org.baderlab.wordcloud.internal.model.CloudModelListener;
@@ -66,20 +66,36 @@ public class TestCloudModel {
 		NetworkParameters networkParams = manager.addNetwork(network);
 		assertEquals(0, networkParams.getClouds().size());
 		
-		CloudParameters cloudParams1 = networkParams.createCloud(network.getNodeList(), "mycloud_1");
+		CloudParameters cloudParams1 = networkParams.getCloudBuilder()
+				                                         .setName("mycloud_1")
+				                                         .setNodes(network.getNodeList())
+				                                         .setAllAttributes()
+				                                         .build();
+		
 		assertNotNull(cloudParams1);
 		assertEquals("mycloud_1", cloudParams1.getCloudName());
 		assertEquals(1, networkParams.getClouds().size());
 		assertEquals(3, cloudParams1.getSelectedNodes().size());
 		
-		CloudParameters cloudParams2 = networkParams.createCloud(network.getNodeList().subList(0, 1), "mycloud_2");
+		CloudParameters cloudParams2 = networkParams.getCloudBuilder()
+				                                         .setName("mycloud_2")
+				                                         .setNodes(network.getNodeList().subList(0, 1))
+				                                         .setAllAttributes()
+				                                         .build();
+		
 		assertNotNull(cloudParams2);
 		assertEquals("mycloud_2", cloudParams2.getCloudName());
 		assertEquals(2, networkParams.getClouds().size());
 		assertEquals(1, cloudParams2.getSelectedNodes().size());
 		
 		network.getDefaultNodeTable().createColumn("attName", String.class, false);
-		CloudParameters cloudParams3 = networkParams.createCloud(network.getNodeList(), "mycloud_3", "attName", null);
+		
+		CloudParameters cloudParams3 = networkParams.getCloudBuilder()
+				                                         .setName("mycloud_3")
+				                                         .setNodes(network.getNodeList())
+				                                         .setAttributes(Arrays.asList("attName"))
+				                                         .build();
+		
 		assertNotNull(cloudParams3);
 		assertEquals("mycloud_3", cloudParams3.getCloudName());
 		assertEquals(3, networkParams.getClouds().size());
@@ -97,9 +113,10 @@ public class TestCloudModel {
 		CyNetwork network = networkTestSupport.getNetwork();
 		NetworkParameters networkParams = manager.addNetwork(network);
 		
-		CloudParameters cloudParams1 = networkParams.createCloud(network.getNodeList(), "mycloud_1");
-		CloudParameters cloudParams2 = networkParams.createCloud(network.getNodeList(), "mycloud_2");
-		CloudParameters cloudParams3 = networkParams.createCloud(network.getNodeList(), "mycloud_3");
+		CloudParameters cloudParams1 = networkParams.getCloudBuilder().setName("mycloud_1").setNodes(network.getNodeList()).setAllAttributes().build();
+		CloudParameters cloudParams2 = networkParams.getCloudBuilder().setName("mycloud_2").setNodes(network.getNodeList()).setAllAttributes().build();
+		CloudParameters cloudParams3 = networkParams.getCloudBuilder().setName("mycloud_3").setNodes(network.getNodeList()).setAllAttributes().build();
+		
 		assertEquals(3, networkParams.getClouds().size());
 		
 		cloudParams1.delete();
@@ -132,81 +149,14 @@ public class TestCloudModel {
 	}
 	
 	
-	@Test
+	@Test(expected=IllegalStateException.class)
 	public void testNullNetworkTryToAddCloud() {
 		CloudModelManager manager = serviceRule.getCloudModelManager();
-		
 		NetworkParameters nullNetwork = manager.getNullNetwork();
-		List<CyNode> nodes = Collections.emptyList();
-		
-		try {
-			nullNetwork.createCloud(nodes);
-			fail();
-		} catch(IllegalStateException e) {}
-		
-		try {
-			nullNetwork.createCloud(nodes, "Cloudy");
-			fail();
-		} catch(IllegalStateException e) {}
-		
-		try {
-			nullNetwork.createCloud(nodes, "Cloudy", null, null);
-			fail();
-		} catch(IllegalStateException e) {}
+		nullNetwork.getCloudBuilder().build();
 	}
 	
 	
-	@Test
-	public void testCreateCloudInvalidParameters() {
-		NetworkTestSupport networkTestSupport = serviceRule.getNetworkTestSupport();
-		CloudModelManager manager = serviceRule.getCloudModelManager();
-		
-		CyNetwork network = networkTestSupport.getNetwork();
-		List<CyNode> nodes = network.getNodeList();
-		NetworkParameters networkParams = manager.addNetwork(network);
-		
-		try {
-			networkParams.createCloud(null);
-			fail();
-		} catch(NullPointerException e) {}
-		
-		try {
-			networkParams.createCloud(null, "blah");
-			fail();
-		} catch(NullPointerException e) {}
-		
-		try {
-			networkParams.createCloud(nodes, null);
-			fail();
-		} catch(NullPointerException e) {}
-		
-		try {
-			networkParams.createCloud(null, "blah", "attName", null);
-			fail();
-		} catch(NullPointerException e) {}
-		
-		try {
-			networkParams.createCloud(nodes, null, "attName", null);
-			fail();
-		} catch(NullPointerException e) {}
-		
-		try {
-			networkParams.createCloud(nodes, "blah", null, null);
-			fail();
-		} catch(NullPointerException e) {}
-		
-		networkParams.createCloud(nodes, "taken_name");
-		
-		try {
-			networkParams.createCloud(nodes, "taken_name");
-			fail();
-		} catch(IllegalArgumentException e) {}
-		
-		try {
-			networkParams.createCloud(nodes, "taken_name", "attName", null);
-			fail();
-		} catch(IllegalArgumentException e) {}
-	}
 	
 	
 	@Test
@@ -221,7 +171,7 @@ public class TestCloudModel {
 		NetworkParameters networkParams = manager.addNetwork(network);
 		
 		List<CyNode> nodes = networkParams.getNetwork().getNodeList();
-		CloudParameters cloudParameters = networkParams.createCloud(nodes);
+		CloudParameters cloudParameters = networkParams.getCloudBuilder().setNodes(nodes).build();
 		cloudParameters.rename("a new name");
 		cloudParameters.delete();
 		manager.removeNetwork(network);

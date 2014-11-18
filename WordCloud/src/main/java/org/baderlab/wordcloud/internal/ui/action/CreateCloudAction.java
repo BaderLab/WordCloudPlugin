@@ -28,7 +28,10 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 
 import org.baderlab.wordcloud.internal.SelectionUtils;
+import org.baderlab.wordcloud.internal.model.CloudBuilder;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
+import org.baderlab.wordcloud.internal.model.CloudParameters;
+import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -42,13 +45,15 @@ public class CreateCloudAction extends AbstractCyAction {
 	private final CyApplicationManager applicationManager;
 	private final CySwingApplication application;
 	private final CloudModelManager cloudManager;
+	private final UIManager uiManager;
 	
 
-	public CreateCloudAction(CyApplicationManager applicationManager, CySwingApplication application, CloudModelManager cloudManager) {
+	public CreateCloudAction(CyApplicationManager applicationManager, CySwingApplication application, CloudModelManager cloudManager, UIManager uiManager) {
 		super("Create Cloud");
 		this.applicationManager = applicationManager;
 		this.application = application;
 		this.cloudManager = cloudManager;
+		this.uiManager = uiManager;
 	}
 	
 	
@@ -65,6 +70,18 @@ public class CreateCloudAction extends AbstractCyAction {
 		
 		Set<CyNode> nodes = SelectionUtils.getSelectedNodes(network);
 		
-		cloudManager.addNetwork(network).createCloud(nodes); // fires event that will update the UI
+		CloudBuilder builder = cloudManager.addNetwork(network).getCloudBuilder();
+		
+		CloudParameters currentCloud = uiManager.getCurrentCloud();
+		if(currentCloud == null) {
+			builder.setAllAttributes();
+		}
+		else {
+			builder.copyFrom(currentCloud); // inherit all the values currently set in the info panel, this works because of live update
+		}
+		
+		builder.setNodes(nodes);
+		
+		builder.build(); // fires event that will update the UI
 	}
 }

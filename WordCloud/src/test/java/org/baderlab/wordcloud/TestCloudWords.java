@@ -59,7 +59,8 @@ public class TestCloudWords {
 	@Test
 	public void testCloudContents() {
 		CloudModelManager manager = serviceRule.getCloudModelManager();
-		CloudParameters cloud = manager.getNetworkParameters(network).createCloud(network.getNodeList());
+		NetworkParameters networkParameters = manager.getNetworkParameters(network);
+		CloudParameters cloud = networkParameters.getCloudBuilder().setNodes(network.getNodeList()).setAllAttributes().build();
 		List<CloudWordInfo> wordInfos = cloud.calculateCloud().getCloudWordInfoList();
 		assertEquals(3, wordInfos.size());
 		
@@ -75,7 +76,7 @@ public class TestCloudWords {
 	public void testWordFilter() {
 		CloudModelManager manager = serviceRule.getCloudModelManager();
 		NetworkParameters networkParameters = manager.getNetworkParameters(network);
-		CloudParameters cloud = networkParameters.createCloud(network.getNodeList());
+		CloudParameters cloud = networkParameters.getCloudBuilder().setNodes(network.getNodeList()).setAllAttributes().build();
 		
 		networkParameters.getFilter().add("node1");
 		
@@ -94,7 +95,7 @@ public class TestCloudWords {
 	public void testCustomDelimeter() {
 		CloudModelManager manager = serviceRule.getCloudModelManager();
 		NetworkParameters networkParameters = manager.getNetworkParameters(network);
-		CloudParameters cloud = networkParameters.createCloud(network.getNodeList());
+		CloudParameters cloud = networkParameters.getCloudBuilder().setNodes(network.getNodeList()).setAllAttributes().build();
 		
 		CyNode node = network.getNodeList().get(0);
 		network.getRow(node).set(WORD_COL, "axbxcxdxe");
@@ -144,7 +145,7 @@ public class TestCloudWords {
 	public void testDelimeterCloudWordInfo() {
 		CloudModelManager manager = serviceRule.getCloudModelManager();
 		NetworkParameters networkParameters = manager.getNetworkParameters(network);
-		CloudParameters cloud = networkParameters.createCloud(network.getNodeList());
+		CloudParameters cloud = networkParameters.getCloudBuilder().setNodes(network.getNodeList()).setAllAttributes().build();
 		
 		String input = "mutS homolog 2, colon    cancer, nonpolyposis type 1 (E. coli)";
 		

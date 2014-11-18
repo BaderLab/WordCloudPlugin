@@ -1,14 +1,17 @@
 package org.baderlab.wordcloud.internal.command;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.baderlab.wordcloud.internal.cluster.CloudWordInfo;
+import org.baderlab.wordcloud.internal.model.CloudBuilder;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.NetworkParameters;
+import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.model.CyColumn;
@@ -28,6 +31,7 @@ public class CreateWordCloudCommandHandlerTask implements Task {
 	private CyTableManager tableManager;
 	private CyTableFactory tableFactory;
 	private CloudModelManager cloudModelManager;
+	private UIManager uiManager;
 	
 	private CyNetwork network;
 	
@@ -51,12 +55,15 @@ public class CreateWordCloudCommandHandlerTask implements Task {
 	public String cloudGroupTableName = "WordCloud Results Table";
 	
 	
+	
 	public CreateWordCloudCommandHandlerTask(
 			CyApplicationManager applicationManager,
 			CloudModelManager cloudManager,
+			UIManager uiManager,
 			CyTableManager tableManager, 
 			CyTableFactory tableFactory) {
 		this.applicationManager = applicationManager;
+		this.uiManager = uiManager;
 		this.tableManager = tableManager;
 		this.tableFactory = tableFactory;
 		this.cloudModelManager = cloudManager;
@@ -97,7 +104,22 @@ public class CreateWordCloudCommandHandlerTask implements Task {
 		}
 		
 		NetworkParameters networkParams = cloudModelManager.addNetwork(network);
-		CloudParameters cloudParams = networkParams.createCloud(nodes, cloudName, wordColumnName, cloudGroupTable);
+		
+		
+		CloudBuilder builder = networkParams.getCloudBuilder();
+		
+		
+		CloudParameters currentCloud = uiManager.getCurrentCloud();
+		if(currentCloud != null) {
+			builder.copyFrom(currentCloud); // inherit all the values currently set in the info panel
+		}
+		
+		builder.setName(cloudName)
+               .setNodes(nodes)
+               .setAttributes(Arrays.asList(wordColumnName))
+               .setClusterTable(cloudGroupTable);
+               
+        CloudParameters cloudParams = builder.build();
 		
 		// Add wordInfo to table
 		List<CloudWordInfo> wordInfo = cloudParams.calculateCloud().getCloudWordInfoList();

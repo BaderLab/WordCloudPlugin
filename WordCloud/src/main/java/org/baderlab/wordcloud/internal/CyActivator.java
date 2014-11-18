@@ -76,7 +76,7 @@ public class CyActivator extends AbstractCyActivator {
 		showAction.setPreferredMenu(APPS_MENU);
 		registerService(context, showAction, CyAction.class, new Properties());
 		
-		CreateCloudAction createAction = new CreateCloudAction(applicationManager, application, cloudModelManager);
+		CreateCloudAction createAction = new CreateCloudAction(applicationManager, application, cloudModelManager, uiManager);
 		createAction.setPreferredMenu(APPS_MENU);
 		registerService(context, createAction, CyAction.class, new Properties());
 		
@@ -101,7 +101,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		// Command line
-    	registerCommand(context, "create", new CreateWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudModelManager, tableManager, tableFactory));
+    	registerCommand(context, "create", new CreateWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudModelManager, uiManager, tableManager, tableFactory));
 		registerCommand(context, "delete", new DeleteWordCloudCommandHandlerTaskFactory(uiManager));
 		registerCommand(context, "select", new SelectWordCloudCommandHandlerTaskFactory(uiManager));
 		

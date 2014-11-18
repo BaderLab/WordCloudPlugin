@@ -1,7 +1,6 @@
 package org.baderlab.wordcloud.internal.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -74,6 +73,15 @@ public class NetworkParameters {
 	}
 	
 	
+	public CloudBuilder getCloudBuilder() {
+		if(isNullNetwork())
+			throw new IllegalStateException("Cannot create a cloud for a null network");
+		CloudBuilder builder = new CloudBuilder(this);
+		
+		return builder;
+	}
+	
+	
 	/**
 	 * Returns a special "Null" cloud that is not contained in the main list of clouds.
 	 * This is mainly for convenience, so that methods in the UI don't need special cases to handle
@@ -82,10 +90,15 @@ public class NetworkParameters {
 	 */
 	public synchronized CloudParameters getNullCloud() {
 		if(nullCloud == null) {
-			List<String> attributes = null;
-			if(!isNullNetwork())
+			List<String> attributes;
+			if(isNullNetwork())
+				attributes = Collections.<String>emptyList();
+			else
 				attributes = CloudModelManager.getColumnNames(network, CyNode.class);
-			nullCloud = createCloudParameters(Collections.<CyNode>emptySet(), NULL_COUNT, NULL_NAME, attributes);
+			
+			nullCloud = new CloudParameters(this, NULL_NAME, NULL_COUNT);
+			nullCloud.setSelectedNodes(Collections.<CyNode>emptySet());
+			nullCloud.setAttributeNames(attributes);
 		}
 		return nullCloud;
 	}
@@ -94,77 +107,41 @@ public class NetworkParameters {
 		return this == parent.getNullNetwork();
 	}
 	
-	private CloudParameters createCloudParameters(Collection<CyNode> nodes, int count, String name, List<String> attributes) {
-		// Should be a single constructor
-		CloudParameters cloudParams = new CloudParameters(this, name, count);
-		cloudParams.setSelectedNodes(nodes);
-		cloudParams.setAttributeNames(attributes == null ? Collections.<String>emptyList() : attributes);
-		return cloudParams;
-	}
 	
-	
-	/**
-	 * Creates a new CloudParameters object for this network.
-	 * @param nodes It is assumed that all the nodes in the list are part of this network.
-	 */
-	public CloudParameters createCloud(Collection<CyNode> nodes) {
+	protected CloudParameters createCloud(CloudBuilder builder) {
 		if(isNullNetwork())
 			throw new IllegalStateException("Cannot create a cloud for a null network");
-		if(nodes == null)
-			throw new NullPointerException("nodes is null");
 		
-		return createCloud(nodes, getNextCloudName());
-	}
-	
-	/**
-	 * Creates a new CloudParameters object for this network.
-	 * @param nodes It is assumed that all the nodes in the list are part of this network.
-	 */
-	public CloudParameters createCloud(Collection<CyNode> nodes, String cloudName) {
-		if(isNullNetwork())
-			throw new IllegalStateException("Cannot create a cloud for a null network");
-		if(nodes == null)
-			throw new NullPointerException("nodes is null");
-		if(cloudName == null)
-			throw new NullPointerException("cloudName is null");
-		if(clouds.containsKey(cloudName))
-			throw new IllegalArgumentException("Cloud name already in use: " + cloudName);
-		if(columnAlreadyExists(cloudName))
-			throw new IllegalArgumentException("Column name already in use: " + cloudName);
+		String cloudName = builder.getName();
+		if(cloudName == null) {
+			cloudName = getNextCloudName();
+		}
+		else {
+			if(clouds.containsKey(cloudName))
+				throw new IllegalArgumentException("Cloud name already in use: " + cloudName);
+			if(columnAlreadyExists(cloudName))
+				throw new IllegalArgumentException("Column name already in use: " + cloudName);
+		}
 		
-		List<String> attributes = CloudModelManager.getColumnNames(network, CyNode.class);
-		CloudParameters cloudParams = createCloudParameters(nodes, getCloudCount(), cloudName, attributes);
+		CloudParameters cloudParams = new CloudParameters(this, cloudName, getCloudCount());
+		cloudParams.setSelectedNodes(builder.getNodes());
+		cloudParams.setAttributeNames(builder.getAttributeNames());
+		
+		cloudParams.setDisplayStyle(builder.getDisplayStyle());
+		cloudParams.setMaxWords(builder.getMaxWords());
+		cloudParams.setClusterCutoff(builder.getClusterCutoff());
+		cloudParams.setNetWeightFactor(builder.getNetWeightFactor());
+		cloudParams.setMinWordOccurrence(builder.getMinWordOccurrence());
+		cloudParams.setClusterColumnName(builder.getClusterColumnName());
+		cloudParams.setClusterTable(builder.getClusterTable());
+		
+		incrementCloudCounter();
 		clouds.put(cloudParams.getCloudName(), cloudParams);
-		
 		parent.fireCloudAdded(cloudParams);
 		return cloudParams;
 	}
 	
-	public CloudParameters createCloud(Collection<CyNode> nodes, String cloudName, String attributeName, CyTable clusterTable) {
-		if(isNullNetwork())
-			throw new IllegalStateException("Cannot create a cloud for a null network");
-		if(nodes == null)
-			throw new NullPointerException("nodes is null");
-		if(clouds.containsKey(cloudName))
-			throw new IllegalArgumentException("Cloud name already in use: " + cloudName);
-		if(cloudName == null)
-			throw new NullPointerException("cloudName is null");
-		if(clouds.containsKey(cloudName))
-			throw new IllegalArgumentException("Cloud name already in use: " + cloudName);
-		if(attributeName == null)
-			throw new NullPointerException("attributeName cannot be null");
-		if(columnAlreadyExists(cloudName))
-			throw new IllegalArgumentException("Column name already in use: " + cloudName);
-		
-		List<String> attributes = new ArrayList<String>(1);
-		attributes.add(attributeName);
-		CloudParameters cloudParams = createCloudParameters(nodes, getCloudCount(), cloudName, attributes);
-		cloudParams.setClusterTable(clusterTable);
-		clouds.put(cloudParams.getCloudName(), cloudParams);
-		
-		parent.fireCloudAdded(cloudParams);
-		return cloudParams;
-	}
+	
 	
 	/**
 	 * Creates a new CloudParameters object for this network by reading the given
@@ -210,7 +187,7 @@ public class NetworkParameters {
 	}
 	
 	
-	public void incrementCloudCounter(CyNetwork network) {
+	private void incrementCloudCounter() {
 		int count = getCloudCount();
 		network.getRow(network).set(Constants.CLOUD_COUNTER, count + 1);
 	}
@@ -219,14 +196,14 @@ public class NetworkParameters {
 	 * Returns the name for the next cloud for this network.
 	 * Note this method is side effecting, it will return a different name every time it is called.
 	 */
-	public String getNextCloudName() {
+	private String getNextCloudName() {
 		while(true) {
 			int cloudCount = getCloudCount();
 			String name = CLOUDNAME + SEPARATER + cloudCount;
-			incrementCloudCounter(network);
 			if(!columnAlreadyExists(name)) {
 				return name;
 			}
+			incrementCloudCounter();
 		}
 	}
 	
@@ -278,9 +255,5 @@ public class NetworkParameters {
 		}
 		return network.getRow(network).get(CyNetwork.NAME, String.class);
 	}
-
-
-	
-	
 	
 }

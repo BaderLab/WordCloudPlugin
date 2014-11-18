@@ -69,7 +69,7 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	private int cloudNum; //Used to order the clouds for each network
 	private int maxWords = DEFAULT_MAX_WORDS;
 	private double clusterCutoff =  DEFAULT_CLUSTER_CUTOFF;
-	private double netWeightFactor;
+	private double netWeightFactor = DEFAULT_NET_WEIGHT;
 	private int minWordOccurrence = DEFAULT_MIN_OCCURRENCE;
 	
 	private String clusterColumnName;

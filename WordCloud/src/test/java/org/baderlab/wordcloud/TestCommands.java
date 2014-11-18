@@ -54,8 +54,10 @@ public class TestCommands {
 		
 		CloudModelManager manager = serviceRule.getCloudModelManager();
 		
+		UIManager uiManager = mock(UIManager.class);
+		
 		// Create the Task
-		CreateWordCloudCommandHandlerTask task = new CreateWordCloudCommandHandlerTask(applicationManager, manager, tableManager, tableFactory);
+		CreateWordCloudCommandHandlerTask task = new CreateWordCloudCommandHandlerTask(applicationManager, manager, uiManager, tableManager, tableFactory);
 		task.cloudName = "mytask_cloud";
 		task.cloudGroupTableName = "cloudGroupTableName";
 		
@@ -94,7 +96,9 @@ public class TestCommands {
 		CyTableManager tableManager = serviceRule.getTableManager();
 		CyNetwork network = applicationManager.getCurrentNetwork();
 		
-		CreateWordCloudCommandHandlerTask task = new CreateWordCloudCommandHandlerTask(applicationManager, manager, tableManager, tableFactory);
+		UIManager uiManager = mock(UIManager.class);
+		
+		CreateWordCloudCommandHandlerTask task = new CreateWordCloudCommandHandlerTask(applicationManager, manager, uiManager, tableManager, tableFactory);
 		
 		try {
 			task.run(mock(TaskMonitor.class));
@@ -148,7 +152,7 @@ public class TestCommands {
 		
 		CyNetwork network = applicationManager.getCurrentNetwork();
 		NetworkParameters networkParameters = manager.addNetwork(network);
-		networkParameters.createCloud(network.getNodeList(), "my_cloud_name");
+		networkParameters.getCloudBuilder().setName("my_cloud_name").setNodes(network.getNodeList()).build();
 		
 		UIManager uiManager = mock(UIManager.class);
 		when(uiManager.getCurrentNetwork()).thenReturn(networkParameters);
