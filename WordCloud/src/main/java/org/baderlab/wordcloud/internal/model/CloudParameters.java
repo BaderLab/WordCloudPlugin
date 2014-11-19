@@ -92,7 +92,6 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		if(cloudName == null)
 			throw new NullPointerException();
 		this.networkParams = networkParams;
-		this.netWeightFactor = networkParams.getManager().getDefaultNetWeight();
 		this.displayStyle = CloudDisplayStyles.getDefault();
 		this.cloudNum = cloudNum;
 		this.cloudName = cloudName;

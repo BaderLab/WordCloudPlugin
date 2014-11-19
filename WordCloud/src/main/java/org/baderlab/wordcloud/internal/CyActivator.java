@@ -20,8 +20,6 @@ import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.property.AbstractConfigDirPropsReader;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NodeViewTaskFactory;
@@ -53,16 +51,9 @@ public class CyActivator extends AbstractCyActivator {
 		StreamUtil streamUtil = getService(context, StreamUtil.class);
 		OpenBrowser openBrowser = getService(context, OpenBrowser.class);
 		
-		
-		// Configuration properties
-		PropsReader propsReader = new PropsReader("wordcloud", "wordcloud.props");
-        Properties propsReaderServiceProps = new Properties();
-        propsReaderServiceProps.setProperty("cyPropertyName", "wordcloud.props");
-        registerAllServices(context, propsReader, propsReaderServiceProps);
-        
         
 		// Managers
-		CloudModelManager cloudModelManager = new CloudModelManager(networkManager, tableManager, streamUtil, propsReader);
+		CloudModelManager cloudModelManager = new CloudModelManager(networkManager, tableManager, streamUtil);
 		registerAllServices(context, cloudModelManager, new Properties());
 		cloudTaskManager = new CloudTaskManager();
 		
@@ -125,10 +116,4 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(context, factory, TaskFactory.class, props);
 	}
 	
-	
-	class PropsReader extends AbstractConfigDirPropsReader {
-		public PropsReader(String name, String fileName) {
-			super(name, fileName, CyProperty.SavePolicy.CONFIG_DIR);
-		}
-	}
 }
