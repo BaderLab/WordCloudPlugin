@@ -506,11 +506,11 @@ public class CloudInfo {
 		double newRatio = zeroedRatio * zeroedMeanWeight / zeroedMeanRatio;
 		
 		//Weighted Average
-		final int maxFont = MAXFONTSIZE;
-		final int minFont = MINFONTSIZE;
+		int maxFont = MAXFONTSIZE;
+		int minFont = MINFONTSIZE;
 		
 		//Check if maxRatio and minRatio are the same
-		if (newRatio == 0 || isCloseEnough(zeroedMaxRatio, zeroedMinRatio))
+		if (isCloseEnough(zeroedMaxRatio, zeroedMinRatio))
 			return (minFont + (maxFont - minFont)/2);
 		
 		double slope = (maxFont - minFont)/(zeroedMaxWeight - zeroedMinWeight);
@@ -520,7 +520,7 @@ public class CloudInfo {
 		long temp = Math.round((slope*newRatio) + yIntercept);
 		int fontSize = Math.round(temp);
 		
-		return Math.min(Math.max(fontSize, minFont), maxFont);
+		return fontSize;
 	}
 	
 	
