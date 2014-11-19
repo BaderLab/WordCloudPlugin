@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.baderlab.wordcloud.internal.cluster.CloudWordInfo;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
@@ -125,9 +124,8 @@ public class TestCloudWords {
 		WordDelimiters wordDelimeters = networkParameters.getDelimeters();
 		
 		String input = "mutS homolog 2, colon   cancer, nonpolyposis type 1 (E. coli)".toLowerCase();
-		Set<String> result = wordDelimeters.split(input);
+		List<String> result = wordDelimeters.split(input);
 		
-		assertEquals(10, result.size());
 		assertTrue(result.contains("muts"));
 		assertTrue(result.contains("homolog"));
 		assertTrue(result.contains("2"));
@@ -138,6 +136,19 @@ public class TestCloudWords {
 		assertTrue(result.contains("1"));
 		assertTrue(result.contains("e"));
 		assertTrue(result.contains("coli"));
+	}
+	
+	@Test
+	public void testSameWordMultipleTimes() {
+		CloudModelManager manager = serviceRule.getCloudModelManager();
+		NetworkParameters networkParameters = manager.getNetworkParameters(network);
+		WordDelimiters wordDelimeters = networkParameters.getDelimeters();
+		
+		String input = "structure structure 1".toLowerCase();
+		List<String> result = wordDelimeters.split(input);
+		
+		assertEquals(3, result.size());
+		assertEquals("[structure, structure, 1]", result.toString());
 	}
 	
 	

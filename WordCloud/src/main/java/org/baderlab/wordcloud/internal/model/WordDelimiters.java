@@ -22,10 +22,10 @@
 
 package org.baderlab.wordcloud.internal.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -254,12 +254,14 @@ public class WordDelimiters
 	}
 	
 	
-	public Set<String> split(String s) {
-		Set<String> words = new HashSet<String>();
+	public List<String> split(String s) {
+		// do not use a Set, if the word appears twice then we want it to be counted twice
+		List<String> words = new ArrayList<String>();
 		for(String word : getSplitter().split(s)) {
-			words.add(word);
+			if(word != null && !"".equals(word)) {
+				words.add(word);
+			}
 		}
-		words.remove("");
 		return words;
 	}
 	
