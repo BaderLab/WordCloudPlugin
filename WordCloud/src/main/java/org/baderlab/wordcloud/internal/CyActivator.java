@@ -10,7 +10,7 @@ import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.ui.CloudTaskManager;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.baderlab.wordcloud.internal.ui.action.CreateCloudAction;
-import org.baderlab.wordcloud.internal.ui.action.ExportImageTaskFactory;
+import org.baderlab.wordcloud.internal.ui.action.ExportImageAction;
 import org.baderlab.wordcloud.internal.ui.action.ShowAboutDialogAction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -71,13 +71,11 @@ public class CyActivator extends AbstractCyActivator {
 		createAction.setPreferredMenu(APPS_MENU);
 		registerService(context, createAction, CyAction.class, new Properties());
 		
-		ExportImageTaskFactory exportImageTaskFactory = new ExportImageTaskFactory(application, fileUtil, uiManager);
-		Properties props = new Properties();
-		props.put(ServiceProperties.PREFERRED_MENU, APPS_MENU);
-		props.put(ServiceProperties.TITLE, ExportImageTaskFactory.TITLE);
-		registerService(context, exportImageTaskFactory, TaskFactory.class, props);
+		ExportImageAction exportImageAction = new ExportImageAction(application, fileUtil, uiManager);
+		exportImageAction.setPreferredMenu(APPS_MENU);
+		registerService(context, exportImageAction, CyAction.class, new Properties());
 		
-		props = new Properties();
+		Properties props = new Properties();
 		props.setProperty(ServiceProperties.TITLE, (String) createAction.getValue(Action.NAME));
 		registerService(context, new ActionNodeViewTaskFactory(createAction), NodeViewTaskFactory.class, props);
 		

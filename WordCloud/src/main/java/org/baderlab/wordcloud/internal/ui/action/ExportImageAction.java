@@ -22,6 +22,7 @@
 
 package org.baderlab.wordcloud.internal.ui.action;
 
+import java.awt.event.ActionEvent;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
@@ -31,16 +32,13 @@ import java.util.Collections;
 import javax.imageio.ImageIO;
 
 import org.baderlab.wordcloud.internal.ui.UIManager;
+import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskMonitor.Level;
 
-public class ExportImageTaskFactory implements TaskFactory {
+@SuppressWarnings("serial")
+public class ExportImageAction extends AbstractCyAction {
 	
 	// Extensions for the new file
 	public static final String SESSION_EXT = ".png";
@@ -52,7 +50,8 @@ public class ExportImageTaskFactory implements TaskFactory {
 
 	
 	
-	public ExportImageTaskFactory(CySwingApplication application, FileUtil fileUtil, UIManager uiManager) {
+	public ExportImageAction(CySwingApplication application, FileUtil fileUtil, UIManager uiManager) {
+		super(TITLE);
 		this.application = application;
 		this.fileUtil = fileUtil;
 		this.uiManager = uiManager;
@@ -95,30 +94,10 @@ public class ExportImageTaskFactory implements TaskFactory {
 		}
 	}
 	
-	@Override
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new Task() {
-			@Override
-			public void run(TaskMonitor monitor) throws Exception {
-				monitor.setTitle(TITLE);
-				String fileName = exportImage();
-				if(fileName == null)
-					monitor.showMessage(Level.WARN, "Cloud image export cancelled");
-				else
-					monitor.setStatusMessage("Cloud image saved to file '" + fileName + "'");
-			}
-			
-			@Override
-			public void cancel() {
-				// TODO Auto-generated method stub
-				
-			}
-		});
-	}
 
 	@Override
-	public boolean isReady() {
-		return true;
+	public void actionPerformed(ActionEvent e) {
+		exportImage();
 	}
 
 }

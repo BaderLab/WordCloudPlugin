@@ -22,11 +22,9 @@
 
 package org.baderlab.wordcloud.internal.ui.input;
 
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
@@ -35,13 +33,11 @@ import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.baderlab.wordcloud.internal.ui.action.CreateNetworkAction;
 import org.baderlab.wordcloud.internal.ui.action.DeleteCloudAction;
-import org.baderlab.wordcloud.internal.ui.action.ExportImageTaskFactory;
+import org.baderlab.wordcloud.internal.ui.action.ExportImageAction;
 import org.baderlab.wordcloud.internal.ui.action.RenameCloudAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 
 /**
@@ -73,11 +69,10 @@ public class CloudListMouseListener extends MouseAdapter {
 	
 	@Override
 	public void mouseReleased(MouseEvent e) {
-//		showPopup(e);
+		showPopup(e);  // needed for menu to work on Windows
 	}
 	
 	
-	@SuppressWarnings("serial")
 	private void showPopup(MouseEvent e) {
 		int clicked = list.locationToIndex(e.getPoint());
 		if(clicked != -1 && list.getCellBounds(clicked, clicked).contains(e.getPoint())) {
@@ -87,19 +82,13 @@ public class CloudListMouseListener extends MouseAdapter {
 			CloudParameters cloud = uiManager.getCurrentNetwork().getCloud(cloudName);
 			
 			if(e.isPopupTrigger()) {
+				FileUtil fileUtil = registrar.getService(FileUtil.class);
+				
 				JPopupMenu menu = new JPopupMenu();
 				menu.add(new DeleteCloudAction(cloud, swingApplication));
 				menu.add(new RenameCloudAction(cloud, swingApplication, uiManager));
 				menu.add(new CreateNetworkAction(cloud, registrar));
-				menu.add(new AbstractAction(ExportImageTaskFactory.TITLE) {
-					public void actionPerformed(ActionEvent e) {
-						FileUtil fileUtil = registrar.getService(FileUtil.class);
-						TaskManager<?,?> taskManager = registrar.getService(DialogTaskManager.class);
-						ExportImageTaskFactory exportTaskFactory = new ExportImageTaskFactory(swingApplication, fileUtil, uiManager);
-						taskManager.execute(exportTaskFactory.createTaskIterator());
-					}
-				});
-				
+				menu.add(new ExportImageAction(swingApplication, fileUtil, uiManager));
 				menu.show(list, e.getX(), e.getY());
 			}
 			else {
@@ -108,6 +97,4 @@ public class CloudListMouseListener extends MouseAdapter {
 		}
 	}
 
-	
-	
 }
