@@ -476,7 +476,6 @@ public class CloudInfo {
 		{
 			ClusterBuilder builder = new ClusterBuilder(this); // half the time here
 			builder.clusterData(cloud.getClusterCutoff()); // other half the time here
-			builder.clusterData(0.0);
 			builder.buildCloudWords();
 			cloudWords = builder.getCloudWords();
 		}
