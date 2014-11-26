@@ -328,8 +328,9 @@ public class SemanticSummaryInputPanel extends JPanel {
 	}
 	
 	private void setIcon(AbstractButton button, String icon) {
+		button.setFont(iconManager.getIconFont(11));
 		button.setText(icon);
-		button.setFont(iconManager.getIconFont(12.0f));
+		button.setMargin(new Insets(0, 0, 0, 0));
 		button.setPreferredSize(new Dimension(24, 24));
 	}
 	
