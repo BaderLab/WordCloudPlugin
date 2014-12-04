@@ -120,7 +120,14 @@ public class CloudDisplayPanel extends JPanel implements CytoPanelComponent
 		buttonPanel.setOpaque(false);
 		
 		// add some space so the floating button doesn't overlap the scrollbar
-		int scrollWidth = ((Integer)javax.swing.UIManager.get("ScrollBar.width")).intValue(); 
+		Object prop = javax.swing.UIManager.get("ScrollBar.width");
+		int scrollWidth;
+		if(prop instanceof Number) {
+			scrollWidth = ((Number)prop).intValue();
+		} else {
+			scrollWidth = 15; // arbitrary number
+		}
+		
 		buttonPanel.add(Box.createRigidArea(new Dimension(scrollWidth, 0)));
 		
 		JPanel glassPane = (JPanel) rootPane.getGlassPane();
