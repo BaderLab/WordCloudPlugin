@@ -36,7 +36,8 @@ import org.baderlab.wordcloud.internal.model.WordFilter;
 public class WordSelectPanel extends JPanel {
 	
 
-	public static interface Model {
+	private static interface Model {
+		String getTitle();
 		List<String> getCurrent();
 		List<String> getAvailable();
 		void add(String s);
@@ -55,6 +56,10 @@ public class WordSelectPanel extends JPanel {
 	
 	public WordSelectPanel(final WordFilter filter) {
 		this(new Model() {
+			
+			public String getTitle() {
+				return "Excluded words";
+			}
 			
 			public void remove(String word) {
 				filter.remove(word);
@@ -96,6 +101,10 @@ public class WordSelectPanel extends JPanel {
 	public WordSelectPanel(final WordDelimiters delimeters) {
 		this(new Model() {
 			
+			public String getTitle() {
+				return "Delimiters";
+			}
+			
 			public void remove(String s) {
 				delimeters.removeDelimiter(s);
 			}
@@ -135,7 +144,7 @@ public class WordSelectPanel extends JPanel {
 		
 		Insets insets = new Insets(3, 3, 3, 3);
 		
-		JLabel title = new JLabel("Excluded words");
+		JLabel title = new JLabel(model.getTitle());
 		GridBagConstraints c = new GridBagConstraints();
 		c.insets = insets;
 		c.gridx = 0;
