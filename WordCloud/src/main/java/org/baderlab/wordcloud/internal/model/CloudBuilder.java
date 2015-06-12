@@ -63,6 +63,16 @@ public class CloudBuilder {
 		return this;
 	}
 	
+	/**
+	 * Some of the fields of the builder can be overridden by cyProperties.
+	 */
+	public CloudBuilder applyOverrideProperties() {
+		CloudModelManager manager = networkParams.getManager();
+		if(manager.overrideNetWeightProperty()) {
+			setNetWeightFactor(manager.getNetWeightPropertyValue());
+		}
+		return this;
+	}
 	
 	public CloudBuilder setName(String cloudName) {
 		this.cloudName = cloudName;

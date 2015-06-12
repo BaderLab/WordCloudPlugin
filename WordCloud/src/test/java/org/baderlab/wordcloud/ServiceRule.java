@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Properties;
 
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
@@ -15,6 +16,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
+import org.cytoscape.property.CyProperty;
 import org.junit.rules.ExternalResource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -31,6 +33,7 @@ public class ServiceRule extends ExternalResource {
 	@Mock private CyApplicationManager applicationManager;
 	@Mock private CyTableManager tableManager;
 	@Mock private StreamUtil streamUtil;
+	@Mock private CyProperty<Properties> cyProperties;
 	
 	private NetworkTestSupport networkTestSupport;
 	private TableTestSupport tableTestSupport;
@@ -45,11 +48,12 @@ public class ServiceRule extends ExternalResource {
 		// stub out methods that get called somewhere in the CloudModelManager
 		when(streamUtil.getInputStream(endsWith("StopWords.txt"))).thenReturn(emptyStream());
 		when(streamUtil.getInputStream(endsWith("FlaggedWords.txt"))).thenReturn(emptyStream());
+		when(cyProperties.getProperties()).thenReturn(new Properties());
 	
 		networkTestSupport = new NetworkTestSupport();
 		
 		CyNetworkManager networkManager = networkTestSupport.getNetworkManager();
-		manager = new CloudModelManager(networkManager, tableManager, streamUtil); 
+		manager = new CloudModelManager(networkManager, tableManager, streamUtil, cyProperties); 
 		
 		tableTestSupport = new TableTestSupport();
 	}
@@ -76,6 +80,10 @@ public class ServiceRule extends ExternalResource {
 		return streamUtil;
 	}
 
+	public CyProperty<Properties> getCyProperties() {
+		return cyProperties;
+	}
+	
 	public NetworkTestSupport getNetworkTestSupport() {
 		return networkTestSupport;
 	}

@@ -115,11 +115,12 @@ public class CreateWordCloudCommandHandlerTask implements Task {
 		}
 		
 		builder.setName(cloudName)
-               .setNodes(nodes)
-               .setAttributes(Arrays.asList(wordColumnName))
-               .setClusterTable(cloudGroupTable);
-               
-        CloudParameters cloudParams = builder.build();
+			   .setNodes(nodes)
+			   .setAttributes(Arrays.asList(wordColumnName))
+			   .setClusterTable(cloudGroupTable);
+			
+		builder.applyOverrideProperties();
+		CloudParameters cloudParams = builder.build();
 		
 		// Add wordInfo to table
 		List<CloudWordInfo> wordInfo = cloudParams.calculateCloud().getCloudWordInfoList();

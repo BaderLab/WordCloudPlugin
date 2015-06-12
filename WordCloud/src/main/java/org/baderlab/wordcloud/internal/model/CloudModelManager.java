@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -30,6 +31,7 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.events.RemovedNodesListener;
+import org.cytoscape.property.CyProperty;
 
 public class CloudModelManager implements NetworkAboutToBeDestroyedListener, RemovedNodesListener, ColumnNameChangedListener, ColumnDeletedListener {
 
@@ -42,6 +44,7 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 	private final CyNetworkManager networkManager;
 	private final CyTableManager tableManager;
 	private final StreamUtil streamUtil;
+	private final CyProperty<Properties> cyProperties;
 	
 	
 	/**
@@ -50,10 +53,11 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 	 * The metadata that is initialized in initializeCloudMetadata() will not work
 	 * if more than one CloudModelManager is created.
 	 */
-	public CloudModelManager(CyNetworkManager networkManager, CyTableManager tableManager, StreamUtil streamUtil) {
+	public CloudModelManager(CyNetworkManager networkManager, CyTableManager tableManager, StreamUtil streamUtil, CyProperty<Properties> cyProperties) {
 		this.networkManager = networkManager;
 		this.tableManager = tableManager;
 		this.streamUtil = streamUtil;
+		this.cyProperties = cyProperties;
 		
 		this.listeners = new LinkedHashSet<CloudModelListener>(); // no duplicates, maintain insertion order
 		this.networks = new HashMap<CyNetwork, NetworkParameters>();
@@ -230,6 +234,38 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 		return streamUtil;
 	}
 	
+	
+	/**
+	 * Returns true if the net weight should be overridden by the value in the properties.
+	 */
+	boolean overrideNetWeightProperty() {
+		final String propName = "wordcloud.overrideNetWeight";
+		return Boolean.valueOf((String)cyProperties.getProperties().get(propName));
+	}
+
+	/**
+	 * Return the default net weight as set in the properties.
+	 */
+	double getNetWeightPropertyValue() {
+		final String propName = "wordcloud.defaultNetWeight";
+		try {
+			double value = Double.valueOf((String)cyProperties.getProperties().get(propName));
+			if(value < 0.0) {
+				cyProperties.getProperties().put(propName, "0.0");
+				return 0.0;
+			}
+			if(value > 1.0) {
+				cyProperties.getProperties().put(propName, "1.0");
+				return 1.0;
+			}
+			return value;
+		} catch(Exception e) {
+			cyProperties.getProperties().put(propName, String.valueOf(CloudParameters.DEFAULT_NET_WEIGHT));
+			return CloudParameters.DEFAULT_NET_WEIGHT;
+		}
+	}
+
+
 	@Override
 	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
 		// MKTODO is this called when the session is destroyed?

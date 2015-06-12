@@ -1,0 +1,2 @@
+wordcloud.overrideNetWeight=false
+wordcloud.defaultNetWeight=0.0
