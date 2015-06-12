@@ -311,7 +311,7 @@ public class SessionListener implements SessionAboutToBeSavedListener, SessionLo
 		}
 		
 		// show the panels once the session has finished loading
-		uiManager.setCurrentCloud(applicationManager.getCurrentNetwork());
+		//uiManager.setCurrentCloud(applicationManager.getCurrentNetwork());
 	}//end restore session method
 	
 }

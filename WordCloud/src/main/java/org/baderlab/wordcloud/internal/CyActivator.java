@@ -103,7 +103,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		// Always show WordCloud panels when Cytoscape starts.
-		showAction.actionPerformed(null);
+		//showAction.actionPerformed(null);
 	}
 	
 	
