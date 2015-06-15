@@ -18,10 +18,12 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 public class TestCloudWords {
 
 	@Rule public ServiceRule serviceRule = new ServiceRule();
+	@Rule public TestRule logSilenceRule = new LogSilenceRule();
 	
 	private final String WORD_COL = "TestWordCol";
 	

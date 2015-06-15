@@ -4,13 +4,12 @@
 
 	<groupId>org.baderlab</groupId>
 	<artifactId>wordcloud</artifactId>
-	<version>${project.version}</version>
+	<version>3.0.2-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 	
 	<name>WordCloud</name>
 	<properties>
 		<bundle.symbolicName>wordcloud</bundle.symbolicName>
-		<project.version>3.0.1</project.version>
 		<bundle.namespace>org.baderlab.wordcloud.internal</bundle.namespace>
 		<cytoscape.api.version>3.1.0</cytoscape.api.version>
 		<maven-bundle-plugin.version>2.3.4</maven-bundle-plugin.version>
@@ -18,6 +17,7 @@
 		<junit.version>4.11</junit.version>
 		<mockito.version>1.9.5</mockito.version>
 		<timestamp>${maven.build.timestamp}</timestamp>
+    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<dependencies>
@@ -183,8 +183,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.0</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 					<optimize>true</optimize>
 					<showWarnings>true</showWarnings>
 					<showDeprecation>true</showDeprecation>

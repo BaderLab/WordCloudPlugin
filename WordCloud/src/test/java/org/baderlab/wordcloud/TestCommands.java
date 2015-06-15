@@ -1,8 +1,7 @@
 package org.baderlab.wordcloud;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.List;
 
@@ -22,10 +21,12 @@ import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 public class TestCommands {
 
 	@Rule public ServiceRule serviceRule = new ServiceRule();
+	@Rule public TestRule logSilenceRule = new LogSilenceRule();
 	
 	private CyTableFactory tableFactory;
 	
