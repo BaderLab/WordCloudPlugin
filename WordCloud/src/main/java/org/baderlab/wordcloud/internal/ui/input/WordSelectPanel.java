@@ -18,7 +18,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -124,7 +123,6 @@ public class WordSelectPanel extends JPanel {
 			
 			public List<String> getAvailable() {
 				List<String> delims = new ArrayList<String>();
-				delims.add("--Common Delimiters--");
 				delims.addAll(delimeters.getDelimsToAdd());
 				return delims;
 			}
@@ -179,26 +177,13 @@ public class WordSelectPanel extends JPanel {
 		add(removeButton, c);
 		
 		
-		// create either a text field or a combo box for the add field
-		JComponent text;
-		final JComboBox<String> addWordCombo;
-		final JTextField addWordTextField;
-		List<String> available = model.getAvailable();
-		if(available == null) {
-			text = addWordTextField = new JTextField();
-			addWordCombo = null;
-		}
-		else {
-			text = addWordCombo = new JComboBox<String>(createComboModel());
-			addWordCombo.setEditable(true);
-			addWordTextField = null;
-		}
+		final JTextField addWordTextField = new JTextField();
 		c = new GridBagConstraints();
 		c.insets = insets;
 		c.gridx = 0;
 		c.gridy = 2;
 		c.fill = GridBagConstraints.HORIZONTAL;
-		add(text, c);
+		add(addWordTextField, c);
 		
 		JButton addButton = new JButton("Add");
 		c = new GridBagConstraints();
@@ -208,16 +193,90 @@ public class WordSelectPanel extends JPanel {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		add(addButton, c);
 		
-		// MKTODO
-//		JButton restoreDefaultsButton = new JButton("Restore Defaults");
-//		c = new GridBagConstraints();
-//		c.insets = insets;
-//		c.gridx = 0;
-//		c.gridy = 4;
-//		c.gridwidth = 2;
-//		c.anchor = GridBagConstraints.WEST;
-//		add(restoreDefaultsButton, c);
+		final JComboBox<String> addWordCombo;
+		List<String> available = model.getAvailable();
+		if(available == null) {
+			addWordCombo = null;
+		}
+		else {
+			addWordCombo = new JComboBox<String>(createComboModel());
+			addWordCombo.setEditable(false);
+			
+			JLabel inactiveLabel = new JLabel("Disabled common delimeters"); 
+			c = new GridBagConstraints();
+			c.insets = insets;
+			c.gridx = 0;
+			c.gridy = 3;
+			c.gridwidth = 2;
+			c.fill = GridBagConstraints.HORIZONTAL;
+			add(inactiveLabel, c);
+			
+			c = new GridBagConstraints();
+			c.insets = insets;
+			c.gridx = 0;
+			c.gridy = 4;
+			c.fill = GridBagConstraints.HORIZONTAL;
+			add(addWordCombo, c);
+			
+			JButton enableButton = new JButton("Add");
+			c = new GridBagConstraints();
+			c.insets = insets;
+			c.gridx = 1;
+			c.gridy = 4;
+			c.fill = GridBagConstraints.HORIZONTAL;
+			add(enableButton, c);
+			
+			enableButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					String word = (String) addWordCombo.getSelectedItem();
+					if(word == null || word.isEmpty())
+						return;
+					
+					word = word.toLowerCase();
+					if(model.validate(WordSelectPanel.this, word)) {
+						model.add(word);
+						wordList.setModel(createListModel());
+						wordList.setSelectedValue(word, true);
+						addWordCombo.setModel(createComboModel());
+					}
+				}
+			});
+		}
 		
+		addButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String word = addWordTextField.getText().trim();
+				if(word.isEmpty())
+					return;
+				
+				word = word.toLowerCase();
+				if(model.validate(WordSelectPanel.this, word)) {
+					model.add(word);
+					wordList.setModel(createListModel());
+					wordList.setSelectedValue(word, true);
+					addWordTextField.setText(null);
+				}
+			}
+		});
+		
+		
+		removeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				List<String> selectedValues = wordList.getSelectedValuesList();
+				for(String word : selectedValues) {
+					model.remove(word);
+				}
+				wordList.setModel(createListModel());
+				if(addWordCombo != null) {
+					addWordCombo.setModel(createComboModel());
+					if(!selectedValues.isEmpty()) {
+						addWordCombo.setSelectedItem(selectedValues.get(0));
+					}
+				}
+			}
+		});
+		
+
 		JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
 		c = new GridBagConstraints();
 		c.insets = new Insets(0,0,0,0);
@@ -226,38 +285,6 @@ public class WordSelectPanel extends JPanel {
 		c.gridwidth = 2;
 		c.fill = GridBagConstraints.HORIZONTAL;
 		add(separator, c);
-		
-		
-		removeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				for(String word : wordList.getSelectedValuesList()) {
-					model.remove(word);
-				}
-				wordList.setModel(createListModel());
-			}
-		});
-		
-		
-		addButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String word;
-				if(addWordTextField != null)
-					word = addWordTextField.getText().trim();
-				else
-					word = (String) addWordCombo.getSelectedItem();
-				
-				if(word.length() == 0)
-					return;
-				if(model.validate(WordSelectPanel.this, word)) {
-					model.add(word.toLowerCase());
-					wordList.setModel(createListModel());
-					if(addWordCombo != null)
-						addWordCombo.setModel(createComboModel());
-					else
-						addWordTextField.setText(null);
-				}
-			}
-		});
 	}
 	
 	
@@ -271,7 +298,6 @@ public class WordSelectPanel extends JPanel {
 	
 	private ComboBoxModel<String> createComboModel() {
 		DefaultComboBoxModel<String> comboModel = new DefaultComboBoxModel<String>();
-		comboModel.addElement("");
 		for(String s : model.getAvailable()) {
 			comboModel.addElement(s);
 		}
