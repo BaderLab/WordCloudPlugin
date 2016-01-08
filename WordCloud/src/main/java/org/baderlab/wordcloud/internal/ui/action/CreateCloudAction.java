@@ -81,8 +81,6 @@ public class CreateCloudAction extends AbstractCyAction {
 		}
 		
 		builder.setNodes(nodes);
-		
-		builder.applyOverrideProperties();
 		builder.build(); // fires event that will update the UI
 	}
 }

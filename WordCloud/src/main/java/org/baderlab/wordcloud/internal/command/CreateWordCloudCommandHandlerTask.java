@@ -129,8 +129,7 @@ public class CreateWordCloudCommandHandlerTask implements ObservableTask {
 		builder.setName(cloudName)
 			   .setNodes(nodes)
 			   .setAttributes(Arrays.asList(wordColumnName))
-			   .setClusterTable(cloudGroupTable)
-			   .applyOverrideProperties();
+			   .setClusterTable(cloudGroupTable);
 			   
 		CloudParameters cloudParams;
 		if(create)

@@ -52,7 +52,7 @@ import org.cytoscape.model.CyTableManager;
 public class CloudParameters implements Comparable<CloudParameters>, CloudProvider
 {
 	//Default Values for User Input
-	public static final double DEFAULT_NET_WEIGHT = 0.0; // this can be overridden in wordcloud.props
+	public static final double DEFAULT_NET_WEIGHT = 0.5; // this can be overridden in wordcloud.props
 	public static final String DEFAULT_ATT_NAME = CyNetwork.NAME;
 	public static final int    DEFAULT_MAX_WORDS = 250;
 	public static final double DEFAULT_CLUSTER_CUTOFF = 1.0;

@@ -99,6 +99,7 @@ public class NetworkParameters {
 			nullCloud = new CloudParameters(this, NULL_NAME, NULL_COUNT);
 			nullCloud.setSelectedNodes(Collections.<CyNode>emptySet());
 			nullCloud.setAttributeNames(attributes);
+			nullCloud.setNetWeightFactor(parent.getNetWeightPropertyValue());
 		}
 		return nullCloud;
 	}

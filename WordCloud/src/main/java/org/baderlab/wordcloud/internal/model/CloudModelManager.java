@@ -236,14 +236,6 @@ public class CloudModelManager implements NetworkAboutToBeDestroyedListener, Rem
 	
 	
 	/**
-	 * Returns true if the net weight should be overridden by the value in the properties.
-	 */
-	boolean overrideNetWeightProperty() {
-		final String propName = "wordcloud.overrideNetWeight";
-		return Boolean.valueOf((String)cyProperties.getProperties().get(propName));
-	}
-
-	/**
 	 * Return the default net weight as set in the properties.
 	 */
 	double getNetWeightPropertyValue() {
