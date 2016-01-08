@@ -3,8 +3,11 @@ import java.util.Properties;
 
 import javax.swing.Action;
 
+import org.baderlab.wordcloud.internal.command.CreateWordCloudCommandHandlerTask;
 import org.baderlab.wordcloud.internal.command.CreateWordCloudCommandHandlerTaskFactory;
 import org.baderlab.wordcloud.internal.command.DeleteWordCloudCommandHandlerTaskFactory;
+import org.baderlab.wordcloud.internal.command.GetVersionCommandHandlerTask;
+import org.baderlab.wordcloud.internal.command.GetVersionCommandHandlerTaskFactory;
 import org.baderlab.wordcloud.internal.command.SelectWordCloudCommandHandlerTaskFactory;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.ui.CloudTaskManager;
@@ -30,11 +33,17 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Version;
 
 
 public class CyActivator extends AbstractCyActivator {
 	
 	private static final String APPS_MENU = "Apps.WordCloud";
+	
+	// Semantic Versioning
+	// VERY IMPORTANT TO UPDATE FOR EVERY RELEASE!
+	public static final Version VERSION = new Version(3,0,2);
+	
 	
 	private CloudTaskManager cloudTaskManager;
 	private UIManager uiManager;
@@ -97,10 +106,10 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		// Command line
-		registerCommand(context, "create", new CreateWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudModelManager, uiManager, tableManager, tableFactory));
-		registerCommand(context, "delete", new DeleteWordCloudCommandHandlerTaskFactory(uiManager));
-		registerCommand(context, "select", new SelectWordCloudCommandHandlerTaskFactory(uiManager));
-		
+		registerCommand(context, "create", new CreateWordCloudCommandHandlerTaskFactory(applicationManager, application, cloudModelManager, uiManager, tableManager, tableFactory), CreateWordCloudCommandHandlerTask.getDescription());
+		registerCommand(context, "delete", new DeleteWordCloudCommandHandlerTaskFactory(uiManager), "Deletes a cloud");
+		registerCommand(context, "select", new SelectWordCloudCommandHandlerTaskFactory(uiManager), "Selects the nodes that are associated with the cloud");
+		registerCommand(context, "version", new GetVersionCommandHandlerTaskFactory(), GetVersionCommandHandlerTask.getDescription());
 		
 		// Always show WordCloud panels when Cytoscape starts.
 		//showAction.actionPerformed(null);
@@ -120,11 +129,14 @@ public class CyActivator extends AbstractCyActivator {
 	}
 	
 	
-	private void registerCommand(BundleContext context, String name, TaskFactory factory) {
+	private void registerCommand(BundleContext context, String name, TaskFactory factory, String description) {
 		Properties props = new Properties();
 		props.put(ServiceProperties.COMMAND, name);
 		props.put(ServiceProperties.COMMAND_NAMESPACE, "wordcloud");
+		if(description != null)
+			props.put("commandDescription", description); // added in Cytoscape 3.2
 		registerService(context, factory, TaskFactory.class, props);
 	}
+	
 	
 }

@@ -126,7 +126,6 @@ public class NetworkParameters {
 		CloudParameters cloudParams = new CloudParameters(this, cloudName, getCloudCount());
 		cloudParams.setSelectedNodes(builder.getNodes());
 		cloudParams.setAttributeNames(builder.getAttributeNames());
-		
 		cloudParams.setDisplayStyle(builder.getDisplayStyle());
 		cloudParams.setMaxWords(builder.getMaxWords());
 		cloudParams.setClusterCutoff(builder.getClusterCutoff());
@@ -138,6 +137,24 @@ public class NetworkParameters {
 		incrementCloudCounter();
 		clouds.put(cloudParams.getCloudName(), cloudParams);
 		parent.fireCloudAdded(cloudParams);
+		return cloudParams;
+	}
+	
+	
+	/**
+	 * Note this isn't very well tested, don't call from anywhere except the create cloud command handler.
+	 */
+	protected CloudParameters createFakeCloud(CloudBuilder builder) {
+		CloudParameters cloudParams = new CloudParameters(this, "FakeCloud", -1);
+		cloudParams.setOverrideNodes(builder.getNodes());
+		cloudParams.setAttributeNames(builder.getAttributeNames());
+		cloudParams.setDisplayStyle(builder.getDisplayStyle());
+		cloudParams.setMaxWords(builder.getMaxWords());
+		cloudParams.setClusterCutoff(builder.getClusterCutoff());
+		cloudParams.setNetWeightFactor(builder.getNetWeightFactor());
+		cloudParams.setMinWordOccurrence(builder.getMinWordOccurrence());
+		cloudParams.setClusterColumnName(builder.getClusterColumnName());
+		cloudParams.setClusterTable(builder.getClusterTable());
 		return cloudParams;
 	}
 	

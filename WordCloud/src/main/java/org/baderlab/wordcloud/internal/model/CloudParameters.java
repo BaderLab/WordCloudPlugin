@@ -75,6 +75,9 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	private String clusterColumnName;
 	private CyTable clusterTable;
 	
+	/** Allows to explicitiy set the nodes instead of using a table column */
+	private Set<CyNode> overrideNodes = null;
+	
 	
 	//String Delimeters
 	//private static final String NODEDELIMITER = "CloudParamNodeDelimiter";
@@ -95,7 +98,8 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 		this.displayStyle = CloudDisplayStyles.getDefault();
 		this.cloudNum = cloudNum;
 		this.cloudName = cloudName;
-		createColumn(cloudName); // create the column for the cloud
+		if(cloudNum != -1)
+			createColumn(cloudName); // create the column for the cloud
 	}
 	
 	
@@ -438,6 +442,10 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 	}
 	
 	private Set<CyNode> getSelectedNodes(CyNetwork network) {
+		if (overrideNodes != null) {
+			return Collections.unmodifiableSet(overrideNodes);
+		}
+		
 		if (network == null) {
 			return Collections.emptySet();
 		}
@@ -451,6 +459,11 @@ public class CloudParameters implements Comparable<CloudParameters>, CloudProvid
 			}
 		}
 		return nodes;
+	}
+	
+	
+	void setOverrideNodes(Collection<CyNode> nodes) {
+		this.overrideNodes = new HashSet<>(nodes);
 	}
 
 	public void setSelectedNodes(Collection<CyNode> nodes)

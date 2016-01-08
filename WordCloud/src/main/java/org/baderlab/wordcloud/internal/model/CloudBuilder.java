@@ -45,6 +45,15 @@ public class CloudBuilder {
 		return networkParams.createCloud(this);
 	}
 
+	/**
+	 * Returns a CloudParameters object that is not actually linked into the model.
+	 * No events are fired.
+	 * This is solely for the purpose of the create command to return the cloud
+	 * results without actually creating a cloud.
+	 */
+	public CloudParameters buildFakeCloud() {
+		return networkParams.createFakeCloud(this);
+	}
 	
 	/**
 	 * Copies all the fields from the given cloud except its name.

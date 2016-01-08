@@ -181,7 +181,7 @@ public class UIManager implements CloudModelListener, SetCurrentNetworkListener,
 	
 	
 	public void setCurrentCloud(CloudParameters cloud) {
-		setCurrentCloud(cloud, true);
+		setCurrentCloud(cloud, false);
 	}
 	
 	public void setCurrentCloud(CloudParameters cloud, boolean updateNodeSelection) {
