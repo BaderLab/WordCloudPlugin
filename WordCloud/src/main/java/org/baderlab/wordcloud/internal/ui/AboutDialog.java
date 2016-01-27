@@ -49,7 +49,7 @@ public class AboutDialog extends JDialog {
 	private static final String BUILD_TIMESTAMP = "build.timestamp";
 	
 	
-	private static final String URL = "http://www.baderlab.org/Software/WordCloud";
+	private static final String URL = "http://www.baderlab.org/WordCloud";
 
 	
 	private final OpenBrowser openBrowser;
