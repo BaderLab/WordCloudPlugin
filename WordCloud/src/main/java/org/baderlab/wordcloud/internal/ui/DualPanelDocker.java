@@ -5,12 +5,15 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.URL;
 import java.util.Properties;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.baderlab.wordcloud.internal.CyActivator;
 import org.baderlab.wordcloud.internal.ui.cloud.CloudDisplayPanel;
 import org.baderlab.wordcloud.internal.ui.input.SemanticSummaryInputPanel;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -57,8 +60,9 @@ public class DualPanelDocker {
 		this.swingApplication = swingApplication;
 		this.registrar = registrar;
 		
-		this.inputComponent = wrapInCytoPanel(inputPanel, CytoPanelName.WEST, "WordCloud");
-		this.cloudComponent = wrapInCytoPanel(cloudPanel, CytoPanelName.SOUTH, "WordCloud Display");
+		Icon icon = getIcon();
+		this.inputComponent = wrapInCytoPanel(inputPanel, CytoPanelName.WEST, "WordCloud", icon);
+		this.cloudComponent = wrapInCytoPanel(cloudPanel, CytoPanelName.SOUTH, "WordCloud Display", icon);
 		
 		state = State.UNDOCKED;
 		flip(); // this will initially dock it
@@ -69,6 +73,10 @@ public class DualPanelDocker {
 		this.callback = callback;
 	}
 	
+	private Icon getIcon() {
+		URL url = CyActivator.class.getResource("wordcloud_logo_v6_16by16.png");
+		return url == null ? null : new ImageIcon(url);
+	}
 	
 	public void flip() {
 		switch(state) {
@@ -167,13 +175,13 @@ public class DualPanelDocker {
 	}
 	
 
-	private CytoPanelComponent wrapInCytoPanel(final JPanel panel, final CytoPanelName compassPoint, final String title) {
+	private CytoPanelComponent wrapInCytoPanel(final JPanel panel, final CytoPanelName compassPoint, final String title, final Icon icon) {
 		return new CytoPanelComponent() {
 			public String getTitle() {
 				return title;
 			}
 			public Icon getIcon() {
-				return null;
+				return icon;
 			}
 			public CytoPanelName getCytoPanelName() {
 				return compassPoint;

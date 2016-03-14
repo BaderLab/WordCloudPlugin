@@ -26,6 +26,7 @@ import java.awt.Insets;
 import java.awt.Window;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
 
 import javax.swing.JDialog;
@@ -72,6 +73,8 @@ public class AboutDialog extends JDialog {
 		editorPane.setEditorKit(new HTMLEditorKit());
 		editorPane.addHyperlinkListener(new HyperlinkAction(editorPane));
 
+		URL logoURL = CyActivator.class.getResource("wordcloud_logo_v6_64by64.png");
+		
 		editorPane
 				.setText("<html><body>"
 						+ "<table border='0'><tr>"
@@ -80,8 +83,9 @@ public class AboutDialog extends JDialog {
 						+ "<p align=center><b>WordCloud</b><BR>A Cytoscape App<BR><BR></p>"
 						+ "<p align=center>Version: " + version + "<br>Build: " + timestamp + "</p>"
 						+ "</td>"
-						+ "<td width='125'><div align='right'></td>"
+						+ "<td width='125'><div align='right'><img src=\"" + logoURL.toString() + "\" ></div></td>"
 						+ "</tr></table>"
+						
 						+ "<p align=center>WordCloud is a Cytoscape App that generates a word tag cloud<BR>"
 						+ "from a user-define node selection, summarizing attributes of choice.<BR>"
 						+ "<BR>"
