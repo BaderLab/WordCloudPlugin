@@ -114,7 +114,7 @@ public class ClusterBuilder
 	{
 		cloudWords = new ArrayList<CloudWordInfo>();
 		
-		Integer wordCount = 0;
+		int wordCount = 0;
 		
 		Map<String, Double> ratios = cloudInfo.getRatios();
 		for(int i = 0; i < clusters.getClusters().size(); i++)

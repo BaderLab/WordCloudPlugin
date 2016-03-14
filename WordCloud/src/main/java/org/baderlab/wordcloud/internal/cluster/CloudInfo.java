@@ -385,7 +385,7 @@ public class CloudInfo {
 			double newNetCount = Math.pow(netCount, cloud.getNetWeightFactor());
 			int netTotal = cloud.getNetworkNumNodes();
 			double newNetTotal = Math.pow(netTotal,  cloud.getNetWeightFactor());
-			
+
 			double numerator = selCount * newNetTotal;
 			double denominator = selTotal * newNetCount;
 			double ratio = numerator/denominator;
