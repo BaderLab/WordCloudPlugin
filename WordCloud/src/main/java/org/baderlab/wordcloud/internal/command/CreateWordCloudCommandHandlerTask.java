@@ -157,6 +157,15 @@ public class CreateWordCloudCommandHandlerTask implements ObservableTask {
 			clusters.add(cloudWord.getCluster());
 			numbers.add(cloudWord.getWordNumber());
 		}
+		
+		// additional parameters
+		results.put("netWeightFactor", cloudParams.getNetWeightFactor());
+		results.put("attributeNames", cloudParams.getAttributeNames());
+		results.put("displayStyle", cloudParams.getDisplayStyle());
+		results.put("maxWords", cloudParams.getMaxWords());
+		results.put("clusterCutoff", cloudParams.getClusterCutoff());
+		results.put("minWordOccurrence", cloudParams.getMinWordOccurrence());
+		
 		this.taskResults = results;
 		
 		// Add wordInfo to table (only here for backwards compatibility)
