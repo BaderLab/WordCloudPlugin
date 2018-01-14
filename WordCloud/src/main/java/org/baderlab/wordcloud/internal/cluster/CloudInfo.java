@@ -1,6 +1,7 @@
 package org.baderlab.wordcloud.internal.cluster;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.baderlab.wordcloud.internal.Stemmer;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
@@ -115,9 +117,13 @@ public class CloudInfo {
 		
 		for (String attributeName : cloud.getAttributeNames()) {
 			for (CyNode curNode : networkParams.getNetwork().getNodeList()) {
-				String value = getNodeAttributeVal(network, curNode, attributeName);
-				if(value != null) {
-					updateNetworkWordCounts(curNode, value);
+				List<String> values = getNodeAttributeVal(network, curNode, attributeName);
+				if(values != null) {
+					for(String value : values) {
+						if(value != null) {
+							updateNetworkWordCounts(curNode, value);
+						}
+					}
 				}
 			}
 		}
@@ -229,11 +235,15 @@ public class CloudInfo {
 		
 		Collection<CyNode> selectedNodes = cloud.getSelectedNodes();
 		
-		for (String attributeName : cloud.getAttributeNames()) {
-			for (CyNode curNode : selectedNodes) {
-				String value = getNodeAttributeVal(network, curNode, attributeName);
-				if(value != null) {
-					updateSelectedWordCounts(curNode, value);
+		for(String attributeName : cloud.getAttributeNames()) {
+			for(CyNode curNode : selectedNodes) {
+				List<String> values = getNodeAttributeVal(network, curNode, attributeName);
+				if(values != null) {
+					for(String value : values) {
+						if(value != null) {
+							updateSelectedWordCounts(curNode, value);
+						}
+					}
 				}
 			}
 		}
@@ -535,18 +545,21 @@ public class CloudInfo {
 	 * 
 	 * 
 	 */
-	private String getNodeAttributeVal(CyNetwork network, CyNode curNode, String attributeName) {
+	private List<String> getNodeAttributeVal(CyNetwork network, CyNode curNode, String attributeName) {
 		CyTable table = network.getDefaultNodeTable();
 		CyColumn column = table.getColumn(attributeName);
 		if (column == null) {
 			return null;
 		}
 		if (column.getType().equals(String.class)) {
-			return table.getRow(curNode.getSUID()).get(attributeName, String.class);
+			String value = table.getRow(curNode.getSUID()).get(attributeName, String.class);
+			return value == null ? null : Arrays.asList(value);
 		}
 		if (column.getType().equals(List.class) && column.getListElementType().equals(String.class)) {
 			List<String> list = table.getRow(curNode.getSUID()).getList(attributeName, String.class);
-			return list == null ? null : join(" ", list);
+			if(list == null)
+				return null;
+			return list.stream().sorted().collect(Collectors.toList());
 		}
 		return null;
 	}
