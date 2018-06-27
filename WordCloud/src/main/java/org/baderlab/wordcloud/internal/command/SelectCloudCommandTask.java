@@ -7,7 +7,7 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
-public class SelectWordCloudCommandHandlerTask implements Task {
+public class SelectCloudCommandTask implements Task {
 
 	private final UIManager uiManager;
 
@@ -17,7 +17,7 @@ public class SelectWordCloudCommandHandlerTask implements Task {
 	@Tunable(description="If true then the graph nodes will be selected to match the cloud. Default: true.")
 	public boolean updateNodeSelection = true;
 	
-	public SelectWordCloudCommandHandlerTask(UIManager uiManager) {
+	public SelectCloudCommandTask(UIManager uiManager) {
 		this.uiManager = uiManager;
 	}
 

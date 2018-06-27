@@ -7,14 +7,14 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
-public class DeleteWordCloudCommandHandlerTask implements Task {
+public class DeleteCloudCommandTask implements Task {
 
 	private UIManager uiManager;
 
 	@Tunable(description="Name of cloud to be destroyed")
 	public String cloudName = "";
 	
-	public DeleteWordCloudCommandHandlerTask(UIManager uiManager) {
+	public DeleteCloudCommandTask(UIManager uiManager) {
 		this.uiManager = uiManager;
 	}
 

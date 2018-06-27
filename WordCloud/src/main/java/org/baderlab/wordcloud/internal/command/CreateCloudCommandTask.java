@@ -27,7 +27,7 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
-public class CreateWordCloudCommandHandlerTask implements ObservableTask {
+public class CreateCloudCommandTask implements ObservableTask {
 
 	private CyApplicationManager applicationManager;
 	private CyTableManager tableManager;
@@ -69,7 +69,7 @@ public class CreateWordCloudCommandHandlerTask implements ObservableTask {
 	public String cloudGroupTableName = null;
 	
 	
-	public CreateWordCloudCommandHandlerTask(
+	public CreateCloudCommandTask(
 			CyApplicationManager applicationManager,
 			CloudModelManager cloudManager,
 			UIManager uiManager,

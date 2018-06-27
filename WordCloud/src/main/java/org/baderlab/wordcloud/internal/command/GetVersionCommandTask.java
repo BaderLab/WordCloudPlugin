@@ -4,7 +4,7 @@ import org.baderlab.wordcloud.internal.CyActivator;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class GetVersionCommandHandlerTask implements ObservableTask {
+public class GetVersionCommandTask implements ObservableTask {
 
 	
 	@Override

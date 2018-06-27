@@ -4,17 +4,17 @@ import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class SelectWordCloudCommandHandlerTaskFactory implements TaskFactory{
+public class DeleteCloudCommandTaskFactory implements TaskFactory {
 
-private UIManager uiManager;
+	private UIManager uiManager;
 	
-	public SelectWordCloudCommandHandlerTaskFactory(UIManager uiManager) {
+	public DeleteCloudCommandTaskFactory(UIManager uiManager) {
 		this.uiManager = uiManager;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new SelectWordCloudCommandHandlerTask(uiManager));
+		return new TaskIterator(new DeleteCloudCommandTask(uiManager));
 	}
 
 	@Override

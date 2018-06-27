@@ -5,8 +5,8 @@ import static org.mockito.Mockito.*;
 
 import java.util.List;
 
-import org.baderlab.wordcloud.internal.command.CreateWordCloudCommandHandlerTask;
-import org.baderlab.wordcloud.internal.command.DeleteWordCloudCommandHandlerTask;
+import org.baderlab.wordcloud.internal.command.CreateCloudCommandTask;
+import org.baderlab.wordcloud.internal.command.DeleteCloudCommandTask;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.model.CloudParameters;
 import org.baderlab.wordcloud.internal.model.NetworkParameters;
@@ -58,7 +58,7 @@ public class TestCommands {
 		UIManager uiManager = mock(UIManager.class);
 		
 		// Create the Task
-		CreateWordCloudCommandHandlerTask task = new CreateWordCloudCommandHandlerTask(applicationManager, manager, uiManager, tableManager, tableFactory);
+		CreateCloudCommandTask task = new CreateCloudCommandTask(applicationManager, manager, uiManager, tableManager, tableFactory);
 		task.cloudName = "mytask_cloud";
 		task.cloudGroupTableName = "cloudGroupTableName";
 		
@@ -99,7 +99,7 @@ public class TestCommands {
 		
 		UIManager uiManager = mock(UIManager.class);
 		
-		CreateWordCloudCommandHandlerTask task = new CreateWordCloudCommandHandlerTask(applicationManager, manager, uiManager, tableManager, tableFactory);
+		CreateCloudCommandTask task = new CreateCloudCommandTask(applicationManager, manager, uiManager, tableManager, tableFactory);
 		
 		try {
 			task.run(mock(TaskMonitor.class));
@@ -158,7 +158,7 @@ public class TestCommands {
 		UIManager uiManager = mock(UIManager.class);
 		when(uiManager.getCurrentNetwork()).thenReturn(networkParameters);
 		
-		DeleteWordCloudCommandHandlerTask task = new DeleteWordCloudCommandHandlerTask(uiManager);
+		DeleteCloudCommandTask task = new DeleteCloudCommandTask(uiManager);
 		task.cloudName = "my_cloud_name";
 		
 		task.run(mock(TaskMonitor.class));
@@ -178,7 +178,7 @@ public class TestCommands {
 		UIManager uiManager = mock(UIManager.class);
 		when(uiManager.getCurrentNetwork()).thenReturn(networkParameters);
 		
-		DeleteWordCloudCommandHandlerTask task = new DeleteWordCloudCommandHandlerTask(uiManager);
+		DeleteCloudCommandTask task = new DeleteCloudCommandTask(uiManager);
 		task.cloudName = "blah blah blah";
 		
 		try {
