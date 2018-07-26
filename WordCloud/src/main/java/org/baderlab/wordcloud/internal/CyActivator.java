@@ -43,7 +43,7 @@ public class CyActivator extends AbstractCyActivator {
 	
 	// Semantic Versioning
 	// VERY IMPORTANT TO UPDATE FOR EVERY RELEASE!
-	public static final Version VERSION = new Version(3,0,2);
+	public static final Version VERSION = new Version(3,1,2);
 	
 	
 	private CloudTaskManager cloudTaskManager;

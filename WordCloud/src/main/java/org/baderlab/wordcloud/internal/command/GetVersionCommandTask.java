@@ -1,6 +1,7 @@
 package org.baderlab.wordcloud.internal.command;
 
-import org.baderlab.wordcloud.internal.CyActivator;
+import static org.baderlab.wordcloud.internal.CyActivator.VERSION;
+
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -16,8 +17,11 @@ public class GetVersionCommandTask implements ObservableTask {
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
 		if(int[].class.equals(type)) {
-			int[] version = { CyActivator.VERSION.getMajor(), CyActivator.VERSION.getMinor(), CyActivator.VERSION.getMicro() };
+			int[] version = { VERSION.getMajor(), VERSION.getMinor(), VERSION.getMicro() };
 			return type.cast(version);
+		} 
+		if(String.class.equals(type)) {
+			return type.cast(VERSION.toString());
 		}
 		return null;
 	}
