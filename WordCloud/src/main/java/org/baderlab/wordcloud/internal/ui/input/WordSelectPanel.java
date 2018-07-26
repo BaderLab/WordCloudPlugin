@@ -202,7 +202,7 @@ public class WordSelectPanel extends JPanel {
 			addWordCombo = new JComboBox<String>(createComboModel());
 			addWordCombo.setEditable(false);
 			
-			JLabel inactiveLabel = new JLabel("Disabled common delimeters"); 
+			JLabel inactiveLabel = new JLabel("Disabled common delimiters"); 
 			c = new GridBagConstraints();
 			c.insets = insets;
 			c.gridx = 0;
