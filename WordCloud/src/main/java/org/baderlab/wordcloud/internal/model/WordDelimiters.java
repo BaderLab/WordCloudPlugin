@@ -47,11 +47,11 @@ public class WordDelimiters
 	
 	private Pattern splitter = null; // lazily initialized
 	
-	private TreeSet<String> delimsInUse= new TreeSet<String>();
-	private TreeSet<String> delimsToAdd= new TreeSet<String>();
-	private TreeSet<String> userDelims= new TreeSet<String>();
+	private TreeSet<String> delimsInUse = new TreeSet<>();
+	private TreeSet<String> delimsToAdd = new TreeSet<>();
+	private TreeSet<String> userDelims = new TreeSet<>();
 	
-	private final HashMap<String, String> regexTranslation = new HashMap<String,String>();
+	private final HashMap<String,String> regexTranslation = new HashMap<>();
 	{
 		regexTranslation.put("tab", "\\t");
 		regexTranslation.put("space", " ");
@@ -100,8 +100,8 @@ public class WordDelimiters
 		delimsInUse.add("|");
 		delimsInUse.add("}");
 		delimsInUse.add("~");
+		delimsInUse.add("-");
 		
-		delimsToAdd.add("-");
 		delimsToAdd.add("'");
 	}
 	
@@ -114,7 +114,7 @@ public class WordDelimiters
 	public WordDelimiters(String propFile)
 	{
 		//Create a hashmap to contain all the values in the rpt file
-		HashMap<String, String> props = new HashMap<String,String>();
+		HashMap<String, String> props = new HashMap<>();
 		
 		String[] lines = propFile.split(FIRSTDELIMITER);
 		
@@ -130,8 +130,8 @@ public class WordDelimiters
 		//Check if this is new version, clear out initialization
 		if ((props.get("DelimsInUse") != null) || (props.get("DelimsToAdd") != null))
 		{
-			delimsInUse = new TreeSet<String>();
-			delimsToAdd = new TreeSet<String>();
+			delimsInUse = new TreeSet<>();
+			delimsToAdd = new TreeSet<>();
 		}
 		
 		//Rebuild inUse List
