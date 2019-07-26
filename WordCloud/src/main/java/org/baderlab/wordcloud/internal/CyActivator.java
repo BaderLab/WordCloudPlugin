@@ -10,6 +10,8 @@ import org.baderlab.wordcloud.internal.command.DelimiterCommandTaskFactory;
 import org.baderlab.wordcloud.internal.command.GetVersionCommandTask;
 import org.baderlab.wordcloud.internal.command.GetVersionCommandTaskFactory;
 import org.baderlab.wordcloud.internal.command.SelectCloudCommandTaskFactory;
+import org.baderlab.wordcloud.internal.command.ShowWordSelectDialogCommand.Type;
+import org.baderlab.wordcloud.internal.command.ShowWordSelectDialogCommandFactory;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
 import org.baderlab.wordcloud.internal.ui.CloudTaskManager;
 import org.baderlab.wordcloud.internal.ui.UIManager;
@@ -53,7 +55,7 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext context) throws Exception {
 		
 		// Get services
-		CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
+		CyApplicationManager appManager = getService(context, CyApplicationManager.class);
 		CySwingApplication application = getService(context, CySwingApplication.class);
 		CyTableManager tableManager = getService(context, CyTableManager.class);
 		CyTableFactory tableFactory = getService(context, CyTableFactory.class);
@@ -74,7 +76,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(context, cloudModelManager, new Properties());
 		cloudTaskManager = new CloudTaskManager();
 		
-		uiManager = new UIManager(cloudModelManager, applicationManager, application, registrar, cloudTaskManager);
+		uiManager = new UIManager(cloudModelManager, appManager, application, registrar, cloudTaskManager);
 		cloudModelManager.addListener(uiManager);
 		registerAllServices(context, uiManager, new Properties());
 		
@@ -84,7 +86,7 @@ public class CyActivator extends AbstractCyActivator {
 		showAction.setPreferredMenu(APPS_MENU);
 		registerService(context, showAction, CyAction.class, new Properties());
 		
-		CreateCloudAction createAction = new CreateCloudAction(applicationManager, application, cloudModelManager, uiManager);
+		CreateCloudAction createAction = new CreateCloudAction(appManager, application, cloudModelManager, uiManager);
 		createAction.setPreferredMenu(APPS_MENU);
 		registerService(context, createAction, CyAction.class, new Properties());
 		
@@ -102,20 +104,26 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		// Session persistence
-		SessionListener sessionListener = new SessionListener(cloudModelManager, new IoUtil(streamUtil), networkManager, applicationManager, uiManager);
+		SessionListener sessionListener = new SessionListener(cloudModelManager, new IoUtil(streamUtil), networkManager, appManager, uiManager);
 		registerAllServices(context, sessionListener, new Properties());
 		
 		
 		// Command line
-		registerCommand(context, "create", new CreateCloudCommandTaskFactory(applicationManager, application, cloudModelManager, uiManager, tableManager, tableFactory), CreateCloudCommandTask.getDescription());
+		registerCommand(context, "create", new CreateCloudCommandTaskFactory(appManager, application, cloudModelManager, uiManager, tableManager, tableFactory), CreateCloudCommandTask.getDescription());
 		registerCommand(context, "delete", new DeleteCloudCommandTaskFactory(uiManager), "Deletes a cloud");
 		registerCommand(context, "select", new SelectCloudCommandTaskFactory(uiManager), "Selects the nodes that are associated with the cloud");
 		registerCommand(context, "version", new GetVersionCommandTaskFactory(), GetVersionCommandTask.getDescription());
 		
-		registerCommand(context, "delimiter add", new DelimiterCommandTaskFactory(cloudModelManager, uiManager, applicationManager, true, true), "Adds a delimiter");
-		registerCommand(context, "delimiter remove", new DelimiterCommandTaskFactory(cloudModelManager, uiManager, applicationManager, false, true), "Removes a delimiter");
-		registerCommand(context, "ignore add", new DelimiterCommandTaskFactory(cloudModelManager, uiManager, applicationManager, true, false), "Adds a word that will be ignored");
-		registerCommand(context, "ignore remove", new DelimiterCommandTaskFactory(cloudModelManager, uiManager, applicationManager, false, false), "Removes a word that will be ignored");
+		registerCommand(context, "delimiter add", new DelimiterCommandTaskFactory(cloudModelManager, uiManager, appManager, true, true), "Adds a delimiter");
+		registerCommand(context, "delimiter remove", new DelimiterCommandTaskFactory(cloudModelManager, uiManager, appManager, false, true), "Removes a delimiter");
+		registerCommand(context, "ignore add", new DelimiterCommandTaskFactory(cloudModelManager, uiManager, appManager, true, false), "Adds a word that will be ignored");
+		registerCommand(context, "ignore remove", new DelimiterCommandTaskFactory(cloudModelManager, uiManager, appManager, false, false), "Removes a word that will be ignored");
+		
+		ShowWordSelectDialogCommandFactory factory1 = new ShowWordSelectDialogCommandFactory(Type.DELIMITERS, cloudModelManager, uiManager, application, appManager);
+		registerCommand(context, "delimiter show", factory1, "Shows the delimiters dialog. Warning: the user must dismiss the dialog.");
+		ShowWordSelectDialogCommandFactory factory2 = new ShowWordSelectDialogCommandFactory(Type.WORDS, cloudModelManager, uiManager, application, appManager);
+		registerCommand(context, "ignore show", factory2, "Shows the word ignore dialog. Warning: the user must dismiss the dialog.");
+		
 		
 		// Always show WordCloud panels when Cytoscape starts.
 		//showAction.actionPerformed(null);

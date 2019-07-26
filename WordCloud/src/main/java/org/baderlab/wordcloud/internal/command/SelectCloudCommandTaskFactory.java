@@ -4,7 +4,7 @@ import org.baderlab.wordcloud.internal.ui.UIManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class SelectCloudCommandTaskFactory implements TaskFactory{
+public class SelectCloudCommandTaskFactory implements TaskFactory {
 
 private UIManager uiManager;
 	
