@@ -9,6 +9,7 @@ import org.baderlab.wordcloud.internal.command.DeleteCloudCommandTaskFactory;
 import org.baderlab.wordcloud.internal.command.DelimiterCommandTaskFactory;
 import org.baderlab.wordcloud.internal.command.GetVersionCommandTask;
 import org.baderlab.wordcloud.internal.command.GetVersionCommandTaskFactory;
+import org.baderlab.wordcloud.internal.command.ParentComponentTunableHandlerFactory;
 import org.baderlab.wordcloud.internal.command.SelectCloudCommandTaskFactory;
 import org.baderlab.wordcloud.internal.command.ShowWordSelectDialogCommand.Type;
 import org.baderlab.wordcloud.internal.command.ShowWordSelectDialogCommandFactory;
@@ -22,6 +23,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.command.StringTunableHandlerFactory;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
@@ -124,6 +126,7 @@ public class CyActivator extends AbstractCyActivator {
 		ShowWordSelectDialogCommandFactory factory2 = new ShowWordSelectDialogCommandFactory(Type.WORDS, cloudModelManager, uiManager, application, appManager);
 		registerCommand(context, "ignore show", factory2, "Shows the word ignore dialog. Warning: the user must dismiss the dialog.");
 		
+		registerService(context, new ParentComponentTunableHandlerFactory(), StringTunableHandlerFactory.class, new Properties());
 		
 		// Always show WordCloud panels when Cytoscape starts.
 		//showAction.actionPerformed(null);

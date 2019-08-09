@@ -1,5 +1,7 @@
 package org.baderlab.wordcloud.internal.command;
 
+import java.awt.Component;
+
 import javax.swing.JDialog;
 
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
@@ -27,8 +29,12 @@ public class ShowWordSelectDialogCommand extends AbstractTask {
 		WORDS, DELIMITERS
 	}
 	
-	@Tunable(description="The network to use (optional, will use current network if not specified.", context="nogui")
+	@Tunable(description="The network to use (optional, will use current network if not specified)", context="nogui")
 	public CyNetwork network = null;
+	
+	// set context to gui so this parameter doesn't show up in the command line help
+	@Tunable(description="The parent Component for the dialog. This is only used when the command is called directy by another App.", context="gui")
+	public ParentComponent parent;
 	
 	
 	public ShowWordSelectDialogCommand(Type type, CloudModelManager cloudManager, UIManager uiManager, CySwingApplication application, CyApplicationManager appManager) {
@@ -56,8 +62,14 @@ public class ShowWordSelectDialogCommand extends AbstractTask {
 			return;
 		}
 		
+		Component dialogParent;
+		if(parent != null && parent.getComponent() != null)
+			dialogParent = parent.getComponent();
+		else
+			dialogParent = application.getJFrame();
+		
 		WordSelectPanel wordSelectPanel = createPanel(networkParameters);
-		JDialog dialog = wordSelectPanel.createDialog(application.getJFrame(), networkParameters.getNetworkName());
+		JDialog dialog = wordSelectPanel.createDialog(dialogParent, networkParameters.getNetworkName());
 		dialog.setVisible(true);
 		
 		networkParameters.updateAllClouds();
