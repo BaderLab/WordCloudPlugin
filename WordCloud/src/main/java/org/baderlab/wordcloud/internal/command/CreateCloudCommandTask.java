@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.baderlab.wordcloud.internal.cluster.CloudInfo;
 import org.baderlab.wordcloud.internal.cluster.CloudWordInfo;
 import org.baderlab.wordcloud.internal.model.CloudBuilder;
 import org.baderlab.wordcloud.internal.model.CloudModelManager;
@@ -137,7 +138,8 @@ public class CreateCloudCommandTask implements ObservableTask {
 		else
 			cloudParams = builder.buildFakeCloud();
 		
-		List<CloudWordInfo> wordInfo = cloudParams.calculateCloud().getCloudWordInfoList();
+		CloudInfo cloudInfo = cloudParams.calculateCloud();
+		List<CloudWordInfo> wordInfo = cloudInfo.getCloudWordInfoList();
 
 		// Prepare results
 		Map<String, Object> results = new HashMap<>();
@@ -165,6 +167,8 @@ public class CreateCloudCommandTask implements ObservableTask {
 		results.put("maxWords", cloudParams.getMaxWords());
 		results.put("clusterCutoff", cloudParams.getClusterCutoff());
 		results.put("minWordOccurrence", cloudParams.getMinWordOccurrence());
+		results.put("selectedCounts", cloudInfo.getSelectedCounts());
+		
 		
 		this.taskResults = results;
 		
